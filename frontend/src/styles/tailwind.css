@@ -1,0 +1,152 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Dark theme base styles */
+.dark {
+  --ion-background-color: #111827; /* gray-900 */
+  --ion-background-color-rgb: 17, 24, 39;
+  --ion-text-color: #ffffff;
+  --ion-text-color-rgb: 255, 255, 255;
+  --ion-border-color: #374151; /* gray-700 */
+  --ion-color-step-50: #1f2937; /* gray-800 */
+  --ion-color-step-100: #374151; /* gray-700 */
+  --ion-color-step-150: #4b5563; /* gray-600 */
+  --ion-color-step-200: #6b7280; /* gray-500 */
+  --ion-color-step-250: #9ca3af; /* gray-400 */
+  --ion-color-step-300: #d1d5db; /* gray-300 */
+  --ion-color-step-350: #e5e7eb; /* gray-200 */
+  --ion-color-step-400: #f3f4f6; /* gray-100 */
+  --ion-color-step-450: #f9fafb; /* gray-50 */
+  --ion-color-step-500: #ffffff;
+  --ion-color-step-550: #ffffff;
+  --ion-color-step-600: #ffffff;
+  --ion-color-step-650: #ffffff;
+  --ion-color-step-700: #ffffff;
+  --ion-color-step-750: #ffffff;
+  --ion-color-step-800: #ffffff;
+  --ion-color-step-850: #ffffff;
+  --ion-color-step-900: #ffffff;
+  --ion-color-step-950: #ffffff;
+}
+
+/* Override Ionic header and toolbar dark mode */
+.dark ion-header {
+  --background: #111827 !important; /* gray-900 */
+  background: #111827 !important;
+  background-color: #111827 !important;
+}
+
+.dark ion-toolbar {
+  --background: #111827 !important; /* gray-900 */
+  --color: #ffffff;
+  background: #111827 !important;
+  background-color: #111827 !important;
+}
+
+/* Override Ionic components dark mode text colors */
+.dark ion-item {
+  --color: #ffffff;
+  color: #ffffff;
+}
+
+.dark ion-label {
+  --color: #ffffff;
+  color: #ffffff;
+}
+
+.dark ion-segment {
+  --background: #1f2937; /* gray-800 */
+}
+
+.dark ion-segment-button {
+  --color: #9ca3af; /* gray-400 */
+  --color-checked: #ffffff;
+  --indicator-color: #f7b801; /* primary color */
+}
+
+/* Light theme base styles */
+.light {
+  --ion-background-color: #ffffff;
+  --ion-background-color-rgb: 255, 255, 255;
+  --ion-text-color: #000000;
+  --ion-text-color-rgb: 0, 0, 0;
+  --ion-border-color: #e0e0e0;
+}
+
+/* Hide scrollbar for categories bar */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Custom searchbar styling */
+.searchbar-custom {
+  --background: #f3f4f6;
+  --border-radius: 8px;
+  --box-shadow: none;
+  --placeholder-color: #9ca3af;
+  --icon-color: #6b7280;
+}
+
+.dark .searchbar-custom {
+  --background: #1f2937; /* gray-800 for dark mode */
+  --placeholder-color: #6b7280;
+  --icon-color: #9ca3af;
+}
+
+/* Compact searchbar for header */
+.searchbar-compact {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.searchbar-compact .searchbar-input-container {
+  padding-left: 0 !important;
+}
+
+/* Button color themes */
+.button-primary {
+  --background: #f7b801;
+  --background-activated: #c59301;
+  --background-hover: #fcdb6f;
+  --color: #000000;
+  --color-activated: #ffffff;
+  --color-hover: #000000;
+}
+
+.button-secondary {
+  --background: #f18701;
+  --background-activated: #c16c01;
+  --background-hover: #f9b76f;
+  --color: #ffffff;
+  --color-activated: #ffffff;
+  --color-hover: #ffffff;
+}
+
+.button-blue {
+  --background: #0d47a1;
+  --background-activated: #1565c0;
+  --background-hover: #1976d2;
+  --color: #ffffff;
+  --color-activated: #ffffff;
+  --color-hover: #ffffff;
+}
+
+.button-red {
+  --background: #d00000;
+  --background-activated: #b71c1c;
+  --background-hover: #e53935;
+  --color: #ffffff;
+  --color-activated: #ffffff;
+  --color-hover: #ffffff;
+}
+
+/* Theme toggle button */
+.theme-toggle {
+  --color: var(--ion-text-color);
+}

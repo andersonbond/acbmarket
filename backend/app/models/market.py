@@ -27,6 +27,9 @@ class Market(Base):
     resolution_outcome = Column(String, nullable=True)  # ID of winning outcome
     resolution_time = Column(DateTime(timezone=True), nullable=True)
     
+    # Market deadline - when forecasting closes
+    end_date = Column(DateTime(timezone=True), nullable=True, index=True)
+    
     # Limits
     max_points_per_user = Column(Integer, default=10000, nullable=False)
     

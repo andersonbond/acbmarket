@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
-import { IonContent, IonPage, IonButton, IonInput, IonTextarea, IonItem, IonLabel, IonSpinner, IonAlert, IonIcon } from '@ionic/react';
+import { IonContent, IonPage, IonButton, IonInput, IonTextarea, IonItem, IonLabel, IonSpinner, IonAlert, IonIcon, IonDatetime } from '@ionic/react';
 import { useHistory } from 'react-router-dom';
-import { imageOutline, closeCircle, documentText } from 'ionicons/icons';
+import { imageOutline, closeCircle, documentText, calendarOutline } from 'ionicons/icons';
 import Header from '../components/Header';
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
@@ -24,6 +24,7 @@ const AdminCreateMarket: React.FC = () => {
     category: 'politics',
     max_points_per_user: 10000,
     image_url: '',
+    end_date: '', // ISO datetime string
     outcomes: [
       { name: 'Yes' },
       { name: 'No' },
@@ -31,7 +32,6 @@ const AdminCreateMarket: React.FC = () => {
   });
 
   const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const [uploadedImageUrl, setUploadedImageUrl] = useState<string>('');
 
   const categories = [
     { value: 'election', label: 'Election' },
@@ -118,7 +118,6 @@ const AdminCreateMarket: React.FC = () => {
 
       if (response.data.success) {
         const imageUrl = response.data.data.image_url;
-        setUploadedImageUrl(imageUrl);
         handleInputChange('image_url', imageUrl);
       }
     } catch (error: any) {
@@ -137,7 +136,6 @@ const AdminCreateMarket: React.FC = () => {
 
   const removeImage = () => {
     setPreviewImage(null);
-    setUploadedImageUrl('');
     handleInputChange('image_url', '');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -194,6 +192,7 @@ const AdminCreateMarket: React.FC = () => {
         category: formData.category,
         max_points_per_user: formData.max_points_per_user,
         image_url: formData.image_url || undefined,
+        end_date: formData.end_date || undefined,
         outcomes: formData.outcomes.map((o) => ({ name: o.name.trim() })),
       });
 
@@ -357,6 +356,35 @@ const AdminCreateMarket: React.FC = () => {
                       className="border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3"
                     />
                   </div>
+                </div>
+
+                {/* Market Deadline */}
+                <div>
+                  <IonLabel className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block flex items-center">
+                    <IonIcon icon={calendarOutline} className="mr-2" />
+                    Market Deadline (Optional)
+                  </IonLabel>
+                  <IonItem className="ion-no-padding" lines="none">
+                    <IonDatetime
+                      presentation="date-time"
+                      value={formData.end_date}
+                      onIonChange={(e) => {
+                        const value = e.detail.value as string;
+                        // Convert to ISO string format
+                        if (value) {
+                          const date = new Date(value);
+                          handleInputChange('end_date', date.toISOString());
+                        } else {
+                          handleInputChange('end_date', '');
+                        }
+                      }}
+                      min={new Date().toISOString()}
+                      className="border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3 w-full"
+                    />
+                  </IonItem>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    When forecasting closes for this market. Leave empty for no deadline.
+                  </p>
                 </div>
               </div>
             </div>

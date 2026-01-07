@@ -65,6 +65,8 @@ const Login: React.FC = () => {
                       onIonInput={(e) => setEmail(e.detail.value!)}
                       placeholder="Enter your email"
                       required
+                      maxlength={255}
+                      autocomplete="email"
                     />
                   </IonItem>
                 </div>
@@ -78,6 +80,8 @@ const Login: React.FC = () => {
                       onIonInput={(e) => setPassword(e.detail.value!)}
                       placeholder="Enter your password"
                       required
+                      maxlength={100}
+                      autocomplete="current-password"
                     />
                   </IonItem>
                 </div>

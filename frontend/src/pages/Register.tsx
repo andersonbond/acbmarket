@@ -9,11 +9,29 @@ const Register: React.FC = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const [contactNumber, setContactNumber] = useState('+63');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { register } = useAuth();
   const history = useHistory();
+
+  const handleContactNumberChange = (value: string) => {
+    // Ensure it always starts with +63
+    if (!value.startsWith('+63')) {
+      setContactNumber('+63');
+      return;
+    }
+    // Only allow digits after +63, max 10 digits
+    const digits = value.replace('+63', '').replace(/\D/g, '').slice(0, 10);
+    setContactNumber('+63' + digits);
+  };
+
+  const validateContactNumber = (): boolean => {
+    // Format: +63 followed by exactly 10 digits
+    const pattern = /^\+63\d{10}$/;
+    return pattern.test(contactNumber);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,6 +47,11 @@ const Register: React.FC = () => {
       return;
     }
 
+    if (!validateContactNumber()) {
+      setError('Contact number must be in format +63XXXXXXXXXX (10 digits after +63)');
+      return;
+    }
+
     if (!acceptedTerms) {
       setError('Please accept the Terms of Service');
       return;
@@ -37,7 +60,7 @@ const Register: React.FC = () => {
     setIsLoading(true);
 
     try {
-      await register({ email, password, display_name: displayName });
+      await register({ email, password, display_name: displayName, contact_number: contactNumber });
       history.push('/');
     } catch (err: any) {
       setError(err.message || 'Registration failed. Please try again.');
@@ -84,6 +107,9 @@ const Register: React.FC = () => {
                       onIonInput={(e) => setDisplayName(e.detail.value!)}
                       placeholder="Choose a display name"
                       required
+                      minlength={3}
+                      maxlength={50}
+                      autocomplete="username"
                     />
                   </IonItem>
                 </div>
@@ -97,8 +123,27 @@ const Register: React.FC = () => {
                       onIonInput={(e) => setEmail(e.detail.value!)}
                       placeholder="Enter your email"
                       required
+                      maxlength={255}
+                      autocomplete="email"
                     />
                   </IonItem>
+                </div>
+
+                <div className="mb-4">
+                  <IonItem className="rounded-lg mb-2" lines="none">
+                    <IonLabel position="stacked">Contact Number *</IonLabel>
+                    <IonInput
+                      type="tel"
+                      value={contactNumber}
+                      onIonInput={(e) => handleContactNumberChange(e.detail.value!)}
+                      placeholder="+639123456789"
+                      required
+                      maxlength={13}
+                    />
+                  </IonItem>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 ml-4">
+                    Format: +63 followed by 10 digits (e.g., +639123456789)
+                  </p>
                 </div>
 
                 <div className="mb-4">
@@ -110,6 +155,9 @@ const Register: React.FC = () => {
                       onIonInput={(e) => setPassword(e.detail.value!)}
                       placeholder="At least 8 characters"
                       required
+                      minlength={8}
+                      maxlength={100}
+                      autocomplete="new-password"
                     />
                   </IonItem>
                 </div>
@@ -123,6 +171,9 @@ const Register: React.FC = () => {
                       onIonInput={(e) => setConfirmPassword(e.detail.value!)}
                       placeholder="Confirm your password"
                       required
+                      minlength={8}
+                      maxlength={100}
+                      autocomplete="new-password"
                     />
                   </IonItem>
                 </div>

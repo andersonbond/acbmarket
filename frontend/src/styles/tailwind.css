@@ -2,6 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Ensure market title is very bold */
+.market-title {
+  font-weight: 900 !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Reduce IonCard shadow to be subtle */
+ion-card {
+  --box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03) !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03) !important;
+}
+
+.dark ion-card {
+  --box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.2), 0 1px 2px 0 rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.2), 0 1px 2px 0 rgba(0, 0, 0, 0.15) !important;
+}
+
 /* Dark theme base styles */
 .dark {
   --ion-background-color: #111827; /* gray-900 */
@@ -37,11 +55,28 @@
   background-color: #111827 !important;
 }
 
+/* Light mode toolbar and title - dark gray instead of black */
+ion-toolbar {
+  --color: #374151 !important; /* gray-700 - dark gray instead of black */
+  color: #374151 !important;
+}
+
+ion-title {
+  --color: #374151 !important; /* gray-700 - dark gray instead of black */
+  color: #374151 !important;
+}
+
 .dark ion-toolbar {
   --background: #111827 !important; /* gray-900 */
-  --color: #ffffff;
+  --color: #ffffff !important;
   background: #111827 !important;
   background-color: #111827 !important;
+  color: #ffffff !important;
+}
+
+.dark ion-title {
+  --color: #ffffff !important;
+  color: #ffffff !important;
 }
 
 /* Override Ionic components dark mode text colors */
@@ -109,6 +144,15 @@
   padding-left: 0 !important;
 }
 
+/* Global button border radius */
+ion-button {
+  --border-radius: 8px;
+}
+
+ion-button .button-native {
+  border-radius: 8px;
+}
+
 /* Button color themes */
 .button-primary {
   --background: #f7b801;
@@ -117,6 +161,7 @@
   --color: #000000;
   --color-activated: #ffffff;
   --color-hover: #000000;
+  --border-radius: 8px;
 }
 
 /* Hover state - maintain text color (prevent any color change) */
@@ -204,6 +249,7 @@ ion-button.button-primary:focus button span {
   --color: #ffffff;
   --color-activated: #ffffff;
   --color-hover: #ffffff;
+  --border-radius: 8px;
 }
 
 .button-secondary:hover,
@@ -228,6 +274,7 @@ ion-button.button-primary:focus button span {
   --color: #ffffff;
   --color-activated: #ffffff;
   --color-hover: #ffffff;
+  --border-radius: 8px;
 }
 
 .button-blue:hover,
@@ -236,12 +283,13 @@ ion-button.button-primary:focus button span {
 }
 
 .button-red {
-  --background: #d00000;
-  --background-activated: #b71c1c;
-  --background-hover: #e53935;
+  --background: #6b7280; /* gray-500 - subtle gray instead of red */
+  --background-activated: #4b5563; /* gray-600 */
+  --background-hover: #9ca3af; /* gray-400 */
   --color: #ffffff;
   --color-activated: #ffffff;
   --color-hover: #ffffff;
+  --border-radius: 8px;
 }
 
 .button-red:hover,
@@ -329,31 +377,76 @@ ion-button.button-secondary:focus ion-icon {
   color: #ffffff !important;
 }
 
-ion-button.button-blue:hover,
-ion-button.button-blue:focus {
+/* Ensure button-blue and button-red maintain white text and background in light mode */
+ion-button.button-blue {
+  --background: #0d47a1 !important;
+  --background-activated: #1565c0 !important;
+  --background-hover: #1976d2 !important;
+  --color: #ffffff !important;
+  --border-radius: 8px !important;
+}
+
+ion-button.button-blue .button-native {
+  border-radius: 8px !important;
+}
+
+ion-button.button-blue .button-native,
+ion-button.button-blue .button-inner,
+ion-button.button-blue:hover .button-native,
+ion-button.button-blue:hover .button-inner,
+ion-button.button-blue:focus .button-native,
+ion-button.button-blue:focus .button-inner {
   --color: #ffffff !important;
   color: #ffffff !important;
 }
 
+ion-button.button-blue span,
+ion-button.button-blue ion-icon,
 ion-button.button-blue:hover span,
-ion-button.button-blue:focus span,
 ion-button.button-blue:hover ion-icon,
-ion-button.button-blue:focus ion-icon {
+ion-button.button-blue:focus span,
+ion-button.button-blue:focus ion-icon,
+ion-button.button-blue .button-native span,
+ion-button.button-blue .button-inner span,
+ion-button.button-blue .button-native ion-icon,
+ion-button.button-blue .button-inner ion-icon {
   color: #ffffff !important;
 }
 
-ion-button.button-red:hover,
-ion-button.button-red:focus {
+ion-button.button-red {
+  --background: #6b7280 !important; /* gray-500 - subtle gray instead of red */
+  --background-activated: #4b5563 !important; /* gray-600 */
+  --background-hover: #9ca3af !important; /* gray-400 */
+  --color: #ffffff !important;
+  --border-radius: 8px !important;
+}
+
+ion-button.button-red .button-native {
+  border-radius: 8px !important;
+}
+
+ion-button.button-red .button-native,
+ion-button.button-red .button-inner,
+ion-button.button-red:hover .button-native,
+ion-button.button-red:hover .button-inner,
+ion-button.button-red:focus .button-native,
+ion-button.button-red:focus .button-inner {
   --color: #ffffff !important;
   color: #ffffff !important;
 }
 
+ion-button.button-red span,
+ion-button.button-red ion-icon,
 ion-button.button-red:hover span,
+ion-button.button-red:hover ion-icon,
 ion-button.button-red:focus span,
-  ion-button.button-red:hover ion-icon,
-  ion-button.button-red:focus ion-icon {
-    color: #ffffff !important;
-  }
+ion-button.button-red:focus ion-icon,
+ion-button.button-red .button-native span,
+ion-button.button-red .button-inner span,
+ion-button.button-red .button-native ion-icon,
+ion-button.button-red .button-inner ion-icon {
+  color: #ffffff !important;
+}
 
 /* Custom input and textarea padding for Ionic components */
 ion-input.px-4,
@@ -483,6 +576,97 @@ ion-button.button-red:focus .button-inner {
   color: #ffffff !important;
 }
 
+/* Beautiful Accordion Styling */
+ion-accordion {
+  --background: transparent !important;
+  --background-hover: transparent !important;
+  --background-activated: transparent !important;
+  border-bottom: 1px solid rgba(229, 231, 235, 0.5);
+}
+
+.dark ion-accordion {
+  border-bottom: 1px solid rgba(55, 65, 81, 0.5);
+  --background: transparent !important;
+  --background-hover: transparent !important;
+  --background-activated: transparent !important;
+}
+
+ion-accordion ion-item {
+  --background: transparent !important;
+  --background-hover: transparent !important;
+  --background-activated: transparent !important;
+  --background-focused: transparent !important;
+  --padding-start: 1rem;
+  --padding-end: 1rem;
+  --min-height: 3.5rem;
+  border-radius: 8px;
+  margin: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+ion-accordion ion-item::part(native) {
+  background: transparent !important;
+}
+
+ion-accordion ion-item:hover {
+  background: transparent !important;
+}
+
+ion-accordion ion-item.ion-activated,
+ion-accordion ion-item.ion-focused {
+  --background: transparent !important;
+  background: transparent !important;
+}
+
+.dark ion-accordion ion-item {
+  --background: transparent !important;
+  --background-hover: transparent !important;
+  --background-activated: transparent !important;
+  --background-focused: transparent !important;
+}
+
+.dark ion-accordion ion-item::part(native) {
+  background: transparent !important;
+}
+
+.dark ion-accordion ion-item:hover {
+  background: transparent !important;
+}
+
+.dark ion-accordion ion-item.ion-activated,
+.dark ion-accordion ion-item.ion-focused {
+  --background: transparent !important;
+  background: transparent !important;
+}
+
+ion-accordion ion-item[slot="header"] {
+  cursor: pointer;
+}
+
+ion-accordion-group {
+  border-radius: 8px;
+  overflow: hidden;
+  --background: transparent !important;
+}
+
+/* Accordion content styling */
+ion-accordion div[slot="content"] {
+  background: transparent;
+  padding: 1rem;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Force text color on specific child elements for button-primary (hover only) */
 ion-button.button-primary:hover .button-native,
 ion-button.button-primary:focus .button-native,
@@ -507,14 +691,137 @@ ion-button.button-primary:focus .button-inner * {
   color: inherit !important;
 }
 
-/* Force text color on specific child elements for button-secondary and button-red (hover only) */
+/* Force text color on specific child elements for button-secondary (wallet button) */
+ion-button.button-secondary {
+  --background: #f18701 !important;
+  --background-activated: #c16c01 !important;
+  --background-hover: #f9b76f !important;
+  --color: #ffffff !important;
+  --border-radius: 8px !important;
+}
+
+ion-button.button-secondary .button-native {
+  border-radius: 8px !important;
+}
+
+ion-button.button-secondary .button-native,
+ion-button.button-secondary .button-inner,
 ion-button.button-secondary:hover .button-native,
-ion-button.button-secondary:focus .button-native,
 ion-button.button-secondary:hover .button-inner,
-ion-button.button-secondary:focus .button-inner,
+ion-button.button-secondary:focus .button-native,
+ion-button.button-secondary:focus .button-inner {
+  --color: #ffffff !important;
+  color: #ffffff !important;
+}
+
+ion-button.button-secondary span,
+ion-button.button-secondary ion-icon,
+ion-button.button-secondary:hover span,
+ion-button.button-secondary:hover ion-icon,
+ion-button.button-secondary:focus span,
+ion-button.button-secondary:focus ion-icon,
+ion-button.button-secondary .button-native span,
+ion-button.button-secondary .button-inner span,
+ion-button.button-secondary .button-native ion-icon,
+ion-button.button-secondary .button-inner ion-icon {
+  color: #ffffff !important;
+}
+
+/* Force text color on specific child elements for button-red (hover only) */
 ion-button.button-red:hover .button-native,
 ion-button.button-red:focus .button-native,
 ion-button.button-red:hover .button-inner,
 ion-button.button-red:focus .button-inner {
   color: #ffffff !important;
+}
+
+/* Beautiful Accordion Styling */
+ion-accordion {
+  --background: transparent !important;
+  --background-hover: transparent !important;
+  --background-activated: transparent !important;
+  border-bottom: 1px solid rgba(229, 231, 235, 0.5);
+}
+
+.dark ion-accordion {
+  border-bottom: 1px solid rgba(55, 65, 81, 0.5);
+  --background: transparent !important;
+  --background-hover: transparent !important;
+  --background-activated: transparent !important;
+}
+
+ion-accordion ion-item {
+  --background: transparent !important;
+  --background-hover: transparent !important;
+  --background-activated: transparent !important;
+  --background-focused: transparent !important;
+  --padding-start: 1rem;
+  --padding-end: 1rem;
+  --min-height: 3.5rem;
+  border-radius: 8px;
+  margin: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+ion-accordion ion-item::part(native) {
+  background: transparent !important;
+}
+
+ion-accordion ion-item:hover {
+  background: transparent !important;
+}
+
+ion-accordion ion-item.ion-activated,
+ion-accordion ion-item.ion-focused {
+  --background: transparent !important;
+  background: transparent !important;
+}
+
+.dark ion-accordion ion-item {
+  --background: transparent !important;
+  --background-hover: transparent !important;
+  --background-activated: transparent !important;
+  --background-focused: transparent !important;
+}
+
+.dark ion-accordion ion-item::part(native) {
+  background: transparent !important;
+}
+
+.dark ion-accordion ion-item:hover {
+  background: transparent !important;
+}
+
+.dark ion-accordion ion-item.ion-activated,
+.dark ion-accordion ion-item.ion-focused {
+  --background: transparent !important;
+  background: transparent !important;
+}
+
+ion-accordion ion-item[slot="header"] {
+  cursor: pointer;
+}
+
+ion-accordion-group {
+  border-radius: 8px;
+  overflow: hidden;
+  --background: transparent !important;
+}
+
+/* Accordion content styling */
+ion-accordion div[slot="content"] {
+  background: transparent;
+  padding: 1rem;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

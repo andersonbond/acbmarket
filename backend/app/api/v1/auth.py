@@ -58,6 +58,7 @@ async def register(request: RegisterRequest, db: Session = Depends(get_db)):
         id=user_id,
         email=request.email,
         display_name=request.display_name,
+        contact_number=request.contact_number,
         hashed_password=hashed_password,
         chips=0,  # Starting chips (users must purchase)
         reputation=0.0,  # Starting reputation

@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonButton } from '@ionic/react';
+import { IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonButton, IonSpinner, IonIcon } from '@ionic/react';
+import { trophyOutline, arrowForward } from 'ionicons/icons';
 import { useHistory } from 'react-router-dom';
 import api from '../services/api';
 
 interface LeaderboardUser {
   rank: number;
+  user_id: string;
   display_name: string;
   reputation: number;
   rank_score: number;
@@ -17,29 +19,22 @@ const LeaderboardWidget: React.FC = () => {
   const history = useHistory();
 
   useEffect(() => {
-    const fetchLeaderboard = async () => {
-      try {
-        const response = await api.get('/api/v1/leaderboard?period=global&limit=10');
-        if (response.data.success) {
-          setTopUsers(response.data.data.leaderboard || []);
-        }
-      } catch (error) {
-        console.error('Error fetching leaderboard:', error);
-        // Set mock data for now since backend isn't ready
-        setTopUsers([
-          { rank: 1, display_name: 'ForecastMaster', reputation: 95.5, rank_score: 980, badges: ['Accurate', 'Specialist'] },
-          { rank: 2, display_name: 'PredictionPro', reputation: 92.3, rank_score: 965, badges: ['Accurate'] },
-          { rank: 3, display_name: 'MarketGuru', reputation: 89.7, rank_score: 950, badges: ['Climber'] },
-          { rank: 4, display_name: 'ElectionExpert', reputation: 87.2, rank_score: 935, badges: ['Specialist'] },
-          { rank: 5, display_name: 'TrendTracker', reputation: 85.1, rank_score: 920, badges: [] },
-        ]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchLeaderboard();
   }, []);
+
+  const fetchLeaderboard = async () => {
+    try {
+      const response = await api.get('/api/v1/leaderboard?period=global&limit=10');
+      if (response.data.success) {
+        setTopUsers(response.data.data.leaderboard || []);
+      }
+    } catch (error) {
+      console.error('Error fetching leaderboard:', error);
+      setTopUsers([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const getRankIcon = (rank: number) => {
     if (rank === 1) return '🥇';
@@ -52,14 +47,18 @@ const LeaderboardWidget: React.FC = () => {
     <IonCard className="shadow-sm bg-white dark:bg-gray-800">
       <IonCardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <IonCardTitle className="text-lg font-bold text-gray-900 dark:text-white">Top Forecasters</IonCardTitle>
+          <div className="flex items-center gap-2">
+            <IonIcon icon={trophyOutline} className="text-primary text-xl" />
+            <IonCardTitle className="text-lg font-bold text-gray-900 dark:text-white">Top Forecasters</IonCardTitle>
+          </div>
           <IonButton
             fill="clear"
             size="small"
             onClick={() => history.push('/leaderboard')}
-            className="text-primary-600 text-sm"
+            className="text-primary-600 dark:text-primary-400 text-sm"
           >
             View All
+            <IonIcon icon={arrowForward} slot="end" />
           </IonButton>
         </div>
       </IonCardHeader>
@@ -68,22 +67,27 @@ const LeaderboardWidget: React.FC = () => {
           <div className="space-y-3">
             {[1, 2, 3, 4, 5].map((i) => (
               <div key={i} className="animate-pulse flex items-center space-x-2">
-                <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
-                <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
-                <div className="flex-1 h-4 bg-gray-200 rounded"></div>
+                <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                <div className="flex-1 h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
               </div>
             ))}
           </div>
+        ) : topUsers.length === 0 ? (
+          <div className="text-center py-4">
+            <IonIcon icon={trophyOutline} className="text-3xl text-gray-400 mb-2" />
+            <p className="text-sm text-gray-500 dark:text-gray-400">No rankings yet</p>
+          </div>
         ) : (
           <div className="space-y-3">
-            {topUsers.map((user) => (
+            {topUsers.slice(0, 5).map((user) => (
               <div
                 key={user.rank}
                 className="flex items-center justify-between p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
-                onClick={() => history.push(`/profile/${user.display_name}`)}
+                onClick={() => history.push(`/users/${user.user_id}/profile`)}
               >
                 <div className="flex items-center space-x-2 flex-1 min-w-0">
-                  <div className="w-8 h-8 flex items-center justify-center font-bold text-gray-700 text-sm flex-shrink-0">
+                  <div className="w-8 h-8 flex items-center justify-center font-bold text-gray-700 dark:text-gray-300 text-sm flex-shrink-0">
                     {getRankIcon(user.rank)}
                   </div>
                   {/* User Avatar */}
@@ -91,17 +95,34 @@ const LeaderboardWidget: React.FC = () => {
                     {user.display_name.charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-gray-900 dark:text-white truncate text-sm">{user.display_name}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Rep: {user.reputation.toFixed(1)}</p>
+                    <p className="font-medium text-gray-900 dark:text-white truncate text-sm">
+                      {user.display_name}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Rep: {user.reputation.toFixed(1)} • Score: {user.rank_score.toFixed(0)}
+                    </p>
                   </div>
                 </div>
-                {user.badges.length > 0 && (
-                  <span className="px-1.5 py-0.5 bg-primary-100 text-primary-700 rounded text-xs font-medium flex-shrink-0 ml-2">
+                {user.badges && user.badges.length > 0 && (
+                  <span className="px-1.5 py-0.5 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 rounded text-xs font-medium flex-shrink-0 ml-2">
                     {user.badges[0]}
                   </span>
                 )}
               </div>
             ))}
+            {topUsers.length > 5 && (
+              <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+                <IonButton
+                  expand="block"
+                  fill="outline"
+                  size="small"
+                  onClick={() => history.push('/leaderboard')}
+                  className="button-primary"
+                >
+                  View Full Leaderboard
+                </IonButton>
+              </div>
+            )}
           </div>
         )}
       </IonCardContent>
@@ -110,4 +131,3 @@ const LeaderboardWidget: React.FC = () => {
 };
 
 export default LeaderboardWidget;
-

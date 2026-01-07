@@ -26,61 +26,55 @@ const MarketFilters: React.FC<MarketFiltersProps> = ({
   ];
 
   return (
-    <div className="mb-6 bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        {/* Sort Section */}
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-2">
-            <IonIcon icon={swapVertical} className="text-gray-500 dark:text-gray-400 text-lg" />
-            <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Sort by</span>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {sortOptions.map((option) => (
-              <button
-                key={option.value}
-                onClick={() => onSortChange(option.value)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                  sortBy === option.value
-                    ? 'bg-primary text-black shadow-sm'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                }`}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
+    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 text-sm">
+      {/* Sort Section */}
+      <div className="flex items-center gap-2">
+        <IonIcon icon={swapVertical} className="text-gray-500 dark:text-gray-400 text-base" />
+        <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Sort:</span>
+        <div className="flex gap-1.5">
+          {sortOptions.map((option) => (
+            <button
+              key={option.value}
+              onClick={() => onSortChange(option.value)}
+              className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all duration-200 ${
+                sortBy === option.value
+                  ? 'bg-primary text-black shadow-sm'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+              }`}
+            >
+              {option.label}
+            </button>
+          ))}
         </div>
+      </div>
 
-        {/* Filters Section */}
-        <div className="flex-1 md:border-l md:border-gray-200 md:dark:border-gray-700 md:pl-4">
-          <div className="flex items-center gap-2 mb-2">
-            <IonIcon icon={eyeOff} className="text-gray-500 dark:text-gray-400 text-lg" />
-            <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Hide categories</span>
-          </div>
-          <div className="flex flex-wrap gap-4">
-            <label className="flex items-center cursor-pointer group">
-              <input
-                type="checkbox"
-                checked={hideSports}
-                onChange={(e) => onHideSportsChange(e.target.checked)}
-                className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary focus:ring-2 bg-white dark:bg-gray-700 cursor-pointer"
-              />
-              <span className="ml-2 text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
-                Sports
-              </span>
-            </label>
-            <label className="flex items-center cursor-pointer group">
-              <input
-                type="checkbox"
-                checked={hidePolitics}
-                onChange={(e) => onHidePoliticsChange(e.target.checked)}
-                className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary focus:ring-2 bg-white dark:bg-gray-700 cursor-pointer"
-              />
-              <span className="ml-2 text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
-                Politics
-              </span>
-            </label>
-          </div>
+      {/* Filters Section */}
+      <div className="flex items-center gap-2 md:border-l md:border-gray-200 md:dark:border-gray-700 md:pl-3">
+        <IonIcon icon={eyeOff} className="text-gray-500 dark:text-gray-400 text-base" />
+        <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Hide:</span>
+        <div className="flex gap-3">
+          <label className="flex items-center cursor-pointer group">
+            <input
+              type="checkbox"
+              checked={hideSports}
+              onChange={(e) => onHideSportsChange(e.target.checked)}
+              className="w-3.5 h-3.5 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary focus:ring-1 bg-white dark:bg-gray-700 cursor-pointer"
+            />
+            <span className="ml-1.5 text-xs text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
+              Sports
+            </span>
+          </label>
+          <label className="flex items-center cursor-pointer group">
+            <input
+              type="checkbox"
+              checked={hidePolitics}
+              onChange={(e) => onHidePoliticsChange(e.target.checked)}
+              className="w-3.5 h-3.5 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary focus:ring-1 bg-white dark:bg-gray-700 cursor-pointer"
+            />
+            <span className="ml-1.5 text-xs text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
+              Politics
+            </span>
+          </label>
         </div>
       </div>
     </div>
@@ -88,4 +82,3 @@ const MarketFilters: React.FC<MarketFiltersProps> = ({
 };
 
 export default MarketFilters;
-

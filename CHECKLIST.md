@@ -139,103 +139,104 @@ Quick reference checklist for tracking development progress.
 ## Phase 4: Forecast System
 
 ### Backend
-- [ ] Create forecasts table migration
-- [ ] Create Forecast model
-- [ ] Create forecast schemas
-- [ ] Implement forecast placement endpoint
-- [ ] Implement forecast validation
-- [ ] Implement atomic transaction (debit chips + create forecast)
-- [ ] Implement forecast history endpoint
-- [ ] Implement market forecasts endpoint
-- [ ] Implement forecast update endpoint
-- [ ] Set up Redis pub/sub
-- [ ] Add rate limiting for forecasts
-- [ ] Implement per-market limits
-- [ ] Implement daily forecast limits
-- [ ] Add suspicious pattern detection
+- [x] Create forecasts table migration
+- [x] Create Forecast model
+- [x] Create forecast schemas
+- [x] Implement forecast placement endpoint
+- [x] Implement forecast validation
+- [x] Implement atomic transaction (debit chips + create forecast)
+- [x] Implement forecast history endpoint
+- [x] Implement market forecasts endpoint
+- [x] Implement forecast update endpoint
+- [x] Implement forecast cancel endpoint
+- [ ] Set up Redis pub/sub (deferred - using polling for MVP)
+- [x] Add rate limiting for forecasts (10 per minute)
+- [x] Implement per-market limits
+- [x] Implement daily forecast limits (50 per day)
+- [ ] Add suspicious pattern detection (basic limits implemented)
 
 ### Frontend
-- [ ] Create ForecastSlip component
-- [ ] Create forecast confirmation modal
-- [ ] Add non-redeemable reminder
-- [ ] Implement forecast placement UI
-- [ ] Display current user forecast
-- [ ] Implement forecast update UI
-- [ ] Create forecast history page
-- [ ] Add real-time consensus updates (polling)
-- [ ] Add points allocation visualization
-- [ ] Add forecast placement feedback
+- [x] Create ForecastSlip component
+- [x] Create forecast confirmation modal
+- [x] Add non-redeemable reminder
+- [x] Implement forecast placement UI
+- [x] Display current user forecast
+- [x] Implement forecast update UI
+- [x] Create forecast history page
+- [x] Add real-time consensus updates (polling every 5 seconds)
+- [x] Add points allocation visualization
+- [x] Add forecast placement feedback
 
 ---
 
 ## Phase 5: Market Resolution
 
 ### Backend
-- [ ] Create resolutions table migration
-- [ ] Create Resolution model
-- [ ] Create resolution schemas
-- [ ] Implement market resolution endpoint (admin)
-- [ ] Implement evidence validation (min 2 for elections)
-- [ ] Implement forecast scoring logic
-- [ ] Create background job for forecast scoring
-- [ ] Implement resolution history
-- [ ] Implement dispute system (basic)
-- [ ] Add resolution immutability
+- [x] Create resolutions table migration
+- [x] Create Resolution model
+- [x] Create resolution schemas
+- [x] Implement market resolution endpoint (admin)
+- [x] Implement evidence validation (min 2 for elections)
+- [x] Implement forecast scoring logic
+- [ ] Create background job for forecast scoring (deferred - scoring done synchronously for MVP)
+- [x] Implement resolution history
+- [ ] Implement dispute system (basic) (deferred - can be added in future phase)
+- [x] Add resolution immutability
 
 ### Frontend
-- [ ] Create admin resolve market page
-- [ ] Add evidence URL inputs
-- [ ] Add resolution note textarea
-- [ ] Display resolution details on market
-- [ ] Show user forecast result (won/lost)
-- [ ] Create dispute form (basic)
-- [ ] Add resolution indicators
+- [x] Create admin resolve market page
+- [x] Add evidence URL inputs
+- [x] Add resolution note textarea
+- [x] Display resolution details on market
+- [x] Show user forecast result (won/lost)
+- [ ] Create dispute form (basic) (deferred - can be added in future phase)
+- [x] Add resolution indicators
 
 ---
 
 ## Phase 6: Reputation & Badges
 
 ### Backend
-- [ ] Implement reputation calculation formula
-- [ ] Implement Brier score calculation
-- [ ] Create background job for reputation recalculation
-- [ ] Implement badge definitions
-- [ ] Implement badge award logic
-- [ ] Create background job for badge checking
-- [ ] Create badge API endpoints
-- [ ] Create reputation history endpoint
+- [x] Implement reputation calculation formula
+- [x] Implement Brier score calculation (simplified to win rate for MVP)
+- [ ] Create background job for reputation recalculation (deferred - done synchronously on market resolution)
+- [x] Implement badge definitions
+- [x] Implement badge award logic
+- [ ] Create background job for badge checking (deferred - done synchronously on market resolution)
+- [x] Create badge API endpoints
+- [x] Create reputation history endpoint
 
 ### Frontend
-- [ ] Display reputation score on profile
-- [ ] Create reputation meter/visualization
-- [ ] Create reputation history chart
-- [ ] Display badges on profile
-- [ ] Create badge tooltips
-- [ ] Enhance profile page with stats
-- [ ] Add badge showcase
+- [x] Display reputation score on profile
+- [x] Create reputation meter/visualization
+- [x] Create reputation history chart
+- [x] Display badges on profile
+- [x] Create badge tooltips (via title attribute)
+- [x] Enhance profile page with stats
+- [x] Add badge showcase
 
 ---
 
 ## Phase 7: Leaderboard System
 
 ### Backend
-- [ ] Implement leaderboard score calculation
-- [ ] Implement streak calculation
-- [ ] Create background job for leaderboard updates
-- [ ] Implement leaderboard caching (Redis)
-- [ ] Create leaderboard API endpoint
-- [ ] Support multiple periods (global, weekly, monthly)
-- [ ] Support category filtering
+- [x] Implement leaderboard score calculation
+- [x] Implement streak calculation
+- [ ] Create background job for leaderboard updates (deferred - calculated on-demand with caching)
+- [x] Implement leaderboard caching (Redis)
+- [x] Create leaderboard API endpoint
+- [x] Support multiple periods (global, weekly, monthly)
+- [x] Support category filtering
 
 ### Frontend
-- [ ] Create global leaderboard page
-- [ ] Create weekly leaderboard page
-- [ ] Create category leaderboards
-- [ ] Create leaderboard filters
-- [ ] Create homepage leaderboard widget
-- [ ] Display user rank
-- [ ] Add leaderboard badges/medals
-- [ ] Add profile leaderboard stats
+- [x] Create global leaderboard page
+- [x] Create weekly leaderboard page
+- [x] Create category leaderboards
+- [x] Create leaderboard filters
+- [x] Create homepage leaderboard widget
+- [x] Display user rank
+- [x] Add leaderboard badges/medals
+- [x] Add profile leaderboard stats
 
 ---
 

@@ -106,6 +106,9 @@ async def list_markets(
     # Include outcomes for each market
     market_responses = []
     for market in markets:
+        # Safely get end_date (in case migration hasn't been run yet)
+        end_date = getattr(market, 'end_date', None)
+        
         market_dict = {
             "id": market.id,
             "title": market.title,
@@ -116,6 +119,7 @@ async def list_markets(
             "category": market.category,
             "meta_data": market.meta_data or {},
             "max_points_per_user": market.max_points_per_user,
+            "end_date": end_date,
             "status": market.status,
             "resolution_outcome": market.resolution_outcome,
             "resolution_time": market.resolution_time,
@@ -169,6 +173,9 @@ async def get_market(market_id: str, db: Session = Depends(get_db)):
             percentage = (outcome.total_points / total_points) * 100
             consensus[outcome.name] = round(percentage, 2)
     
+    # Safely get end_date (in case migration hasn't been run yet)
+    end_date = getattr(market, 'end_date', None)
+    
     market_dict = {
         "id": market.id,
         "title": market.title,
@@ -179,6 +186,7 @@ async def get_market(market_id: str, db: Session = Depends(get_db)):
         "category": market.category,
         "meta_data": market.meta_data or {},
         "max_points_per_user": market.max_points_per_user,
+        "end_date": end_date,
         "status": market.status,
         "resolution_outcome": market.resolution_outcome,
         "resolution_time": market.resolution_time,
@@ -228,6 +236,7 @@ async def create_market(
         category=market_data.category,
         meta_data=market_data.meta_data or {},
         max_points_per_user=market_data.max_points_per_user,
+        end_date=market_data.end_date,
         created_by=current_user.id,
         status="open",
     )
@@ -249,6 +258,9 @@ async def create_market(
     db.refresh(market)
     
     # Return created market
+    # Safely get end_date (in case migration hasn't been run yet)
+    end_date = getattr(market, 'end_date', None)
+    
     market_dict = {
         "id": market.id,
         "title": market.title,
@@ -259,6 +271,7 @@ async def create_market(
         "category": market.category,
         "meta_data": market.meta_data or {},
         "max_points_per_user": market.max_points_per_user,
+        "end_date": end_date,
         "status": market.status,
         "resolution_outcome": market.resolution_outcome,
         "resolution_time": market.resolution_time,
@@ -329,10 +342,18 @@ async def update_market(
     if market_data.max_points_per_user is not None:
         market.max_points_per_user = market_data.max_points_per_user
     
+    if market_data.end_date is not None:
+        # Safely set end_date (only if column exists)
+        if hasattr(market, 'end_date'):
+            market.end_date = market_data.end_date
+    
     db.commit()
     db.refresh(market)
     
     # Return updated market
+    # Safely get end_date (in case migration hasn't been run yet)
+    end_date = getattr(market, 'end_date', None)
+    
     market_dict = {
         "id": market.id,
         "title": market.title,
@@ -343,6 +364,7 @@ async def update_market(
         "category": market.category,
         "meta_data": market.meta_data or {},
         "max_points_per_user": market.max_points_per_user,
+        "end_date": end_date,
         "status": market.status,
         "resolution_outcome": market.resolution_outcome,
         "resolution_time": market.resolution_time,
@@ -415,4 +437,157 @@ async def upload_market_image(
             "filename": unique_filename,
         },
         "message": "Image uploaded successfully",
+    }
+
+
+@router.get("/{market_id}/history", response_model=dict)
+async def get_market_history(
+    market_id: str,
+    time_range: Optional[str] = Query("all", description="Time range: 1h, 6h, 1d, 1w, 1m, all"),
+    db: Session = Depends(get_db),
+):
+    """
+    Get historical consensus data for a market
+    
+    Reconstructs consensus history from forecast timestamps.
+    Returns data points showing how consensus changed over time.
+    """
+    from app.models.forecast import Forecast
+    from datetime import datetime, timedelta, timezone
+    
+    market = db.query(Market).filter(Market.id == market_id).first()
+    
+    if not market:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Market not found",
+        )
+    
+    # Calculate time range
+    now = datetime.now(timezone.utc)
+    time_ranges = {
+        "1h": timedelta(hours=1),
+        "6h": timedelta(hours=6),
+        "1d": timedelta(days=1),
+        "1w": timedelta(weeks=1),
+        "1m": timedelta(days=30),
+        "all": None,  # All time
+    }
+    
+    start_time = None
+    if time_range.lower() in time_ranges:
+        delta = time_ranges[time_range.lower()]
+        if delta:
+            start_time = now - delta
+    else:
+        time_range = "all"
+    
+    # Get all forecasts for this market, ordered by created_at
+    query = db.query(Forecast).filter(Forecast.market_id == market_id)
+    if start_time:
+        # Ensure start_time is timezone-aware for comparison
+        if start_time.tzinfo is None:
+            start_time = start_time.replace(tzinfo=timezone.utc)
+        query = query.filter(Forecast.created_at >= start_time)
+    
+    forecasts = query.order_by(Forecast.created_at).all()
+    
+    # Get market creation time as starting point
+    market_created = market.created_at
+    
+    # Initialize outcome totals (start at 0)
+    outcome_totals = {outcome.id: 0 for outcome in market.outcomes}
+    outcome_names = {outcome.id: outcome.name for outcome in market.outcomes}
+    
+    # Build history by processing forecasts chronologically
+    history_data = []
+    
+    # Add initial point (market creation, all at 0% or equal distribution)
+    # Ensure market_created is timezone-aware for comparison
+    market_created_aware = market_created
+    if market_created_aware.tzinfo is None:
+        market_created_aware = market_created_aware.replace(tzinfo=timezone.utc)
+    
+    if not start_time or market_created_aware >= start_time:
+        total_points = sum(outcome_totals.values())
+        consensus = {}
+        if total_points > 0:
+            for outcome_id, name in outcome_names.items():
+                percentage = (outcome_totals[outcome_id] / total_points) * 100
+                consensus[name] = round(percentage, 2)
+        else:
+            # Equal distribution if no points yet
+            equal_pct = 100.0 / len(outcome_names) if outcome_names else 0
+            for name in outcome_names.values():
+                consensus[name] = round(equal_pct, 2)
+        
+        history_data.append({
+            "timestamp": market_created_aware.isoformat(),
+            "consensus": consensus,
+        })
+    
+    # Process each forecast chronologically
+    for forecast in forecasts:
+        # Update outcome totals
+        outcome_totals[forecast.outcome_id] += forecast.points
+        
+        # Calculate consensus at this point
+        total_points = sum(outcome_totals.values())
+        consensus = {}
+        
+        if total_points > 0:
+            for outcome_id, name in outcome_names.items():
+                percentage = (outcome_totals[outcome_id] / total_points) * 100
+                consensus[name] = round(percentage, 2)
+        else:
+            # Equal distribution if no points yet
+            equal_pct = 100.0 / len(outcome_names) if outcome_names else 0
+            for name in outcome_names.values():
+                consensus[name] = round(equal_pct, 2)
+        
+        history_data.append({
+            "timestamp": forecast.created_at.isoformat(),
+            "consensus": consensus,
+        })
+    
+    # Add current point if not already included
+    if history_data:
+        last_point = history_data[-1]
+        # Only add if last forecast was more than 1 second ago
+        last_timestamp_str = last_point["timestamp"]
+        if last_timestamp_str.endswith("Z"):
+            last_timestamp = datetime.fromisoformat(last_timestamp_str.replace("Z", "+00:00"))
+        else:
+            last_timestamp = datetime.fromisoformat(last_timestamp_str)
+        
+        # Ensure both are timezone-aware for comparison
+        if last_timestamp.tzinfo is None:
+            last_timestamp = last_timestamp.replace(tzinfo=timezone.utc)
+        
+        if (now - last_timestamp).total_seconds() > 1:
+            # Get current consensus from market
+            total_points = sum(outcome.total_points for outcome in market.outcomes)
+            current_consensus = {}
+            if total_points > 0:
+                for outcome in market.outcomes:
+                    percentage = (outcome.total_points / total_points) * 100
+                    current_consensus[outcome.name] = round(percentage, 2)
+            else:
+                equal_pct = 100.0 / len(market.outcomes) if market.outcomes else 0
+                for outcome in market.outcomes:
+                    current_consensus[outcome.name] = round(equal_pct, 2)
+            
+            history_data.append({
+                "timestamp": now.isoformat(),
+                "consensus": current_consensus,
+            })
+    
+    return {
+        "success": True,
+        "data": {
+            "market_id": market_id,
+            "time_range": time_range,
+            "history": history_data,
+            "outcomes": [{"id": o.id, "name": o.name} for o in market.outcomes],
+        },
     }

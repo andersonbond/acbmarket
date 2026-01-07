@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { IonContent, IonPage, IonButton, IonInput, IonItem, IonLabel, IonSpinner, IonAlert, IonIcon, IonCard, IonCardContent } from '@ionic/react';
-import { useHistory } from 'react-router-dom';
-import { wallet, informationCircle, checkmarkCircle, closeCircle } from 'ionicons/icons';
+import { useHistory, useLocation } from 'react-router-dom';
+import { wallet, informationCircle, checkmarkCircle, closeCircle, arrowBack, trophy } from 'ionicons/icons';
 import Header from '../components/Header';
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
@@ -9,8 +9,18 @@ import { PurchaseCreate } from '../types/purchase';
 
 const Purchase: React.FC = () => {
   const history = useHistory();
+  const location = useLocation();
   const { user, updateUser } = useAuth();
-  const [chipsAmount, setChipsAmount] = useState<number>(100);
+  
+  // Get return URL and required chips from query params
+  const searchParams = new URLSearchParams(location.search);
+  const returnUrl = searchParams.get('return');
+  const requiredChips = searchParams.get('required');
+  
+  // Set initial amount to required chips if provided, otherwise default to 100
+  const [chipsAmount, setChipsAmount] = useState<number>(
+    requiredChips ? Math.max(parseInt(requiredChips, 10), 20) : 100
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
@@ -67,10 +77,17 @@ const Purchase: React.FC = () => {
         setIsSuccess(true);
         setShowAlert(true);
         
-        // Reset form after success
-        setTimeout(() => {
-          setChipsAmount(100);
-        }, 2000);
+        // If there's a return URL, redirect back after a short delay
+        if (returnUrl) {
+          setTimeout(() => {
+            history.push(returnUrl);
+          }, 2000);
+        } else {
+          // Reset form after success if no return URL
+          setTimeout(() => {
+            setChipsAmount(100);
+          }, 2000);
+        }
       }
     } catch (error: any) {
       console.error('Error purchasing chips:', error);
@@ -108,6 +125,18 @@ const Purchase: React.FC = () => {
       <Header />
       <IonContent className="bg-gray-50 dark:bg-gray-900">
         <div className="container mx-auto px-4 py-4 max-w-3xl">
+          {/* Back Button */}
+          {returnUrl && (
+            <IonButton 
+              fill="clear" 
+              onClick={() => history.push(returnUrl)} 
+              className="mb-3 -ml-2"
+            >
+              <IonIcon icon={arrowBack} slot="start" />
+              Back to Market
+            </IonButton>
+          )}
+          
           {/* Header and Balance - Compact */}
           <div className="mb-4 flex items-center justify-between">
             <div>
@@ -123,6 +152,27 @@ const Purchase: React.FC = () => {
               </p>
             </div>
           </div>
+
+          {/* Redirect Message */}
+          {returnUrl && requiredChips && (
+            <IonCard className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 mb-4">
+              <IonCardContent className="p-4">
+                <div className="flex items-start">
+                  <IonIcon icon={informationCircle} className="text-blue-600 dark:text-blue-400 text-xl mr-2 flex-shrink-0 mt-0.5" />
+                  <div className="text-sm text-blue-800 dark:text-blue-300">
+                    <p className="font-semibold mb-1">You need chips to place your forecast</p>
+                    <p>
+                      You need at least <span className="font-bold">₱20</span> chips to place your forecast (minimum purchase). 
+                      {parseInt(requiredChips, 10) > 20 && (
+                        <> Your forecast requires <span className="font-bold">₱{parseInt(requiredChips, 10).toLocaleString()}</span> chips.</>
+                      )}
+                      {' '}After purchasing, you'll be redirected back to continue.
+                    </p>
+                  </div>
+                </div>
+              </IonCardContent>
+            </IonCard>
+          )}
 
           {/* Purchase Form Card - More Compact */}
           <IonCard className="bg-white dark:bg-gray-800">
@@ -217,6 +267,23 @@ const Purchase: React.FC = () => {
                   >
                     View History
                   </IonButton>
+                </div>
+
+                {/* Prize Notice - Emphasized */}
+                <div className="bg-gradient-to-r from-primary/20 via-secondary/20 to-primary/20 dark:from-primary/30 dark:via-secondary/30 dark:to-primary/30 border-2 border-primary/40 dark:border-primary/50 rounded-lg p-4 shadow-lg">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0">
+                      <IonIcon icon={trophy} className="text-primary text-3xl" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-base font-extrabold text-gray-900 dark:text-white mb-1 flex items-center gap-2">
+                        <span>🏆 Top Forecasters May Receive Prizes!</span>
+                      </h3>
+                      <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 leading-relaxed">
+                        Pilimarket may award prizes to top-performing forecasters. Improve your forecasting skills, climb the leaderboard, and you could be eligible for exciting rewards!
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Compact Disclaimer */}

@@ -12,7 +12,11 @@ from app.database import Base
 from app.config import settings
 
 # Import all models so Alembic can detect them
-from app.models import User, Market, Outcome, Purchase  # noqa
+from app.models import User, Market, Outcome, Purchase, Forecast, Resolution, ReputationHistory  # noqa
+# Ensure all models are imported for autogenerate
+import app.models.user  # noqa
+import app.models.market  # noqa
+import app.models.forecast  # noqa
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

@@ -51,26 +51,26 @@ const MarketCard: React.FC<MarketCardProps> = ({ market }) => {
 
   return (
     <IonCard 
-      className="cursor-pointer hover:shadow-xl transition-shadow overflow-hidden bg-white dark:bg-gray-800"
+      className="cursor-pointer hover:shadow-md transition-shadow overflow-hidden bg-white dark:bg-gray-800"
       onClick={() => history.push(`/markets/${market.id}`)}
     >
-      {/* Market Image */}
-      <div className="w-full h-32 bg-gradient-to-br from-primary/20 to-secondary/20 relative overflow-hidden">
-        <img
-          src={getImageUrl()}
-          alt={market.title}
-          className="w-full h-full object-cover"
-          onError={(e) => {
-            // Fallback to gradient if image fails to load
-            (e.target as HTMLImageElement).style.display = 'none';
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-      </div>
-      
       <IonCardContent className="p-4">
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex-1">
+        <div className="flex items-start gap-3 mb-3">
+          {/* Market Image - Left side, square with rounded corners */}
+          <div className="flex-shrink-0">
+            <img
+              src={getImageUrl()}
+              alt={market.title}
+              className="w-16 h-16 object-cover rounded-lg"
+              onError={(e) => {
+                // Hide image if it fails to load
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
+            />
+          </div>
+
+          {/* Content - Right side of image */}
+          <div className="flex-1 min-w-0">
             <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2">
               {market.title}
             </h3>
@@ -83,23 +83,29 @@ const MarketCard: React.FC<MarketCardProps> = ({ market }) => {
         {/* Probability Bars */}
         <div className="mb-3">
           <div className="flex items-center space-x-2 mb-1">
-            <div className="flex-1 h-8 bg-gray-200 rounded-full overflow-hidden relative">
-              <div
-                className="h-full bg-green-500 flex items-center justify-end pr-2"
-                style={{ width: `${yesPercentage}%` }}
-              >
-                {yesPercentage > 10 && (
-                  <span className="text-white text-xs font-semibold">{yesPercentage.toFixed(0)}%</span>
-                )}
-              </div>
-              <div
-                className="h-full bg-red-500 flex items-center pl-2 absolute right-0"
-                style={{ width: `${noPercentage}%` }}
-              >
-                {noPercentage > 10 && (
-                  <span className="text-white text-xs font-semibold">{noPercentage.toFixed(0)}%</span>
-                )}
-              </div>
+            <div className="flex-1 h-8 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden relative">
+              {/* Yes bar - positioned from left */}
+              {yesPercentage > 0 && (
+                <div
+                  className="h-full bg-green-500 flex items-center justify-end pr-2 absolute left-0 z-10"
+                  style={{ width: `${yesPercentage}%` }}
+                >
+                  {yesPercentage > 10 && (
+                    <span className="text-white text-xs font-semibold">{yesPercentage.toFixed(0)}%</span>
+                  )}
+                </div>
+              )}
+              {/* No bar - positioned from right */}
+              {noPercentage > 0 && (
+                <div
+                  className="h-full bg-red-500 flex items-center pl-2 absolute right-0 z-20"
+                  style={{ width: `${noPercentage}%` }}
+                >
+                  {noPercentage > 10 && (
+                    <span className="text-white text-xs font-semibold">{noPercentage.toFixed(0)}%</span>
+                  )}
+                </div>
+              )}
             </div>
           </div>
           <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400">
@@ -108,16 +114,23 @@ const MarketCard: React.FC<MarketCardProps> = ({ market }) => {
           </div>
         </div>
 
-        {/* Volume */}
-        {market.total_volume !== undefined && (
-          <div className="text-xs text-gray-500 dark:text-gray-400">
-            {market.total_volume > 0 ? (
-              <span>${(market.total_volume / 100).toLocaleString()} Vol.</span>
-            ) : (
-              <span>No volume yet</span>
-            )}
-          </div>
-        )}
+        {/* Volume and Deadline */}
+        <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+          {market.total_volume !== undefined && (
+            <div>
+              {market.total_volume > 0 ? (
+                <span>₱{market.total_volume.toLocaleString()} Vol.</span>
+              ) : (
+                <span>No volume yet</span>
+              )}
+            </div>
+          )}
+          {market.end_date && (
+            <div className="text-orange-600 dark:text-orange-400">
+              Ends: {new Date(market.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+            </div>
+          )}
+        </div>
       </IonCardContent>
     </IonCard>
   );

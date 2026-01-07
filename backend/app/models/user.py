@@ -1,7 +1,7 @@
 """
 User model
 """
-from sqlalchemy import Column, String, Integer, Float, Boolean, DateTime, Text
+from sqlalchemy import Column, String, Integer, Float, Boolean, DateTime, Text, JSON
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from datetime import datetime
@@ -17,6 +17,7 @@ class User(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     display_name = Column(String, nullable=False, index=True)
     hashed_password = Column(String, nullable=False)
+    contact_number = Column(String, nullable=False, index=True)  # Format: +63XXXXXXXXXX
     bio = Column(Text, nullable=True)
     
     # Virtual chips (non-redeemable)
@@ -25,6 +26,11 @@ class User(Base):
     # Reputation system
     reputation = Column(Float, default=0.0, nullable=False)  # 0-100 scale
     rank_score = Column(Float, default=0.0, nullable=False)  # For leaderboard
+    badges = Column(JSON, nullable=True, default=list)  # List of badge IDs (JSON array)
+    
+    # Streaks
+    winning_streak = Column(Integer, default=0, nullable=False)  # Consecutive correct forecasts
+    activity_streak = Column(Integer, default=0, nullable=False)  # Consecutive days with activity
     
     # Account status
     is_active = Column(Boolean, default=True, nullable=False)

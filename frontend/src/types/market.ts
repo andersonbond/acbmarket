@@ -9,6 +9,7 @@ export interface Market {
   status: 'open' | 'suspended' | 'resolved' | 'cancelled';
   resolution_outcome?: string;
   resolution_time?: string;
+  end_date?: string; // Market deadline - when forecasting closes
   created_by?: string;
   created_at: string;
   updated_at: string;

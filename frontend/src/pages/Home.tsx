@@ -11,7 +11,7 @@ import api from '../services/api';
 import { Market } from '../types/market';
 
 const Home: React.FC = () => {
-  const { isAuthenticated, user } = useAuth();
+  //const { isAuthenticated, user } = useAuth();
   const [markets, setMarkets] = useState<Market[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [sortBy, setSortBy] = useState('volume');
@@ -23,7 +23,7 @@ const Home: React.FC = () => {
     const fetchMarkets = async () => {
       setIsLoading(true);
       try {
-        const response = await api.get('/api/v1/markets?status=open&limit=20');
+        const response = await api.get('/api/v1/markets?status=open&limit=20&page=1');
         if (response.data.success) {
           // Process markets to calculate percentages
           const processedMarkets = response.data.data.markets.map((market: Market) => {
@@ -40,86 +40,16 @@ const Home: React.FC = () => {
           });
           setMarkets(processedMarkets);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error fetching markets:', error);
-        // Mock data for now
-        setMarkets([
-          {
-            id: '1',
-            title: 'Will Martin Romualdez win the 2028 Philippine Presidential Election?',
-            slug: 'marcos-2028-election',
-            category: 'politics',
-            status: 'open',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            max_points_per_user: 10000,
-            outcomes: [
-              { id: '1', market_id: '1', name: 'Yes', total_points: 35000, percentage: 65 },
-              { id: '2', market_id: '1', name: 'No', total_points: 19000, percentage: 35 },
-            ],
-            total_volume: 54000,
-          },
-          {
-            id: '2',
-            title: 'Will Sara Duterte run for president in 2028?',
-            slug: 'saraduterte-2028-election',
-            category: 'politics',
-            status: 'open',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            max_points_per_user: 10000,
-            outcomes: [
-              { id: '3', market_id: '2', name: 'Yes', total_points: 28000, percentage: 72 },
-              { id: '4', market_id: '2', name: 'No', total_points: 11000, percentage: 28 },
-            ],
-            total_volume: 39000,
-          },
-          {
-            id: '3',
-            title: 'Will the Philippines qualify for the 2026 FIFA World Cup?',
-            slug: 'philippines-world-cup-2026',
-            category: 'sports',
-            status: 'open',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            max_points_per_user: 10000,
-            outcomes: [
-              { id: '5', market_id: '3', name: 'Yes', total_points: 12000, percentage: 25 },
-              { id: '6', market_id: '3', name: 'No', total_points: 36000, percentage: 75 },
-            ],
-            total_volume: 48000,
-          },
-          {
-            id: '4',
-            title: 'Will there be a major earthquake in Metro Manila in 2026?',
-            slug: 'manila-earthquake-2025',
-            category: 'politics',
-            status: 'open',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            max_points_per_user: 10000,
-            outcomes: [
-              { id: '7', market_id: '4', name: 'Yes', total_points: 8000, percentage: 15 },
-              { id: '8', market_id: '4', name: 'No', total_points: 45000, percentage: 85 },
-            ],
-            total_volume: 53000,
-          },
-          {
-            id: '5',
-            title: 'Will the Philippines GDP growth exceed 6% in 2026?',
-            slug: 'philippines-gdp-2025',
-            category: 'politics',
-            status: 'open',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            max_points_per_user: 10000,
-            outcomes: [
-              { id: '9', market_id: '5', name: 'Yes', total_points: 32000, percentage: 68 },
-              { id: '10', market_id: '5', name: 'No', total_points: 15000, percentage: 32 },
-            ],
-            total_volume: 47000,
-          },
-        ]);
+        // Don't set mock data - show empty state or error
+        setMarkets([]);
+        // Log the full error for debugging
+        if (error.response) {
+          console.error('API Error Response:', error.response.data);
+        } else if (error.request) {
+          console.error('No response received. Is the backend running?');
+        }
       } finally {
         setIsLoading(false);
       }
@@ -157,7 +87,7 @@ const Home: React.FC = () => {
       <IonContent>
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
           {/* Top Bar - User Stats */}
-          {isAuthenticated && user && (
+          {/* {isAuthenticated && user && (
           <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
             <div className="container mx-auto px-4 py-2">
               <div className="flex items-center justify-end">
@@ -176,7 +106,7 @@ const Home: React.FC = () => {
               </div>
             </div>
           </div>
-          )}
+          )} */}
 
           <div className="container mx-auto px-4 py-6">
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">

@@ -18,10 +18,15 @@ async def get_current_user_profile(
     db: Session = Depends(get_db)
 ):
     """Get current user profile endpoint"""
+    # Get forecast stats
+    from app.services.reputation_service import get_user_forecast_stats
+    stats = get_user_forecast_stats(db, current_user.id)
+    
     return {
         "success": True,
         "data": {
             "user": UserProfile.model_validate(current_user).model_dump(),
+            "stats": stats,
         },
         "errors": None,
     }
@@ -76,10 +81,15 @@ async def get_user_profile(user_id: str, db: Session = Depends(get_db)):
             "errors": [{"message": "User not found"}],
         }
     
+    # Get forecast stats
+    from app.services.reputation_service import get_user_forecast_stats
+    stats = get_user_forecast_stats(db, user_id)
+    
     return {
         "success": True,
         "data": {
             "user": UserResponse.model_validate(user).model_dump(),
+            "stats": stats,
         },
         "errors": None,
     }
@@ -97,19 +107,24 @@ async def get_user_badges(user_id: str, db: Session = Depends(get_db)):
             "errors": [{"message": "User not found"}],
         }
     
-    # TODO: Implement badge system in Phase 6
-    # For now, return empty badges
+    from app.services.badge_service import get_user_badges as get_badges
+    badges = get_badges(user)
+    
     return {
         "success": True,
         "data": {
-            "badges": [],
+            "badges": badges,
         },
         "errors": None,
     }
 
 
 @router.get("/{user_id}/reputation-history", response_model=dict)
-async def get_reputation_history(user_id: str, db: Session = Depends(get_db)):
+async def get_reputation_history(
+    user_id: str,
+    db: Session = Depends(get_db),
+    limit: int = 100
+):
     """Get reputation history endpoint"""
     user = db.query(User).filter(User.id == user_id, User.is_active == True).first()
     
@@ -120,12 +135,27 @@ async def get_reputation_history(user_id: str, db: Session = Depends(get_db)):
             "errors": [{"message": "User not found"}],
         }
     
-    # TODO: Implement reputation history in Phase 6
-    # For now, return empty history
+    from app.models.reputation_history import ReputationHistory
+    from sqlalchemy import desc
+    
+    history = db.query(ReputationHistory).filter(
+        ReputationHistory.user_id == user_id
+    ).order_by(desc(ReputationHistory.created_at)).limit(limit).all()
+    
+    history_data = [
+        {
+            "reputation": h.reputation,
+            "accuracy_score": h.accuracy_score,
+            "total_forecast_points": h.total_forecast_points,
+            "created_at": h.created_at.isoformat(),
+        }
+        for h in history
+    ]
+    
     return {
         "success": True,
         "data": {
-            "history": [],
+            "history": history_data,
         },
         "errors": None,
     }

@@ -24,6 +24,7 @@
     "react-router": "^5.3.4",
     "react-router-dom": "^5.3.4",
     "axios": "^1.6.2",
+    "recharts": "^2.10.3",
     "@capacitor/core": "^5.5.1",
     "@capacitor/app": "^5.0.6",
     "@capacitor/haptics": "^5.0.6",

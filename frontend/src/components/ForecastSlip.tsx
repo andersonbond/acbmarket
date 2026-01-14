@@ -217,18 +217,33 @@ const ForecastSlip: React.FC<ForecastSlipProps> = ({
                 {quickAmounts.map((amount) => {
                   // Only disable if amount exceeds market limit
                   const isDisabled = amount > market.max_points_per_user;
+                  const isSelected = points === amount;
                   return (
                     <button
                       key={amount}
                       onClick={() => handleQuickSelect(amount)}
                       disabled={isDisabled}
-                      className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-                        points === amount
-                          ? 'bg-primary text-black'
+                      className={`text-center uppercase border-none rounded-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-150 ease-in-out ${
+                        isSelected
+                          ? 'text-white'
                           : isDisabled
-                          ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 cursor-not-allowed opacity-50'
-                          : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                      }`}
+                          ? 'text-gray-400'
+                          : 'text-white'
+                      } ${!isDisabled && !isSelected ? 'hover:-translate-y-0.5' : ''}`}
+                      style={{
+                        padding: '8px 0',
+                        background: isSelected ? '#1d4ed8' : isDisabled ? '#e5e7eb' : '#1d4ed8',
+                        fontSize: '14px',
+                        fontWeight: 700,
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isDisabled && !isSelected) {
+                          e.currentTarget.style.transform = 'translateY(-1px)';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                      }}
                     >
                       ₱{amount}
                     </button>
@@ -267,8 +282,22 @@ const ForecastSlip: React.FC<ForecastSlipProps> = ({
               </div>
             )}
 
-            {/* Action Buttons */}
-            <div className="flex gap-2">
+            {/* Non-redeemable Reminder */}
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+              <div className="flex items-start">
+                <IonIcon icon={informationCircle} className="text-blue-600 dark:text-blue-400 text-lg mr-2 flex-shrink-0 mt-0.5" />
+                <div className="text-xs text-blue-800 dark:text-blue-300">
+                  <p className="font-semibold mb-1">Important Reminder</p>
+                  <p>
+                    Chips are virtual and non-redeemable. They cannot be converted to cash or withdrawn. 
+                    This is a forecasting platform for entertainment purposes only.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons - Desktop (inside card) */}
+            <div className="hidden lg:flex gap-2">
               {userForecast ? (
                 <>
                   <IonButton
@@ -288,43 +317,97 @@ const ForecastSlip: React.FC<ForecastSlipProps> = ({
                   </IonButton>
                 </>
               ) : (
-                <IonButton
-                  expand="block"
+                <button
                   onClick={handleSubmit}
                   disabled={isLoading || !points || points < 1 || points > market.max_points_per_user}
-                  className="button-primary"
+                  className="w-full text-white text-center uppercase border-none rounded-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all duration-150 ease-in-out hover:-translate-y-0.5 disabled:hover:translate-y-0"
+                  style={{
+                    padding: '16px 0',
+                    background: '#1d4ed8',
+                    fontSize: '20px',
+                    fontWeight: 700,
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isLoading && points >= 1 && points <= market.max_points_per_user) {
+                      e.currentTarget.style.transform = 'translateY(-1px)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }}
                 >
                   {isLoading ? (
                     <>
-                      <IonSpinner name="crescent" slot="start" />
+                      <IonSpinner name="crescent" />
                       Placing...
                     </>
                   ) : (
                     <>
-                      <IonIcon icon={wallet} slot="start" />
+                      <IonIcon icon={wallet} className="text-xl" />
                       Buy {selectedOutcome?.name || 'Position'}
                     </>
                   )}
-                </IonButton>
+                </button>
               )}
-            </div>
-
-            {/* Non-redeemable Reminder */}
-            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
-              <div className="flex items-start">
-                <IonIcon icon={informationCircle} className="text-blue-600 dark:text-blue-400 text-lg mr-2 flex-shrink-0 mt-0.5" />
-                <div className="text-xs text-blue-800 dark:text-blue-300">
-                  <p className="font-semibold mb-1">Important Reminder</p>
-                  <p>
-                    Chips are virtual and non-redeemable. They cannot be converted to cash or withdrawn. 
-                    This is a forecasting platform for entertainment purposes only.
-                  </p>
-                </div>
-              </div>
             </div>
           </div>
         </IonCardContent>
       </IonCard>
+
+      {/* Action Buttons - Mobile (fixed at bottom) */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-50 shadow-lg">
+        {userForecast ? (
+          <>
+            <IonButton
+              expand="block"
+              onClick={handleSubmit}
+              disabled={isLoading || (points <= userForecast.points && selectedOutcomeId === userForecast.outcome_id)}
+              className="button-primary"
+            >
+              {isLoading ? (
+                <>
+                  <IonSpinner name="crescent" slot="start" />
+                  Updating...
+                </>
+              ) : (
+                'Update Forecast'
+              )}
+            </IonButton>
+          </>
+        ) : (
+          <button
+            onClick={handleSubmit}
+            disabled={isLoading || !points || points < 1 || points > market.max_points_per_user}
+            className="w-full text-white text-center uppercase border-none rounded-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all duration-150 ease-in-out hover:-translate-y-0.5 disabled:hover:translate-y-0"
+            style={{
+              padding: '16px 0',
+              background: '#1d4ed8',
+              fontSize: '20px',
+              fontWeight: 700,
+            }}
+            onMouseEnter={(e) => {
+              if (!isLoading && points >= 1 && points <= market.max_points_per_user) {
+                e.currentTarget.style.transform = 'translateY(-1px)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
+          >
+            {isLoading ? (
+              <>
+                <IonSpinner name="crescent" />
+                Placing...
+              </>
+            ) : (
+              <>
+                <IonIcon icon={wallet} className="text-xl" />
+                Buy {selectedOutcome?.name || 'Position'}
+              </>
+            )}
+          </button>
+        )}
+      </div>
 
       {/* Confirmation Modal */}
       <IonAlert

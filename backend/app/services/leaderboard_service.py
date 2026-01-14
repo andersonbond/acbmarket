@@ -3,7 +3,7 @@ Leaderboard calculation service
 """
 import math
 from typing import List, Dict, Optional, Tuple
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, func, desc
 
@@ -73,12 +73,12 @@ def calculate_leaderboard(
     Returns:
         List of user dictionaries with rank, display_name, reputation, rank_score, badges
     """
-    # Get date filter based on period
+    # Get date filter based on period (make timezone-aware)
     date_filter = None
     if period == "weekly":
-        date_filter = datetime.utcnow() - timedelta(days=7)
+        date_filter = datetime.now(timezone.utc) - timedelta(days=7)
     elif period == "monthly":
-        date_filter = datetime.utcnow() - timedelta(days=30)
+        date_filter = datetime.now(timezone.utc) - timedelta(days=30)
     
     # Get all active users
     query = db.query(User).filter(User.is_active == True)
@@ -127,6 +127,39 @@ def calculate_leaderboard(
         # Get forecast stats
         stats = get_user_forecast_stats(db, user.id)
         
+        # Calculate profit/loss and volume
+        # Get all forecasts for this user
+        user_forecasts = db.query(Forecast).filter(Forecast.user_id == user.id).all()
+        
+        # Apply period filter if needed
+        if date_filter:
+            user_forecasts = [f for f in user_forecasts if f.created_at >= date_filter]
+        
+        # Apply category filter if needed
+        if category and category != "all":
+            category_market_ids = [m.id for m in db.query(Market).filter(Market.category == category).all()]
+            user_forecasts = [f for f in user_forecasts if f.market_id in category_market_ids]
+        
+        # Calculate volume (total points allocated)
+        volume = sum(f.points for f in user_forecasts)
+        
+        # Calculate profit/loss
+        # For won forecasts: calculate estimated profit (simplified - actual profit depends on market odds at resolution)
+        # For lost forecasts: loss is the points allocated
+        won_forecasts = [f for f in user_forecasts if f.status == 'won']
+        lost_forecasts = [f for f in user_forecasts if f.status == 'lost']
+        
+        # Calculate profit from won forecasts (simplified: assume average 1.5x return)
+        # In production, this should be calculated from actual market resolution data
+        won_points = sum(f.points for f in won_forecasts) if won_forecasts else 0
+        lost_points = sum(f.points for f in lost_forecasts) if lost_forecasts else 0
+        
+        # Simplified profit calculation: won forecasts get 1.5x return on average
+        # This is a placeholder - actual profit should be calculated from resolution data
+        # Profit = (won_points * 1.5) - lost_points
+        # This means winners get their bet back (won_points) + 0.5x bonus, losers lose their bet
+        profit_loss = int((won_points * 1.5) - lost_points) if won_points > 0 else -lost_points
+        
         # Calculate rank score
         rank_score = calculate_rank_score(
             user.reputation,
@@ -152,6 +185,8 @@ def calculate_leaderboard(
             "activity_streak": activity_streak,
             "total_forecasts": stats["total_forecasts"],
             "badges": badges,
+            "profit_loss": profit_loss,
+            "volume": volume,
         })
     
     # Sort by rank_score (descending)

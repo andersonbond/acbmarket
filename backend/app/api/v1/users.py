@@ -119,6 +119,44 @@ async def get_user_badges(user_id: str, db: Session = Depends(get_db)):
     }
 
 
+@router.post("/{user_id}/badges/check", response_model=dict)
+async def check_user_badges(user_id: str, db: Session = Depends(get_db)):
+    """Manually check and award badges for a user (useful for retroactive badge awarding)"""
+    user = db.query(User).filter(User.id == user_id, User.is_active == True).first()
+    
+    if not user:
+        return {
+            "success": False,
+            "data": None,
+            "errors": [{"message": "User not found"}],
+        }
+    
+    from app.services.badge_service import check_and_award_badges, get_user_badges as get_badges
+    from app.models.forecast import Forecast
+    
+    # Get current forecast count for info
+    forecast_count = db.query(Forecast).filter(Forecast.user_id == user_id).count()
+    
+    # Check and award badges
+    newly_awarded = check_and_award_badges(db, user_id)
+    
+    # Refresh user to get updated badges
+    db.refresh(user)
+    
+    # Get formatted badges
+    badges = get_badges(user)
+    
+    return {
+        "success": True,
+        "data": {
+            "forecast_count": forecast_count,
+            "newly_awarded": newly_awarded,
+            "badges": badges,
+        },
+        "errors": None,
+    }
+
+
 @router.get("/{user_id}/reputation-history", response_model=dict)
 async def get_reputation_history(
     user_id: str,

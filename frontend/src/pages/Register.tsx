@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { IonContent, IonPage, IonButton, IonInput, IonItem, IonLabel, IonCheckbox, IonIcon, IonSpinner } from '@ionic/react';
-import { personAdd, close, personOutline, mailOutline, callOutline, lockClosedOutline, eyeOutline, eyeOffOutline, checkmarkCircleOutline } from 'ionicons/icons';
+import { personAdd, close, personOutline, callOutline, lockClosedOutline, eyeOutline, eyeOffOutline, checkmarkCircleOutline } from 'ionicons/icons';
 import { useHistory, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 const Register: React.FC = () => {
-  const [email, setEmail] = useState('');
+  // Email is auto-generated from display name (field is hidden)
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
@@ -14,9 +14,25 @@ const Register: React.FC = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [error, setError] = useState('');
+  const [displayNameError, setDisplayNameError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { register } = useAuth();
   const history = useHistory();
+
+  const handleDisplayNameChange = (value: string) => {
+    // Check if input contains special characters
+    const hasSpecialChars = /[^a-zA-Z0-9]/.test(value);
+    
+    if (hasSpecialChars) {
+      setDisplayNameError('Only letters and numbers are allowed (no special characters)');
+    } else {
+      setDisplayNameError('');
+    }
+    
+    // Only allow alphanumeric characters (letters and numbers)
+    const alphanumericOnly = value.replace(/[^a-zA-Z0-9]/g, '');
+    setDisplayName(alphanumericOnly);
+  };
 
   const handleContactNumberChange = (value: string) => {
     // Ensure it always starts with +63
@@ -57,6 +73,12 @@ const Register: React.FC = () => {
     }
   };
 
+  const validateDisplayName = (): boolean => {
+    // Only alphanumeric characters allowed
+    const pattern = /^[a-zA-Z0-9]+$/;
+    return pattern.test(displayName);
+  };
+
   const validateContactNumber = (): boolean => {
     // Format: +63 followed by exactly 10 digits
     const pattern = /^\+63\d{10}$/;
@@ -86,6 +108,11 @@ const Register: React.FC = () => {
       return;
     }
 
+    if (!validateDisplayName()) {
+      setError('Display name must contain only letters and numbers (no special characters)');
+      return;
+    }
+
     if (!validateContactNumber()) {
       setError('Contact number must be in format +63XXXXXXXXXX (10 digits after +63)');
       return;
@@ -99,7 +126,8 @@ const Register: React.FC = () => {
     setIsLoading(true);
 
     try {
-      await register({ email, password, display_name: displayName, contact_number: contactNumber });
+      // Email is optional, so we don't send it
+      await register({ password, display_name: displayName, contact_number: contactNumber });
       history.push('/');
     } catch (err: any) {
       setError(err.message || 'Registration failed. Please try again.');
@@ -110,7 +138,8 @@ const Register: React.FC = () => {
 
   const isFormValid = () => {
     return displayName.length >= 3 && 
-           email.length > 0 && 
+           validateDisplayName() &&
+           // email.length > 0 && // Email not required for now
            validateContactNumber() && 
            password.length >= 8 && 
            password === confirmPassword && 
@@ -121,7 +150,7 @@ const Register: React.FC = () => {
     <IonPage>
       <IonContent className="ion-padding">
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-4 py-8">
-          <div className="max-w-md lg:max-w-2xl w-full">
+          <div className="max-w-md lg:max-w-4xl xl:max-w-5xl w-full">
             {/* Close Button */}
             <div className="flex justify-end mb-2">
               <IonButton 
@@ -139,7 +168,7 @@ const Register: React.FC = () => {
               <div className="flex justify-center mb-4">
                 <img 
                   src="/logo.png" 
-                  alt="Pilimarket" 
+                  alt="ACBMarket" 
                   className="h-16 w-auto rounded-lg shadow-md"
                   onError={(e) => {
                     (e.target as HTMLImageElement).style.display = 'none';
@@ -147,7 +176,7 @@ const Register: React.FC = () => {
                 />
               </div>
               <h1 className="text-5xl font-dm-sans font-extrabold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent mb-2">
-                Pilimarket
+                ACBMarket
               </h1>
               <p className="text-gray-600 dark:text-gray-300 text-lg">Join the prediction market community</p>
             </div>
@@ -164,10 +193,23 @@ const Register: React.FC = () => {
               )}
 
               <form onSubmit={handleSubmit} className="space-y-5 lg:grid lg:grid-cols-2 lg:gap-5 lg:space-y-0">
+                <style>{`
+                  ion-item {
+                    --inner-padding-end: 0;
+                    --inner-padding-start: 0;
+                  }
+                  ion-item ion-input {
+                    width: 100% !important;
+                    flex: 1;
+                  }
+                  ion-item .item-native {
+                    width: 100%;
+                  }
+                `}</style>
                 {/* Display Name */}
                 <div className="space-y-2">
                   <IonItem 
-                    className="rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-600 transition-colors" 
+                    className="rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-600 transition-colors w-full" 
                     lines="none"
                   >
                     <IonIcon icon={personOutline} slot="start" className="text-gray-400 dark:text-gray-500 text-xl" />
@@ -177,21 +219,25 @@ const Register: React.FC = () => {
                     <IonInput
                       type="text"
                       value={displayName}
-                      onIonInput={(e) => setDisplayName(e.detail.value!)}
-                      placeholder="Choose a display name"
+                      onIonInput={(e) => handleDisplayNameChange(e.detail.value!)}
+                      placeholder="Choose a display name (letters and numbers only)"
                       required
                       minlength={3}
                       maxlength={50}
                       autocomplete="username"
+                      className="w-full"
                     />
                   </IonItem>
-                  {displayName.length > 0 && displayName.length < 3 && (
+                  {displayNameError && (
+                    <p className="text-xs text-red-500 ml-4 animate-fade-in">{displayNameError}</p>
+                  )}
+                  {displayName.length > 0 && displayName.length < 3 && !displayNameError && (
                     <p className="text-xs text-red-500 ml-4">Must be at least 3 characters</p>
                   )}
                 </div>
 
-                {/* Email */}
-                <div className="space-y-2">
+                {/* Email - Hidden for now */}
+                {/* <div className="space-y-2 hidden">
                   <IonItem 
                     className="rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-600 transition-colors" 
                     lines="none"
@@ -205,17 +251,16 @@ const Register: React.FC = () => {
                       value={email}
                       onIonInput={(e) => setEmail(e.detail.value!)}
                       placeholder="you@example.com"
-                      required
                       maxlength={255}
                       autocomplete="email"
                     />
                   </IonItem>
-                </div>
+                </div> */}
 
                 {/* Contact Number */}
                 <div className="space-y-2">
                   <IonItem 
-                    className="rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-600 transition-colors" 
+                    className="rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-600 transition-colors w-full" 
                     lines="none"
                   >
                     <IonIcon icon={callOutline} slot="start" className="text-gray-400 dark:text-gray-500 text-xl" />
@@ -240,6 +285,7 @@ const Register: React.FC = () => {
                       placeholder="+639123456789"
                       required
                       maxlength={13}
+                      className="w-full"
                     />
                   </IonItem>
                   <p className="text-xs text-gray-500 dark:text-gray-400 ml-4">
@@ -253,7 +299,7 @@ const Register: React.FC = () => {
                 {/* Password */}
                 <div className="space-y-2">
                   <IonItem 
-                    className="rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-600 transition-colors" 
+                    className="rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-600 transition-colors w-full" 
                     lines="none"
                   >
                     <IonIcon icon={lockClosedOutline} slot="start" className="text-gray-400 dark:text-gray-500 text-xl" />
@@ -264,11 +310,12 @@ const Register: React.FC = () => {
                       type={showPassword ? 'text' : 'password'}
                       value={password}
                       onIonInput={(e) => setPassword(e.detail.value!)}
-                      placeholder="At least 8 characters"
+                      placeholder="Enter your password"
                       required
                       minlength={8}
                       maxlength={100}
                       autocomplete="new-password"
+                      className="w-full"
                     />
                     <IonButton
                       fill="clear"
@@ -305,7 +352,7 @@ const Register: React.FC = () => {
                 {/* Confirm Password */}
                 <div className="space-y-2">
                   <IonItem 
-                    className="rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-600 transition-colors" 
+                    className="rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-600 transition-colors w-full" 
                     lines="none"
                   >
                     <IonIcon icon={lockClosedOutline} slot="start" className="text-gray-400 dark:text-gray-500 text-xl" />
@@ -321,6 +368,7 @@ const Register: React.FC = () => {
                       minlength={8}
                       maxlength={100}
                       autocomplete="new-password"
+                      className="w-full"
                     />
                     <IonButton
                       fill="clear"
@@ -371,24 +419,37 @@ const Register: React.FC = () => {
 
                 {/* Submit Button - Full Width */}
                 <div className="lg:col-span-2">
-                  <IonButton
-                    expand="block"
+                  <button
                     type="submit"
                     disabled={isLoading || !isFormValid()}
-                    className="h-14 font-semibold text-lg button-primary rounded-xl shadow-lg hover:shadow-xl transition-all mt-6"
+                    className="w-full text-white text-center uppercase border-none rounded-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all duration-150 ease-in-out hover:-translate-y-0.5 disabled:hover:translate-y-0 mt-6"
+                    style={{
+                      padding: '16px 0',
+                      background: '#1d4ed8',
+                      fontSize: '20px',
+                      fontWeight: 700,
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isLoading && isFormValid()) {
+                        e.currentTarget.style.transform = 'translateY(-1px)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                    }}
                   >
                     {isLoading ? (
                       <>
-                        <IonSpinner name="crescent" slot="start" />
+                        <IonSpinner name="crescent" />
                         Creating account...
                       </>
                     ) : (
                       <>
-                        <IonIcon icon={personAdd} slot="start" />
+                        <IonIcon icon={personAdd} className="text-xl" />
                         Create Account
                       </>
                     )}
-                  </IonButton>
+                  </button>
                 </div>
               </form>
 

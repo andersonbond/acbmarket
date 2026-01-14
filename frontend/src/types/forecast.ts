@@ -4,12 +4,14 @@ export interface Forecast {
   market_id: string;
   outcome_id: string;
   points: number;
+  reward_amount?: number | null; // Actual reward amount if forecast wins
   status: 'pending' | 'won' | 'lost';
   is_flagged: boolean;
   created_at: string;
   updated_at: string;
   outcome_name?: string;
   market_title?: string;
+  market_status?: string;
 }
 
 export interface ForecastCreate {

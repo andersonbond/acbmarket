@@ -84,7 +84,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (credentials: LoginCredentials) => {
     try {
-      const response = await api.post('/api/v1/auth/login', credentials);
+      // Backend expects contact_number
+      const response = await api.post('/api/v1/auth/login', {
+        contact_number: credentials.contact_number,
+        password: credentials.password
+      });
       
       if (response.data.success) {
         const { tokens, user: userData } = response.data.data;

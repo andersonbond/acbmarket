@@ -20,6 +20,7 @@ class Forecast(Base):
     
     # Forecast details
     points = Column(Integer, nullable=False)  # Number of chips allocated to this forecast
+    reward_amount = Column(Integer, nullable=True)  # Actual reward amount when forecast wins (null if pending or lost)
     
     # Status: pending (market not resolved), won (correct), lost (incorrect)
     status = Column(String, default="pending", nullable=False, index=True)

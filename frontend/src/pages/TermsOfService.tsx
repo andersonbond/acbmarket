@@ -19,7 +19,7 @@ const TermsOfService: React.FC = () => {
             <section>
               <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">1. Acceptance of Terms</h2>
               <p>
-                By accessing and using Pilimarket, you accept and agree to be bound by the terms and provision of this agreement. 
+                By accessing and using ACBMarket, you accept and agree to be bound by the terms and provision of this agreement. 
                 If you do not agree to abide by the above, please do not use this service.
               </p>
             </section>
@@ -27,7 +27,7 @@ const TermsOfService: React.FC = () => {
             <section>
               <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">2. Description of Service</h2>
               <p>
-                Pilimarket is a Philippine prediction market platform that allows users to make forecasts on various events 
+                ACBMarket is a Philippine prediction market platform that allows users to make forecasts on various events 
                 using virtual, non-redeemable chips. This service is provided for entertainment and educational purposes only.
               </p>
             </section>
@@ -35,7 +35,7 @@ const TermsOfService: React.FC = () => {
             <section>
               <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">3. Virtual Chips</h2>
               <p>
-                All chips used on Pilimarket are virtual and non-redeemable. They cannot be converted to real money, 
+                All chips used on ACBMarket are virtual and non-redeemable. They cannot be converted to real money, 
                 cryptocurrency, or any other form of currency. Chips have no monetary value and are solely for use 
                 within the platform.
               </p>
@@ -65,7 +65,7 @@ const TermsOfService: React.FC = () => {
             <section>
               <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">6. Market Resolution</h2>
               <p>
-                Markets are resolved based on verifiable real-world outcomes. Pilimarket reserves the right to determine 
+                Markets are resolved based on verifiable real-world outcomes. ACBMarket reserves the right to determine 
                 market resolution based on objective criteria. All resolution decisions are final.
               </p>
             </section>
@@ -73,7 +73,7 @@ const TermsOfService: React.FC = () => {
             <section>
               <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">7. Limitation of Liability</h2>
               <p>
-                Pilimarket is provided "as is" without warranties of any kind. We are not liable for any damages arising 
+                ACBMarket is provided "as is" without warranties of any kind. We are not liable for any damages arising 
                 from your use of the service. This includes but is not limited to loss of data, reputation points, or virtual chips.
               </p>
             </section>

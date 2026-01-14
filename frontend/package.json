@@ -1,7 +1,7 @@
 {
   "name": "pili-frontend",
   "version": "1.0.0",
-  "description": "Pilimarket Frontend - Ionic 8 + React",
+  "description": "ACBMarket Frontend - Ionic 8 + React",
   "private": true,
   "scripts": {
     "start": "vite",

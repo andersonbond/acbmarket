@@ -91,11 +91,20 @@ async def list_markets(
     # Get total count
     total = query.count()
     
-    # Apply pagination
+    # Apply pagination with eager loading to avoid N+1 queries
+    from sqlalchemy.orm import selectinload
     offset = (page - 1) * limit
-    markets = query.order_by(desc(Market.created_at)).offset(offset).limit(limit).all()
+    # Use selectinload instead of joinedload to avoid duplicate rows and JSONB distinct issues
+    # selectinload uses a separate query but doesn't cause duplicate rows
+    markets = (
+        query.options(selectinload(Market.outcomes))
+        .order_by(desc(Market.created_at))
+        .offset(offset)
+        .limit(limit)
+        .all()
+    )
     
-    # Include outcomes for each market
+    # Include outcomes for each market (already loaded via eager loading)
     market_responses = []
     for market in markets:
         # Safely get end_date (in case migration hasn't been run yet)

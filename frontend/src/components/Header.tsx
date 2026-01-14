@@ -20,16 +20,16 @@ const Header: React.FC = () => {
         {/* Mobile: Logo/Title and Menu */}
         <div slot="start" className="flex items-center md:hidden">
           <div onClick={() => history.push('/')} className="cursor-pointer flex items-center gap-2">
-            <img src="/logo.png" alt="Pilimarket" className="h-8 w-auto rounded ml-2" />
-            <IonTitle className="flex-shrink-0 text-lg pl-0 font-dm-sans font-extrabold">Pilimarket</IonTitle>
+            <img src="/logo.png" alt="ACBMarket" className="h-8 w-auto rounded ml-2" />
+            <IonTitle className="flex-shrink-0 text-lg pl-0 font-dm-sans font-extrabold">ACBMarket</IonTitle>
           </div>
         </div>
 
         {/* Desktop: Logo/Title and Search */}
         <div slot="start" className="hidden md:flex items-center">
           <div onClick={() => history.push('/')} className="cursor-pointer flex items-center gap-2 mr-4">
-            <img src="/logo.png" alt="Pilimarket" className="h-10 w-auto rounded ml-2" />
-            <IonTitle className="flex-shrink-0 pl-0 font-dm-sans font-extrabold">Pilimarket</IonTitle>
+            <img src="/logo.png" alt="ACBMarket" className="h-10 w-auto rounded ml-2" />
+            <IonTitle className="flex-shrink-0 pl-0 font-dm-sans font-extrabold">ACBMarket</IonTitle>
           </div>
           <div className="flex">
             <IonSearchbar
@@ -42,7 +42,7 @@ const Header: React.FC = () => {
                 }
               }}
               onIonClear={() => setSearchQuery('')}
-              placeholder="Search Pilimarket..."
+              placeholder="Search ACBMarket..."
               className="searchbar-custom searchbar-compact"
             />
           </div>
@@ -140,7 +140,7 @@ const Header: React.FC = () => {
             }
           }}
           onIonClear={() => setSearchQuery('')}
-          placeholder="Search Pilimarket..."
+          placeholder="Search ACBMarket..."
           className="searchbar-custom"
         />
       </div>
@@ -320,9 +320,9 @@ const Header: React.FC = () => {
         <IonContent className="ion-padding">
           <div className="max-w-3xl mx-auto py-6 space-y-6">
             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Welcome to Pilimarket</h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Welcome to ACBMarket</h2>
               <p className="text-gray-700 dark:text-gray-300 mb-4">
-                Pilimarket is a Philippine prediction market platform where you can forecast events using virtual chips. 
+                ACBMarket is a Philippine prediction market platform where you can forecast events using virtual chips. 
                 Test your prediction skills, compete with others, and climb the leaderboard!
               </p>
             </div>

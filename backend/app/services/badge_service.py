@@ -17,7 +17,7 @@ from app.services.reputation_service import calculate_reputation, get_user_forec
 BADGE_DEFINITIONS = {
     "newbie": {
         "name": "Newbie",
-        "description": "Made your first 10 forecasts",
+        "description": "Made your first 3 forecasts",
         "icon": "🌱",
         "color": "gray",
     },
@@ -55,9 +55,9 @@ BADGE_DEFINITIONS = {
 
 
 def check_newbie_badge(db: Session, user_id: str) -> bool:
-    """Check if user qualifies for Newbie badge (10+ forecasts)"""
+    """Check if user qualifies for Newbie badge (3+ forecasts)"""
     forecast_count = db.query(Forecast).filter(Forecast.user_id == user_id).count()
-    return forecast_count >= 10
+    return forecast_count >= 3
 
 
 def check_accurate_badge(db: Session, user_id: str) -> bool:

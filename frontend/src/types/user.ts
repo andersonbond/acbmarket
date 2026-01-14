@@ -1,6 +1,6 @@
 export interface User {
   id: string;
-  email: string;
+  email?: string;  // Optional email
   display_name: string;
   bio?: string;
   avatar_url?: string;
@@ -22,12 +22,12 @@ export interface AuthTokens {
 }
 
 export interface LoginCredentials {
-  email: string;
+  contact_number: string;  // Changed to contact_number
   password: string;
 }
 
 export interface RegisterData {
-  email: string;
+  email?: string;  // Optional email
   password: string;
   display_name: string;
   contact_number: string;

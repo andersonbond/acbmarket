@@ -30,6 +30,7 @@ class ForecastResponse(BaseModel):
     market_id: str
     outcome_id: str
     points: int
+    reward_amount: Optional[int] = None  # Actual reward amount when forecast wins (null if pending or lost)
     status: str  # pending, won, lost
     is_flagged: bool
     created_at: datetime

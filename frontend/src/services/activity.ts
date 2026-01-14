@@ -47,5 +47,25 @@ export const activityService = {
     const response = await api.get(`/api/v1/activity/global?${params.toString()}`);
     return response.data;
   },
+
+  /**
+   * Get activity feed for a specific user (public)
+   */
+  getUserActivity: async (
+    userId: string,
+    page: number = 1,
+    limit: number = 20,
+    type?: string
+  ): Promise<ActivityListResponse> => {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+    });
+    if (type) {
+      params.append('type', type);
+    }
+    const response = await api.get(`/api/v1/activity/users/${userId}?${params.toString()}`);
+    return response.data;
+  },
 };
 

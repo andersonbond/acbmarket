@@ -10,17 +10,17 @@ import os
 
 from app.config import settings
 from app.database import engine, Base
-from app.api.v1 import auth, markets, forecasts, purchases, users, leaderboard, admin, resolutions, notifications, activity
+from app.api.v1 import auth, markets, forecasts, purchases, users, leaderboard, admin, resolutions, notifications, activity, comments
 from app.middleware import RateLimitMiddleware, SecurityHeadersMiddleware
 
 # Import models to register them with SQLAlchemy
-from app.models import User  # noqa
+from app.models import User, Comment  # noqa
 
 # Note: Use Alembic migrations instead of create_all in production
 # Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
-    title="Pilimarket API",
+    title="ACBMarket API",
     description="Philippine Prediction Market API",
     version="1.0.0",
     docs_url="/api/docs",
@@ -56,6 +56,7 @@ app.include_router(leaderboard.router, prefix="/api/v1/leaderboard", tags=["lead
 app.include_router(notifications.router, prefix="/api/v1/notifications", tags=["notifications"])
 app.include_router(activity.router, prefix="/api/v1/activity", tags=["activity"])
 app.include_router(admin.router, prefix="/api/v1/admin", tags=["admin"])
+app.include_router(comments.router, prefix="/api/v1", tags=["comments"])
 
 # Serve uploaded files
 if os.path.exists("uploads"):
@@ -65,13 +66,13 @@ if os.path.exists("uploads"):
 @app.get("/")
 async def root():
     """Root endpoint"""
-    return {"message": "Pilimarket API", "version": "1.0.0"}
+    return {"message": "ACBMarket API", "version": "1.0.0"}
 
 
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
-    return {"status": "healthy", "service": "Pilimarket-api"}
+    return {"status": "healthy", "service": "ACBMarket-api"}
 
 
 @app.exception_handler(Exception)

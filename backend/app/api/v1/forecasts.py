@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import desc, and_
 
 from app.database import get_db
+from app.dependencies import get_current_user_optional
 from app.models.forecast import Forecast
 from app.models.market import Market, Outcome
 from app.models.user import User
@@ -157,6 +158,14 @@ async def place_forecast(
         
         # Update outcome total_points
         outcome.total_points += forecast_data.points
+        
+        # Flush to ensure forecast is in database before badge check
+        db.flush()
+        
+        # Check and award badges (for badges like Newbie, Veteran that depend on forecast count)
+        # Must happen after flush so the new forecast is counted
+        from app.services.badge_service import check_and_award_badges
+        check_and_award_badges(db, current_user.id)
         
         db.commit()
         db.refresh(forecast)
@@ -340,23 +349,30 @@ async def update_forecast(
 async def get_user_forecasts(
     user_id: str,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: Optional[User] = Depends(get_current_user_optional),
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
     market_id: Optional[str] = Query(None),
     status_filter: Optional[str] = Query(None),
+    public_only: bool = Query(False, description="If true, only return resolved forecasts (for public viewing)"),
 ):
     """
     Get forecasts for a user
     
-    Users can only view their own forecasts unless they're viewing public data
+    - If viewing own profile: returns all forecasts
+    - If viewing other user's profile: only returns resolved forecasts (won/lost) for privacy
     """
-    # Users can only view their own forecasts
-    if user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You can only view your own forecasts",
-        )
+    # Check if user is viewing their own profile
+    is_own_profile = current_user and user_id == current_user.id
+    
+    # Ensure public_only is a boolean (FastAPI should handle this, but just in case)
+    if isinstance(public_only, str):
+        public_only = public_only.lower() in ('true', '1', 'yes')
+    
+    # For public profiles (not own), only show resolved forecasts
+    # If current_user is None (not logged in), treat as public viewing
+    if not is_own_profile:
+        public_only = True
     
     # Build query with eager loading to avoid N+1 queries
     query = (
@@ -364,6 +380,10 @@ async def get_user_forecasts(
         .options(joinedload(Forecast.outcome), joinedload(Forecast.market))
         .filter(Forecast.user_id == user_id)
     )
+    
+    # For public viewing, only show resolved forecasts
+    if public_only:
+        query = query.filter(Forecast.status.in_(['won', 'lost']))
     
     if market_id:
         query = query.filter(Forecast.market_id == market_id)
@@ -383,6 +403,7 @@ async def get_user_forecasts(
         forecast_dict = ForecastResponse.model_validate(forecast).model_dump()
         forecast_dict["outcome_name"] = forecast.outcome.name if forecast.outcome else None
         forecast_dict["market_title"] = forecast.market.title if forecast.market else None
+        forecast_dict["market_status"] = forecast.market.status if forecast.market else None
         
         forecast_details.append(ForecastDetailResponse(**forecast_dict))
     

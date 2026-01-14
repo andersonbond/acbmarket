@@ -56,6 +56,16 @@ const MarketGraph: React.FC<MarketGraphProps> = ({ marketId, outcomes }) => {
     }
   }, [marketId, timeRange]);
 
+  // Determine which outcome to display
+  // For binary markets (2 outcomes), show only "Yes" or first outcome
+  // For multi-outcome markets, show all outcomes
+  const isBinaryMarket = outcomes.length === 2;
+  const displayOutcomes = isBinaryMarket
+    ? outcomes.filter((o) => o.name.toLowerCase() === 'yes').length > 0
+      ? outcomes.filter((o) => o.name.toLowerCase() === 'yes')
+      : [outcomes[0]] // If no "Yes", show first outcome
+    : outcomes; // For multi-outcome, show all
+
   // Transform data for Recharts
   const chartData = history.map((point) => {
     const data: any = {
@@ -68,32 +78,13 @@ const MarketGraph: React.FC<MarketGraphProps> = ({ marketId, outcomes }) => {
       }),
     };
     
-    // Add each outcome's percentage
-    outcomes.forEach((outcome) => {
+    // Add each outcome's percentage (only for display outcomes)
+    displayOutcomes.forEach((outcome) => {
       data[outcome.name] = point.consensus[outcome.name] || 0;
     });
     
     return data;
   });
-
-  // Generate colors for each outcome
-  const getOutcomeColor = (index: number, outcomeName: string) => {
-    const name = outcomeName.toLowerCase();
-    if (name === 'yes') return '#10b981'; // green
-    if (name === 'no') return '#ef4444'; // red
-    
-    const colors = [
-      '#f7b801', // primary yellow
-      '#f18701', // secondary orange
-      '#0d47a1', // blue
-      '#d00000', // red
-      '#10b981', // green
-      '#8b5cf6', // purple
-      '#06b6d4', // cyan
-      '#ec4899', // pink
-    ];
-    return colors[index % colors.length];
-  };
 
   const timeRangeButtons = [
     { label: '1H', value: '1h' },
@@ -157,7 +148,7 @@ const MarketGraph: React.FC<MarketGraphProps> = ({ marketId, outcomes }) => {
         </div>
 
         {/* Chart */}
-        <div className="w-full" style={{ height: '400px' }}>
+        <div className="w-full h-[300px] md:h-[250px]">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={chartData}
@@ -179,25 +170,27 @@ const MarketGraph: React.FC<MarketGraphProps> = ({ marketId, outcomes }) => {
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: '#1f2937',
-                  border: '1px solid #374151',
-                  borderRadius: '8px',
-                  color: '#f3f4f6',
+                  backgroundColor: '#fff',
+                  border: '1px solid rgb(223, 223, 223)',
+                  borderRadius: '6px',
+                  color: '#1f2937',
                 }}
                 labelStyle={{ color: '#9ca3af' }}
                 formatter={(value: number) => [`${value.toFixed(2)}%`, '']}
               />
-              <Legend
-                wrapperStyle={{ color: '#9ca3af', fontSize: '12px' }}
-                iconType="line"
-              />
-              {outcomes.map((outcome, index) => (
+              {!isBinaryMarket && (
+                <Legend
+                  wrapperStyle={{ color: '#9ca3af', fontSize: '12px' }}
+                  iconType="line"
+                />
+              )}
+              {displayOutcomes.map((outcome) => (
                 <Line
                   key={outcome.id}
                   type="monotone"
                   dataKey={outcome.name}
-                  stroke={getOutcomeColor(index, outcome.name)}
-                  strokeWidth={2}
+                  stroke="#1452f0"
+                  strokeWidth={4}
                   dot={false}
                   activeDot={{ r: 4 }}
                 />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { IonContent, IonPage, IonSpinner } from '@ionic/react';
 import { useLocation } from 'react-router-dom';
 import Header from '../components/Header';
@@ -8,17 +8,22 @@ import CategoriesBar from '../components/CategoriesBar';
 import api from '../services/api';
 import { Market, MarketListResponse } from '../types/market';
 
+const MARKETS_PER_PAGE = 25;
+
 const Markets: React.FC = () => {
   const location = useLocation();
   const [markets, setMarkets] = useState<Market[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [sortBy, setSortBy] = useState('volume');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [hideSports, setHideSports] = useState(false);
   const [hidePolitics, setHidePolitics] = useState(false);
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [totalMarkets, setTotalMarkets] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
+  const observerTarget = useRef<HTMLDivElement>(null);
 
   // Get search query from URL params
   useEffect(() => {
@@ -29,72 +34,125 @@ const Markets: React.FC = () => {
     }
   }, [location.search]);
 
-  useEffect(() => {
-    const fetchMarkets = async () => {
+  // Process markets helper function
+  const processMarkets = useCallback((marketsData: Market[]): Market[] => {
+    return marketsData.map((market: Market) => {
+      // Calculate percentages from outcomes if consensus not available
+      const totalPoints = market.outcomes.reduce((sum, outcome) => sum + outcome.total_points, 0);
+      const outcomesWithPercentage = market.outcomes.map((outcome) => ({
+        ...outcome,
+        percentage: totalPoints > 0 ? (outcome.total_points / totalPoints) * 100 : 0,
+      }));
+
+      // Use consensus if available, otherwise calculate from outcomes
+      let consensus = market.consensus;
+      if (!consensus && totalPoints > 0) {
+        consensus = {};
+        outcomesWithPercentage.forEach((outcome) => {
+          consensus![outcome.name] = outcome.percentage || 0;
+        });
+      }
+
+      return {
+        ...market,
+        outcomes: outcomesWithPercentage,
+        consensus: consensus,
+        total_volume: market.total_volume || totalPoints,
+      };
+    });
+  }, []);
+
+  // Fetch markets function
+  const fetchMarkets = useCallback(async (pageNum: number, append: boolean = false) => {
+    if (append) {
+      setIsLoadingMore(true);
+    } else {
       setIsLoading(true);
-      try {
-        const params = new URLSearchParams();
-        params.append('status', 'open');
-        params.append('page', page.toString());
-        params.append('limit', '20');
+    }
 
-        if (selectedCategory !== 'All') {
-          params.append('category', selectedCategory.toLowerCase());
-        }
+    try {
+      const params = new URLSearchParams();
+      params.append('status', 'open');
+      params.append('page', pageNum.toString());
+      params.append('limit', MARKETS_PER_PAGE.toString());
 
-        if (searchQuery) {
-          params.append('search', searchQuery);
-        }
+      if (selectedCategory !== 'All') {
+        params.append('category', selectedCategory.toLowerCase());
+      }
 
-        // Map sortBy to API sort (if needed)
-        if (sortBy === 'newest') {
-          // API should sort by created_at desc by default
-        } else if (sortBy === 'ending') {
-          // This would need resolution_time, but for now we'll use created_at
-        }
+      if (searchQuery) {
+        params.append('search', searchQuery);
+      }
 
-        const response = await api.get<MarketListResponse>(`/api/v1/markets?${params.toString()}`);
+      const response = await api.get<MarketListResponse>(`/api/v1/markets?${params.toString()}`);
+      
+      if (response.data.success) {
+        const processedMarkets = processMarkets(response.data.data.markets);
         
-        if (response.data.success) {
-          // Process markets to calculate percentages from consensus or outcomes
-          const processedMarkets = response.data.data.markets.map((market: Market) => {
-            // Calculate percentages from outcomes if consensus not available
-            const totalPoints = market.outcomes.reduce((sum, outcome) => sum + outcome.total_points, 0);
-            const outcomesWithPercentage = market.outcomes.map((outcome) => ({
-              ...outcome,
-              percentage: totalPoints > 0 ? (outcome.total_points / totalPoints) * 100 : 0,
-            }));
-
-            // Use consensus if available, otherwise calculate from outcomes
-            let consensus = market.consensus;
-            if (!consensus && totalPoints > 0) {
-              consensus = {};
-              outcomesWithPercentage.forEach((outcome) => {
-                consensus![outcome.name] = outcome.percentage || 0;
-              });
-            }
-
-            return {
-              ...market,
-              outcomes: outcomesWithPercentage,
-              consensus: consensus,
-              total_volume: market.total_volume || totalPoints,
-            };
-          });
-
+        if (append) {
+          setMarkets((prev) => [...prev, ...processedMarkets]);
+        } else {
           setMarkets(processedMarkets);
-          setTotalPages(response.data.data.pagination.pages);
         }
-      } catch (error) {
-        console.error('Error fetching markets:', error);
+        
+        // Check if there are more pages
+        const totalPages = response.data.data.pagination.pages;
+        setHasMore(pageNum < totalPages);
+        if (!append) {
+          setTotalMarkets(response.data.data.pagination.total);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching markets:', error);
+      if (!append) {
         setMarkets([]);
-      } finally {
-        setIsLoading(false);
+      }
+    } finally {
+      setIsLoading(false);
+      setIsLoadingMore(false);
+    }
+  }, [selectedCategory, searchQuery, processMarkets]);
+
+  // Initial load and when filters change
+  useEffect(() => {
+    setPage(1);
+    setMarkets([]);
+    setHasMore(true);
+    setTotalMarkets(0);
+    fetchMarkets(1, false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCategory, searchQuery, sortBy]); // Removed hideSports, hidePolitics from deps - they're client-side filters
+
+  // Load more when page changes (for infinite scroll)
+  useEffect(() => {
+    if (page > 1 && hasMore && !isLoading && !isLoadingMore) {
+      fetchMarkets(page, true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, hasMore]);
+
+  // Intersection Observer for infinite scroll
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isLoading && !isLoadingMore) {
+          setPage((prev) => prev + 1);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    const currentTarget = observerTarget.current;
+    if (currentTarget) {
+      observer.observe(currentTarget);
+    }
+
+    return () => {
+      if (currentTarget) {
+        observer.unobserve(currentTarget);
       }
     };
-
-    fetchMarkets();
-  }, [selectedCategory, hideSports, hidePolitics, sortBy, page, searchQuery]);
+  }, [hasMore, isLoading, isLoadingMore]);
 
   // Filter markets client-side for hideSports and hidePolitics
   const filteredMarkets = markets.filter((market) => {
@@ -118,7 +176,16 @@ const Markets: React.FC = () => {
               <div>
                 <h1 className="text-xl font-bold text-gray-900 dark:text-white">Markets</h1>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                  {filteredMarkets.length} {filteredMarkets.length === 1 ? 'market' : 'markets'} found
+                  {totalMarkets > 0 ? (
+                    <>
+                      {filteredMarkets.length} of {totalMarkets} {totalMarkets === 1 ? 'market' : 'markets'}
+                      {filteredMarkets.length !== totalMarkets && ' (filtered)'}
+                    </>
+                  ) : (
+                    <>
+                      {filteredMarkets.length} {filteredMarkets.length === 1 ? 'market' : 'markets'} found
+                    </>
+                  )}
                 </p>
               </div>
             </div>
@@ -163,28 +230,20 @@ const Markets: React.FC = () => {
                 ))}
               </div>
 
-              {/* Compact Pagination */}
-              {totalPages > 1 && (
-                <div className="flex justify-center items-center gap-2 mb-4">
-                  <button
-                    onClick={() => setPage((p) => Math.max(1, p - 1))}
-                    disabled={page === 1}
-                    className="px-3 py-1.5 text-sm rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                  >
-                    Previous
-                  </button>
-                  <span className="px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300">
-                    Page {page} of {totalPages}
-                  </span>
-                  <button
-                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                    disabled={page === totalPages}
-                    className="px-3 py-1.5 text-sm rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                  >
-                    Next
-                  </button>
-                </div>
-              )}
+              {/* Infinite Scroll Trigger & Loading Indicator */}
+              <div ref={observerTarget} className="h-10 flex justify-center items-center py-4">
+                {isLoadingMore && (
+                  <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                    <IonSpinner name="crescent" />
+                    <span className="text-sm">Loading more markets...</span>
+                  </div>
+                )}
+                {!hasMore && filteredMarkets.length > 0 && (
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    No more markets to load
+                  </p>
+                )}
+              </div>
             </>
           )}
         </div>

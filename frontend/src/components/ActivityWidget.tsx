@@ -59,21 +59,44 @@ const ActivityWidget: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
+    let intervalId: NodeJS.Timeout | null = null;
+
     const loadActivities = async () => {
       try {
         const response = await activityService.getGlobalFeed(1, 5);
-        setActivities(response.data.activities);
+        if (isMounted) {
+          setActivities(response.data.activities);
+        }
       } catch (error) {
         console.error('Failed to load activities:', error);
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
+    // Initial load
     loadActivities();
-    // Refresh every 60 seconds
-    const interval = setInterval(loadActivities, 60000);
-    return () => clearInterval(interval);
+    
+    // Refresh every 60 seconds, but pause when tab is hidden
+    const setupInterval = () => {
+      if (intervalId) clearInterval(intervalId);
+      if (!document.hidden) {
+        intervalId = setInterval(loadActivities, 60000);
+      }
+    };
+
+    // Handle visibility change (pause when tab is hidden)
+    document.addEventListener('visibilitychange', setupInterval);
+    setupInterval();
+
+    return () => {
+      isMounted = false;
+      if (intervalId) clearInterval(intervalId);
+      document.removeEventListener('visibilitychange', setupInterval);
+    };
   }, []);
 
   const handleActivityClick = (activity: Activity) => {

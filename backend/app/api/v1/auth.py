@@ -32,14 +32,15 @@ router = APIRouter()
 @router.post("/register", response_model=dict, status_code=status.HTTP_201_CREATED)
 async def register(request: RegisterRequest, db: Session = Depends(get_db)):
     """User registration endpoint"""
-    # Check if user already exists
-    existing_user = db.query(User).filter(User.email == request.email).first()
-    if existing_user:
-        return {
-            "success": False,
-            "data": None,
-            "errors": [{"message": "Email already registered"}],
-        }
+    # Check if email is provided and already exists
+    if request.email:
+        existing_user = db.query(User).filter(User.email == request.email).first()
+        if existing_user:
+            return {
+                "success": False,
+                "data": None,
+                "errors": [{"message": "Email already registered"}],
+            }
     
     # Check if display name is taken
     existing_display_name = db.query(User).filter(User.display_name == request.display_name).first()
@@ -50,13 +51,22 @@ async def register(request: RegisterRequest, db: Session = Depends(get_db)):
             "errors": [{"message": "Display name already taken"}],
         }
     
+    # Check if contact number is already registered
+    existing_contact = db.query(User).filter(User.contact_number == request.contact_number).first()
+    if existing_contact:
+        return {
+            "success": False,
+            "data": None,
+            "errors": [{"message": "Contact number already registered"}],
+        }
+    
     # Create new user
     user_id = str(uuid.uuid4())
     hashed_password = get_password_hash(request.password)
     
     new_user = User(
         id=user_id,
-        email=request.email,
+        email=request.email,  # Can be None
         display_name=request.display_name,
         contact_number=request.contact_number,
         hashed_password=hashed_password,
@@ -73,8 +83,8 @@ async def register(request: RegisterRequest, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_user)
     
-    # Generate tokens
-    token_data = {"sub": user_id, "email": request.email}
+    # Generate tokens (email may be None)
+    token_data = {"sub": user_id, "email": request.email or ""}
     access_token = create_access_token(token_data)
     refresh_token = create_refresh_token(token_data)
     
@@ -94,15 +104,15 @@ async def register(request: RegisterRequest, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=dict)
 async def login(request: LoginRequest, db: Session = Depends(get_db)):
-    """User login endpoint"""
-    # Find user by email
-    user = db.query(User).filter(User.email == request.email).first()
+    """User login endpoint - uses contact_number instead of email"""
+    # Find user by contact_number
+    user = db.query(User).filter(User.contact_number == request.contact_number).first()
     
     if not user or not verify_password(request.password, user.hashed_password):
         return {
             "success": False,
             "data": None,
-            "errors": [{"message": "Invalid email or password"}],
+            "errors": [{"message": "Invalid contact number or password"}],
         }
     
     if not user.is_active:
@@ -116,8 +126,8 @@ async def login(request: LoginRequest, db: Session = Depends(get_db)):
     user.last_login = datetime.utcnow()
     db.commit()
     
-    # Generate tokens
-    token_data = {"sub": user.id, "email": user.email}
+    # Generate tokens (email may be None)
+    token_data = {"sub": user.id, "email": user.email or ""}
     access_token = create_access_token(token_data)
     refresh_token = create_refresh_token(token_data)
     
@@ -164,8 +174,8 @@ async def refresh_token(request: RefreshTokenRequest, db: Session = Depends(get_
             "errors": [{"message": "User not found or inactive"}],
         }
     
-    # Generate new access token
-    token_data = {"sub": user.id, "email": user.email}
+    # Generate new access token (email may be None)
+    token_data = {"sub": user.id, "email": user.email or ""}
     access_token = create_access_token(token_data)
     
     return {
@@ -179,14 +189,14 @@ async def refresh_token(request: RefreshTokenRequest, db: Session = Depends(get_
 
 @router.post("/forgot-password", response_model=dict)
 async def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(get_db)):
-    """Forgot password endpoint"""
-    user = db.query(User).filter(User.email == request.email).first()
+    """Forgot password endpoint - uses contact_number instead of email"""
+    user = db.query(User).filter(User.contact_number == request.contact_number).first()
     
-    # Don't reveal if email exists (security best practice)
+    # Don't reveal if user exists (security best practice)
     if not user:
         return {
             "success": True,
-            "data": {"message": "If the email exists, a password reset link has been sent"},
+            "data": {"message": "If the account exists, a password reset link has been sent"},
             "errors": None,
         }
     
@@ -196,14 +206,14 @@ async def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(
     user.reset_token_expires = datetime.utcnow() + timedelta(hours=1)  # Token expires in 1 hour
     db.commit()
     
-    # TODO: Send email with reset link
+    # TODO: Send reset link via SMS (contact_number) or email if available
     # For now, we'll just return success
-    # In production, send email with link: /reset-password?token={reset_token}
+    # In production, send SMS/email with link: /reset-password?token={reset_token}
     
     return {
         "success": True,
         "data": {
-            "message": "If the email exists, a password reset link has been sent",
+            "message": "If the account exists, a password reset link has been sent",
             # In development, include token for testing (remove in production)
             "reset_token": reset_token if db.query(User).count() < 10 else None,
         },

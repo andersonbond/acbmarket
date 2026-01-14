@@ -7,5 +7,6 @@ from app.models.resolution import Resolution
 from app.models.reputation_history import ReputationHistory
 from app.models.activity import Activity
 from app.models.notification import Notification
+from app.models.comment import Comment
 
-__all__ = ["User", "Market", "Outcome", "Purchase", "Forecast", "Resolution", "ReputationHistory", "Activity", "Notification"]
+__all__ = ["User", "Market", "Outcome", "Purchase", "Forecast", "Resolution", "ReputationHistory", "Activity", "Notification", "Comment"]

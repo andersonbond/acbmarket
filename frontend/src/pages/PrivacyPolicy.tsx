@@ -86,7 +86,7 @@ const PrivacyPolicy: React.FC = () => {
             <section>
               <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">8. Children's Privacy</h2>
               <p>
-                Pilimarket is not intended for users under 18 years of age. We do not knowingly collect personal information 
+                ACBMarket is not intended for users under 18 years of age. We do not knowingly collect personal information 
                 from children.
               </p>
             </section>

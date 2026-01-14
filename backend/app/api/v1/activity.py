@@ -51,22 +51,18 @@ async def get_activity_feed(
         db, current_user.id, page, limit, type, market_id
     )
     
-    # Enrich with user and market names
+    # Enrich with user and market names (already loaded via eager loading)
     enriched_activities = []
     for activity in activities:
         activity_dict = ActivityResponse.model_validate(activity).model_dump()
         
-        # Add user display name if available
-        if activity.user_id:
-            user = db.query(User).filter(User.id == activity.user_id).first()
-            if user:
-                activity_dict["user_display_name"] = user.display_name
+        # Add user display name if available (already loaded)
+        if activity.user:
+            activity_dict["user_display_name"] = activity.user.display_name
         
-        # Add market title if available
-        if activity.market_id:
-            market = db.query(Market).filter(Market.id == activity.market_id).first()
-            if market:
-                activity_dict["market_title"] = market.title
+        # Add market title if available (already loaded)
+        if activity.market:
+            activity_dict["market_title"] = activity.market.title
         
         enriched_activities.append(activity_dict)
     
@@ -112,22 +108,86 @@ async def get_global_activity(
     """
     activities, total = get_global_activity_feed(db, page, limit, type, category)
     
-    # Enrich with user and market names
+    # Enrich with user and market names (already loaded via eager loading)
     enriched_activities = []
     for activity in activities:
         activity_dict = ActivityResponse.model_validate(activity).model_dump()
         
-        # Add user display name if available
-        if activity.user_id:
-            user = db.query(User).filter(User.id == activity.user_id).first()
-            if user:
-                activity_dict["user_display_name"] = user.display_name
+        # Add user display name if available (already loaded)
+        if activity.user:
+            activity_dict["user_display_name"] = activity.user.display_name
         
-        # Add market title if available
-        if activity.market_id:
-            market = db.query(Market).filter(Market.id == activity.market_id).first()
-            if market:
-                activity_dict["market_title"] = market.title
+        # Add market title if available (already loaded)
+        if activity.market:
+            activity_dict["market_title"] = activity.market.title
+        
+        enriched_activities.append(activity_dict)
+    
+    # Calculate pagination
+    pages = (total + limit - 1) // limit if total > 0 else 1
+    
+    return {
+        "success": True,
+        "data": {
+            "activities": enriched_activities,
+            "pagination": {
+                "page": page,
+                "limit": limit,
+                "total": total,
+                "pages": pages,
+            },
+        },
+        "errors": None,
+    }
+
+
+@router.get("/users/{user_id}", response_model=dict)
+async def get_user_activity(
+    user_id: str,
+    page: int = Query(1, ge=1, description="Page number"),
+    limit: int = Query(20, ge=1, le=100, description="Results per page"),
+    type: Optional[str] = Query(None, description="Filter by activity type"),
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional),
+):
+    """
+    Get activity feed for a specific user (public endpoint)
+    
+    Query Parameters:
+    - user_id: User ID to get activities for
+    - page: Page number (default: 1)
+    - limit: Results per page (default: 20, max: 100)
+    - type: Filter by activity type (optional)
+    
+    Returns:
+    - activities: List of activities
+    - pagination: Pagination metadata
+    """
+    # Verify user exists
+    from app.models.user import User
+    user = db.query(User).filter(User.id == user_id, User.is_active == True).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+    
+    activities, total = get_user_activity_feed(
+        db, user_id, page, limit, type, None
+    )
+    
+    # Enrich with user and market names (already loaded via eager loading)
+    enriched_activities = []
+    for activity in activities:
+        activity_dict = ActivityResponse.model_validate(activity).model_dump()
+        
+        # Add user display name if available (already loaded)
+        if activity.user:
+            activity_dict["user_display_name"] = activity.user.display_name
+        
+        # Add market title if available (already loaded)
+        if activity.market:
+            activity_dict["market_title"] = activity.market.title
         
         enriched_activities.append(activity_dict)
     

@@ -386,7 +386,7 @@ const Purchase: React.FC = () => {
                 <div className="text-center">
                   <div className="mb-6">
                     <div className="inline-block bg-gradient-to-r from-primary-500 to-secondary-500 text-white px-8 py-3 rounded-full text-sm font-bold mb-2">
-                      PILIMARKET CERTIFICATE OF EXCELLENCE
+                      ACBMARKET CERTIFICATE OF EXCELLENCE
                     </div>
                   </div>
                   <h4 className="text-3xl font-bold text-gray-900 dark:text-white mb-3">

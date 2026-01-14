@@ -81,12 +81,12 @@ const MarketCard: React.FC<MarketCardProps> = ({ market }) => {
   const getButtonColor = (outcomeName: string) => {
     const name = outcomeName.toLowerCase();
     if (name === 'yes') {
-      return 'bg-green-100 hover:bg-green-300 dark:bg-green-500 dark:hover:bg-green-600 text-green-900 dark:text-white shadow-sm hover:shadow transition-colors';
+      return 'bg-green-100 hover:bg-green-300 dark:bg-green-900/20 dark:hover:bg-green-900/30 text-green-900 dark:text-green-300 shadow-sm hover:shadow transition-colors';
     } else if (name === 'no') {
-      return 'bg-red-100 hover:bg-red-300 dark:bg-red-500 dark:hover:bg-red-600 text-red-900 dark:text-white shadow-sm hover:shadow transition-colors';
+      return 'bg-red-100 hover:bg-red-300 dark:bg-red-900/20 dark:hover:bg-red-900/30 text-red-900 dark:text-red-300 shadow-sm hover:shadow transition-colors';
     }
     // Default colors for other outcomes
-    return 'bg-blue-100 hover:bg-blue-300 dark:bg-blue-500 dark:hover:bg-blue-600 text-white shadow-sm hover:shadow transition-colors';
+    return 'bg-blue-100 hover:bg-blue-300 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 text-blue-900 dark:text-blue-300 shadow-sm hover:shadow transition-colors';
   };
 
   return (

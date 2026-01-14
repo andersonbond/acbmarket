@@ -78,10 +78,20 @@ def score_forecasts(db: Session, market_id: str, winning_outcome_id: str) -> dic
     lost_count = 0
     total_rewards = 0
     
+    # Store user results for notifications
+    user_results = []  # List of dicts: {user_id, won, chips_gained, chips_lost, forecast_points}
+    
     # Mark losers (chips already debited when forecast was placed)
     for forecast in losing_forecasts:
         forecast.status = "lost"
         lost_count += 1
+        user_results.append({
+            "user_id": forecast.user_id,
+            "won": False,
+            "chips_gained": 0,
+            "chips_lost": forecast.points,
+            "forecast_points": forecast.points,
+        })
     
     # Mark winners and credit chips
     for forecast in winning_forecasts:
@@ -97,12 +107,27 @@ def score_forecasts(db: Session, market_id: str, winning_outcome_id: str) -> dic
             # Edge case: no winning chips (shouldn't happen, but handle gracefully)
             reward = forecast.points
         
+        # Store the reward amount in the forecast
+        reward_int = int(reward)  # Round to integer
+        forecast.reward_amount = reward_int
+        
+        # Calculate chips gained (reward - original bet = profit)
+        chips_gained = reward_int - forecast.points
+        
         # Credit chips to user
         user = db.query(User).filter(User.id == forecast.user_id).first()
         if user:
-            reward_int = int(reward)  # Round to integer
             user.chips += reward_int
             total_rewards += reward_int
+        
+        user_results.append({
+            "user_id": forecast.user_id,
+            "won": True,
+            "chips_gained": chips_gained,
+            "chips_lost": 0,
+            "forecast_points": forecast.points,
+            "reward_amount": reward_int,
+        })
     
     db.commit()
     
@@ -114,6 +139,7 @@ def score_forecasts(db: Session, market_id: str, winning_outcome_id: str) -> dic
         "total_losing_chips": total_losing_chips,
         "house_edge_chips": house_edge_chips,
         "chips_distributed": chips_to_distribute,
+        "user_results": user_results,  # Add user results for notifications
     }
 
 
@@ -221,26 +247,21 @@ async def resolve_market(
             }  # Will be stored as meta_data
         )
         
-        # Get all users who forecasted on this market for notifications
-        user_ids_with_forecasts = db.query(Forecast.user_id).filter(
-            Forecast.market_id == market_id
-        ).distinct().all()
-        user_ids_list = [uid[0] for uid in user_ids_with_forecasts]
-        
-        # Create notifications in batch for all users who forecasted
-        if user_ids_list:
-            from app.services.notification_service import create_notifications_batch
-            create_notifications_batch(
+        # Create individual win/loss notifications for each user
+        # Use async processing for large batches (>10k users) to avoid blocking the API
+        if scoring_results.get("user_results"):
+            from app.services.notification_service import create_forecast_result_notifications
+            num_users = len(scoring_results["user_results"])
+            use_async = num_users > 10000  # Use async for batches > 10k users
+            
+            create_forecast_result_notifications(
                 db,
-                user_ids_list,
-                notification_type="market_resolved",
-            message=f"Market '{market.title}' has been resolved. Winning outcome: {winning_outcome_obj.name if winning_outcome_obj else 'Unknown'}",
-            metadata={
-                "market_id": market_id,
-                "market_title": market.title,
-                "outcome_id": resolution_data.outcome_id,
-                "outcome_name": winning_outcome_obj.name if winning_outcome_obj else "Unknown",
-            }  # This will be stored as meta_data in the model
+                scoring_results["user_results"],
+                market_id,
+                market.title,
+                winning_outcome_obj.name if winning_outcome_obj else "Unknown",
+                batch_size=5000,  # Process 5000 notifications per batch
+                use_async=use_async
             )
         
         # Recalculate reputation for all users who had forecasts on this market

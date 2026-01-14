@@ -114,10 +114,15 @@ def get_user_forecast_stats(db: Session, user_id: str) -> Dict:
         - lost_forecasts: Number of lost forecasts
         - total_points: Total points allocated
         - accuracy: Accuracy percentage (0-100)
+        - profit_loss: Total profit/loss from resolved forecasts
+        - positions_value: Total value of pending forecasts
+        - biggest_win: Biggest profit from a single forecast
     """
     all_forecasts = db.query(Forecast).filter(Forecast.user_id == user_id).all()
     resolved_forecasts = [f for f in all_forecasts if f.status in ['won', 'lost']]
     won_forecasts = [f for f in resolved_forecasts if f.status == 'won']
+    lost_forecasts = [f for f in resolved_forecasts if f.status == 'lost']
+    pending_forecasts = [f for f in all_forecasts if f.status == 'pending']
     
     total_points = sum(f.points for f in all_forecasts)
     
@@ -125,12 +130,39 @@ def get_user_forecast_stats(db: Session, user_id: str) -> Dict:
     if resolved_forecasts:
         accuracy = (len(won_forecasts) / len(resolved_forecasts)) * 100.0
     
+    # Calculate profit/loss
+    profit_loss = 0
+    for forecast in won_forecasts:
+        if forecast.reward_amount:
+            profit_loss += (forecast.reward_amount - forecast.points)
+        else:
+            # Estimate for old forecasts without reward_amount
+            profit_loss += int(forecast.points * 0.5)
+    
+    for forecast in lost_forecasts:
+        profit_loss -= forecast.points
+    
+    # Calculate positions value (pending forecasts)
+    positions_value = sum(f.points for f in pending_forecasts)
+    
+    # Calculate biggest win
+    biggest_win = None
+    if won_forecasts:
+        biggest_win_obj = max(won_forecasts, key=lambda f: 
+            (f.reward_amount - f.points) if f.reward_amount 
+            else int(f.points * 0.5)
+        )
+        biggest_win = (biggest_win_obj.reward_amount - biggest_win_obj.points) if biggest_win_obj.reward_amount else int(biggest_win_obj.points * 0.5)
+    
     return {
         "total_forecasts": len(all_forecasts),
         "resolved_forecasts": len(resolved_forecasts),
         "won_forecasts": len(won_forecasts),
-        "lost_forecasts": len(resolved_forecasts) - len(won_forecasts),
+        "lost_forecasts": len(lost_forecasts),
         "total_points": total_points,
         "accuracy": accuracy,
+        "profit_loss": profit_loss,
+        "positions_value": positions_value,
+        "biggest_win": biggest_win,
     }
 

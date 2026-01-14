@@ -9,11 +9,11 @@ class Settings(BaseSettings):
     """Application settings"""
     
     # App
-    APP_NAME: str = "Pilimarket API"
+    APP_NAME: str = "ACBMarket API"
     DEBUG: bool = False
     
     # Database
-    DATABASE_URL: str = "postgresql://andersonbondoc@localhost/dev_pilimarket"
+    DATABASE_URL: str = "postgresql://andersonbondoc@localhost/dev_acbmarket"
     
     # Redis
     REDIS_HOST: str = "localhost"

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   IonContent,
   IonPage,
@@ -15,8 +15,10 @@ import {
   IonToolbar,
   IonTitle,
   IonButtons,
+  IonInput,
+  IonItem,
 } from '@ionic/react';
-import { trophyOutline, flameOutline, trendingUpOutline, informationCircleOutline, close } from 'ionicons/icons';
+import { trophyOutline, searchOutline, chevronDownOutline, informationCircleOutline, close } from 'ionicons/icons';
 import Header from '../components/Header';
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
@@ -32,6 +34,18 @@ interface LeaderboardUser {
   activity_streak?: number;
   total_forecasts?: number;
   badges: string[];
+  profit_loss?: number;
+  volume?: number;
+}
+
+interface BiggestWin {
+  rank: number;
+  user_id: string;
+  display_name: string;
+  avatar_gradient?: string;
+  event: string;
+  initial_amount: number;
+  final_amount: number;
 }
 
 interface LeaderboardResponse {
@@ -58,27 +72,67 @@ const CATEGORIES = [
   { value: 'weather', label: 'Weather' },
 ];
 
+// Generate gradient avatar colors based on user ID
+const getAvatarGradient = (userId: string): string => {
+  const gradients = [
+    'from-orange-400 to-yellow-500',
+    'from-purple-400 to-pink-500',
+    'from-teal-400 to-blue-500',
+    'from-green-400 to-emerald-500',
+    'from-red-400 to-orange-500',
+    'from-blue-400 to-indigo-500',
+    'from-pink-400 to-rose-500',
+    'from-cyan-400 to-teal-500',
+  ];
+  
+  // Use userId to consistently pick a gradient
+  const index = userId.charCodeAt(0) % gradients.length;
+  return gradients[index];
+};
+
 const Leaderboard: React.FC = () => {
   const { user } = useAuth();
   const history = useHistory();
-  const [period, setPeriod] = useState<'global' | 'weekly' | 'monthly'>('global');
+  const [period, setPeriod] = useState<'today' | 'weekly' | 'monthly' | 'all'>('monthly');
   const [category, setCategory] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [users, setUsers] = useState<LeaderboardUser[]>([]);
   const [userRank, setUserRank] = useState<LeaderboardUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState({ page: 1, limit: 50, total: 0, pages: 1 });
+  const [sortBy, setSortBy] = useState<'profit_loss' | 'volume'>('profit_loss');
   const [showCertificateModal, setShowCertificateModal] = useState(false);
+  const [biggestWins, setBiggestWins] = useState<BiggestWin[]>([]);
+  const [isLoadingWins, setIsLoadingWins] = useState(false);
+
+  // Map frontend period to backend period
+  const backendPeriod = period === 'today' ? 'weekly' : period === 'all' ? 'global' : period;
 
   useEffect(() => {
     fetchLeaderboard();
-  }, [period, category, page]);
+    fetchBiggestWins();
+  }, [backendPeriod, category, page]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (showCategoryDropdown && !target.closest('.category-dropdown-container')) {
+        setShowCategoryDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showCategoryDropdown]);
 
   const fetchLeaderboard = async () => {
     setIsLoading(true);
     try {
       const response = await api.get<LeaderboardResponse>(
-        `/api/v1/leaderboard?period=${period}&category=${category}&page=${page}&limit=50`
+        `/api/v1/leaderboard?period=${backendPeriod}&category=${category}&page=${page}&limit=50`
       );
       if (response.data.success) {
         setUsers(response.data.data.leaderboard || []);
@@ -93,18 +147,59 @@ const Leaderboard: React.FC = () => {
     }
   };
 
-  const getRankIcon = (rank: number) => {
-    if (rank === 1) return '🥇';
-    if (rank === 2) return '🥈';
-    if (rank === 3) return '🥉';
-    return `#${rank}`;
+  const fetchBiggestWins = async () => {
+    setIsLoadingWins(true);
+    try {
+      const response = await api.get<{ success: boolean; data: { wins: any[] } }>(
+        '/api/v1/leaderboard/biggest-wins?limit=8'
+      );
+      if (response.data.success && response.data.data.wins) {
+        const wins = response.data.data.wins.map((win) => ({
+          rank: win.rank,
+          user_id: win.user_id,
+          display_name: win.display_name,
+          avatar_gradient: getAvatarGradient(win.user_id),
+          event: win.market_title || 'Market Event',
+          initial_amount: win.initial_amount || 0,
+          final_amount: win.final_amount || win.initial_amount || 0,
+        }));
+        setBiggestWins(wins);
+      }
+    } catch (error) {
+      console.error('Error fetching biggest wins:', error);
+      setBiggestWins([]);
+    } finally {
+      setIsLoadingWins(false);
+    }
   };
 
-  const getRankColor = (rank: number) => {
-    if (rank === 1) return 'text-yellow-600 dark:text-yellow-400';
-    if (rank === 2) return 'text-gray-400 dark:text-gray-500';
-    if (rank === 3) return 'text-orange-600 dark:text-orange-400';
-    return 'text-gray-600 dark:text-gray-400';
+  // Filter and sort users
+  const filteredAndSortedUsers = useMemo(() => {
+    let filtered = users;
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter((u) =>
+        u.display_name.toLowerCase().includes(query)
+      );
+    }
+
+    // Sort by selected column
+    filtered = [...filtered].sort((a, b) => {
+      if (sortBy === 'profit_loss') {
+        return (b.profit_loss || 0) - (a.profit_loss || 0);
+      } else {
+        return (b.volume || 0) - (a.volume || 0);
+      }
+    });
+
+    return filtered;
+  }, [users, searchQuery, sortBy]);
+
+
+  const formatCurrency = (amount: number): string => {
+    return amount.toLocaleString();
   };
 
   const isCurrentUser = (userId: string) => {
@@ -115,257 +210,293 @@ const Leaderboard: React.FC = () => {
     <IonPage>
       <Header />
       <IonContent className="bg-gray-50 dark:bg-gray-900">
-        <div className="container mx-auto px-4 py-6 max-w-6xl">
+        <div className="container mx-auto px-4 py-6 max-w-7xl">
           {/* Header */}
           <div className="mb-6">
-            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-4">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
-                  <IonIcon icon={trophyOutline} className="text-primary text-3xl" />
-                  Leaderboard
-                </h1>
-                <p className="text-gray-600 dark:text-gray-400">Compete with the best forecasters</p>
-              </div>
-              
-              {/* Prize Notice Card */}
-              <IonCard className="bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 border-2 border-yellow-300 dark:border-yellow-700 lg:max-w-md w-full lg:flex-shrink-0">
-                <IonCardContent className="p-4">
-                  <div className="flex items-start gap-3">
-                    <IonIcon icon={informationCircleOutline} className="text-yellow-600 dark:text-yellow-400 text-2xl flex-shrink-0 mt-0.5" />
-                    <div className="flex-1">
-                      <p className="font-bold text-yellow-900 dark:text-yellow-200 text-sm mb-2">
-                        <span>🏆 Monthly Top Forecasters Receive Digital Certificates!</span>
-                      </p>
-                      <p className="text-xs text-yellow-800 dark:text-yellow-300 leading-relaxed mb-2">
-                        Top-performing forecasters at the end of each month will receive a prestigious digital certificate recognizing their forecasting excellence.{' '}
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+              Leaderboard
+            </h1>
+          </div>
+
+          {/* Two Column Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Left Column - Leaderboard */}
+            <div className="lg:col-span-2 space-y-4">
+              {/* Period Tabs */}
+              <IonCard className="bg-white dark:bg-gray-800">
+                <IonCardContent className="p-0">
+                  <IonSegment
+                    value={period}
+                    onIonChange={(e) => {
+                      setPeriod(e.detail.value as any);
+                      setPage(1);
+                    }}
+                    className="bg-gray-100 dark:bg-gray-700"
+                  >
+                    <IonSegmentButton value="today">
+                      <IonLabel>Today</IonLabel>
+                    </IonSegmentButton>
+                    <IonSegmentButton value="weekly">
+                      <IonLabel>Weekly</IonLabel>
+                    </IonSegmentButton>
+                    <IonSegmentButton value="monthly">
+                      <IonLabel>Monthly</IonLabel>
+                    </IonSegmentButton>
+                    <IonSegmentButton value="all">
+                      <IonLabel>All</IonLabel>
+                    </IonSegmentButton>
+                  </IonSegment>
+                </IonCardContent>
+              </IonCard>
+
+              {/* Search and Category Filter */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="flex-1 relative">
+                  <IonItem className="rounded-lg border border-gray-200 dark:border-gray-700" lines="none">
+                    <IonIcon icon={searchOutline} slot="start" className="text-gray-400" />
+                    <IonInput
+                      value={searchQuery}
+                      placeholder="Search by name"
+                      onIonInput={(e) => setSearchQuery(e.detail.value || '')}
+                      className="text-gray-900 dark:text-white"
+                    />
+                  </IonItem>
+                </div>
+                <div className="relative category-dropdown-container">
+                  <IonButton
+                    fill="outline"
+                    onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
+                    className="w-full sm:w-auto"
+                  >
+                    {CATEGORIES.find((c) => c.value === category)?.label || 'All Categories'}
+                    <IonIcon icon={chevronDownOutline} slot="end" />
+                  </IonButton>
+                  {showCategoryDropdown && (
+                    <div className="absolute top-full left-0 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10">
+                      {CATEGORIES.map((cat) => (
                         <button
-                          onClick={() => setShowCertificateModal(true)}
-                          className="text-yellow-700 dark:text-yellow-300 hover:text-yellow-800 dark:hover:text-yellow-200 underline font-bold"
+                          key={cat.value}
+                          onClick={() => {
+                            setCategory(cat.value);
+                            setShowCategoryDropdown(false);
+                            setPage(1);
+                          }}
+                          className={`w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                            category === cat.value
+                              ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
+                              : 'text-gray-900 dark:text-white'
+                          }`}
                         >
-                          Click here for more info...
+                          {cat.label}
                         </button>
-                      </p>
+                      ))}
                     </div>
-                  </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Leaderboard Table */}
+              <IonCard className="bg-white dark:bg-gray-800">
+                <IonCardContent className="p-0">
+                  {isLoading ? (
+                    <div className="flex justify-center items-center py-12">
+                      <IonSpinner name="crescent" />
+                    </div>
+                  ) : filteredAndSortedUsers.length === 0 ? (
+                    <div className="text-center py-12">
+                      <IonIcon icon={trophyOutline} className="text-4xl text-gray-400 mb-2" />
+                      <p className="text-gray-500 dark:text-gray-400">No users found</p>
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead className="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+                          <tr>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                              Rank
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                              User
+                            </th>
+                            <th
+                              className={`px-4 py-3 text-left text-xs font-medium uppercase cursor-pointer transition-colors ${
+                                sortBy === 'profit_loss'
+                                  ? 'text-primary-600 dark:text-primary-400 underline'
+                                  : 'text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200'
+                              }`}
+                              onClick={() => setSortBy('profit_loss')}
+                            >
+                              Profit/Loss
+                            </th>
+                            <th
+                              className={`px-4 py-3 text-left text-xs font-medium uppercase cursor-pointer transition-colors ${
+                                sortBy === 'volume'
+                                  ? 'text-primary-600 dark:text-primary-400 underline'
+                                  : 'text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200'
+                              }`}
+                              onClick={() => setSortBy('volume')}
+                            >
+                              Volume
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                          {filteredAndSortedUsers.map((userEntry) => (
+                            <tr
+                              key={userEntry.user_id}
+                              className={`hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer ${
+                                isCurrentUser(userEntry.user_id)
+                                  ? 'bg-primary-50/50 dark:bg-primary-900/20'
+                                  : ''
+                              }`}
+                              onClick={() => history.push(`/users/${userEntry.user_id}/profile`)}
+                            >
+                              <td className="px-4 py-4 whitespace-nowrap">
+                                <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                  {userEntry.rank <= 3 ? (
+                                    <span className="text-2xl">
+                                      {userEntry.rank === 1 ? '🥇' : userEntry.rank === 2 ? '🥈' : '🥉'}
+                                    </span>
+                                  ) : (
+                                    `#${userEntry.rank}`
+                                  )}
+                                </span>
+                              </td>
+                              <td className="px-4 py-4">
+                                <div className="flex items-center gap-3">
+                                  <div
+                                    className={`w-10 h-10 rounded-full bg-gradient-to-br ${getAvatarGradient(
+                                      userEntry.user_id
+                                    )} flex items-center justify-center text-white font-bold text-sm flex-shrink-0 relative shadow-sm`}
+                                  >
+                                    {userEntry.rank <= 3 && (
+                                      <IonIcon
+                                        icon={trophyOutline}
+                                        className="absolute -top-1 -right-1 text-yellow-400 text-lg drop-shadow-md"
+                                      />
+                                    )}
+                                    {userEntry.display_name.charAt(0).toUpperCase()}
+                                  </div>
+                                  <div className="min-w-0">
+                                    <div className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                      {userEntry.display_name}
+                                      {isCurrentUser(userEntry.user_id) && (
+                                        <span className="ml-2 text-xs text-primary font-semibold">(You)</span>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-4 py-4 whitespace-nowrap">
+                                <div
+                                  className={`text-sm font-semibold ${
+                                    (userEntry.profit_loss || 0) >= 0
+                                      ? 'text-green-600 dark:text-green-400'
+                                      : 'text-red-600 dark:text-red-400'
+                                  }`}
+                                >
+                                  {(userEntry.profit_loss || 0) >= 0 ? '+' : ''}
+                                  {formatCurrency(userEntry.profit_loss || 0)}
+                                </div>
+                              </td>
+                              <td className="px-4 py-4 whitespace-nowrap">
+                                <div className="text-sm text-gray-900 dark:text-white font-medium">
+                                  {formatCurrency(userEntry.volume || 0)}
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+
+                  {/* Pagination */}
+                  {!isLoading && filteredAndSortedUsers.length > 0 && pagination.pages > 1 && (
+                    <div className="px-4 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                        Page {pagination.page} of {pagination.pages}
+                      </div>
+                      <div className="flex gap-2">
+                        <IonButton
+                          fill="outline"
+                          size="small"
+                          disabled={pagination.page === 1}
+                          onClick={() => setPage(page - 1)}
+                        >
+                          Previous
+                        </IonButton>
+                        <IonButton
+                          fill="outline"
+                          size="small"
+                          disabled={pagination.page >= pagination.pages}
+                          onClick={() => setPage(page + 1)}
+                        >
+                          Next
+                        </IonButton>
+                      </div>
+                    </div>
+                  )}
+                </IonCardContent>
+              </IonCard>
+            </div>
+
+            {/* Right Column - Biggest Wins */}
+            <div className="lg:col-span-1">
+              <IonCard className="bg-white dark:bg-gray-800">
+                <IonCardContent className="p-4">
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                    Biggest wins this month
+                  </h2>
+                  {isLoadingWins ? (
+                    <div className="flex justify-center items-center py-8">
+                      <IonSpinner name="crescent" />
+                    </div>
+                  ) : biggestWins.length === 0 ? (
+                    <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-8">
+                      No wins to display this month
+                    </p>
+                  ) : (
+                    <div className="space-y-4">
+                      {biggestWins.map((win) => (
+                        <div
+                          key={`${win.user_id}-${win.rank}`}
+                          className="flex items-center gap-3 p-2 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-lg cursor-pointer transition-colors"
+                          onClick={() => history.push(`/users/${win.user_id}/profile`)}
+                        >
+                          <div className="flex-shrink-0">
+                            <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                              #{win.rank}
+                            </span>
+                          </div>
+                          <div
+                            className={`w-8 h-8 rounded-full bg-gradient-to-br ${win.avatar_gradient || getAvatarGradient(win.user_id)} flex items-center justify-center text-white font-bold text-xs flex-shrink-0`}
+                          >
+                            {win.display_name.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-xs font-medium text-gray-900 dark:text-white truncate">
+                              {win.display_name.length > 15
+                                ? `${win.display_name.substring(0, 15)}...`
+                                : win.display_name}
+                            </div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                              {win.event}
+                            </div>
+                          </div>
+                          <div className="text-right flex-shrink-0">
+                            <div className="text-xs font-semibold text-green-600 dark:text-green-400">
+                              {formatCurrency(win.initial_amount)} → {formatCurrency(win.final_amount)}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </IonCardContent>
               </IonCard>
             </div>
           </div>
-
-          {/* User Rank Card */}
-          {userRank && (
-            <IonCard className="bg-gradient-to-r from-primary-50 to-secondary-50 dark:from-primary-900/20 dark:to-secondary-900/20 border-2 border-primary mb-6">
-              <IonCardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="text-4xl">{getRankIcon(userRank.rank)}</div>
-                    <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Your Rank</p>
-                      <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                        #{userRank.rank}
-                      </p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Score: {userRank.rank_score.toFixed(0)}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Reputation</p>
-                    <p className="text-xl font-bold text-primary">{userRank.reputation.toFixed(1)}</p>
-                  </div>
-                </div>
-              </IonCardContent>
-            </IonCard>
-          )}
-
-          {/* Filters */}
-          <div className="mb-6 space-y-4">
-            {/* Period Filter */}
-            <IonCard className="bg-white dark:bg-gray-800">
-              <IonCardContent className="p-4">
-                <IonSegment
-                  value={period}
-                  onIonChange={(e) => {
-                    setPeriod(e.detail.value as any);
-                    setPage(1);
-                  }}
-                >
-                  <IonSegmentButton value="global">
-                    <IonLabel>Global</IonLabel>
-                  </IonSegmentButton>
-                  <IonSegmentButton value="weekly">
-                    <IonLabel>Weekly</IonLabel>
-                  </IonSegmentButton>
-                  <IonSegmentButton value="monthly">
-                    <IonLabel>Monthly</IonLabel>
-                  </IonSegmentButton>
-                </IonSegment>
-              </IonCardContent>
-            </IonCard>
-
-            {/* Category Filter */}
-            <IonCard className="bg-white dark:bg-gray-800">
-              <IonCardContent className="p-4">
-                <div className="flex flex-wrap gap-2">
-                  {CATEGORIES.map((cat) => (
-                    <IonButton
-                      key={cat.value}
-                      fill={category === cat.value ? 'solid' : 'outline'}
-                      size="small"
-                      onClick={() => {
-                        setCategory(cat.value);
-                        setPage(1);
-                      }}
-                      className={category === cat.value ? 'button-primary' : ''}
-                    >
-                      {cat.label}
-                    </IonButton>
-                  ))}
-                </div>
-              </IonCardContent>
-            </IonCard>
-          </div>
-
-          {/* Leaderboard Table */}
-          <IonCard className="bg-white dark:bg-gray-800">
-            <IonCardContent className="p-0">
-              {isLoading ? (
-                <div className="flex justify-center items-center py-12">
-                  <IonSpinner name="crescent" />
-                </div>
-              ) : users.length === 0 ? (
-                <div className="text-center py-12">
-                  <IonIcon icon={trophyOutline} className="text-4xl text-gray-400 mb-2" />
-                  <p className="text-gray-500 dark:text-gray-400">No users found in this leaderboard</p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-gray-50 dark:bg-gray-700">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                          Rank
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                          User
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                          Reputation
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                          Score
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                          Streaks
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                      {users.map((userEntry) => (
-                        <tr
-                          key={userEntry.rank}
-                          className={`hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer ${
-                            isCurrentUser(userEntry.user_id)
-                              ? 'bg-primary-50 dark:bg-primary-900/20 border-l-4 border-primary'
-                              : ''
-                          }`}
-                          onClick={() => history.push(`/users/${userEntry.user_id}/profile`)}
-                        >
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center">
-                              <span className={`text-lg font-bold ${getRankColor(userEntry.rank)}`}>
-                                {getRankIcon(userEntry.rank)}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="flex items-center">
-                              <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center text-white font-bold mr-3 flex-shrink-0">
-                                {userEntry.display_name.charAt(0).toUpperCase()}
-                              </div>
-                              <div className="min-w-0">
-                                <div className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                                  {userEntry.display_name}
-                                  {isCurrentUser(userEntry.user_id) && (
-                                    <span className="ml-2 text-xs text-primary font-semibold">(You)</span>
-                                  )}
-                                </div>
-                                {userEntry.badges && userEntry.badges.length > 0 && (
-                                  <div className="flex gap-1 mt-1 flex-wrap">
-                                    {userEntry.badges.slice(0, 3).map((badge, idx) => (
-                                      <span
-                                        key={idx}
-                                        className="px-2 py-0.5 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 rounded-full text-xs"
-                                      >
-                                        {badge}
-                                      </span>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-gray-900 dark:text-white font-semibold">
-                              {userEntry.reputation.toFixed(1)}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm font-bold text-gray-900 dark:text-white">
-                              {userEntry.rank_score.toFixed(0)}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center gap-3 text-xs">
-                              {userEntry.winning_streak !== undefined && userEntry.winning_streak > 0 && (
-                                <div className="flex items-center gap-1 text-orange-600 dark:text-orange-400">
-                                  <IonIcon icon={flameOutline} />
-                                  <span>{userEntry.winning_streak}</span>
-                                </div>
-                              )}
-                              {userEntry.activity_streak !== undefined && userEntry.activity_streak > 0 && (
-                                <div className="flex items-center gap-1 text-blue-600 dark:text-blue-400">
-                                  <IonIcon icon={trendingUpOutline} />
-                                  <span>{userEntry.activity_streak}d</span>
-                                </div>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-
-              {/* Pagination */}
-              {!isLoading && users.length > 0 && pagination.pages > 1 && (
-                <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
-                    Page {pagination.page} of {pagination.pages} ({pagination.total} total)
-                  </div>
-                  <div className="flex gap-2">
-                    <IonButton
-                      fill="outline"
-                      size="small"
-                      disabled={pagination.page === 1}
-                      onClick={() => setPage(page - 1)}
-                    >
-                      Previous
-                    </IonButton>
-                    <IonButton
-                      fill="outline"
-                      size="small"
-                      disabled={pagination.page >= pagination.pages}
-                      onClick={() => setPage(page + 1)}
-                    >
-                      Next
-                    </IonButton>
-                  </div>
-                </div>
-              )}
-            </IonCardContent>
-          </IonCard>
         </div>
       </IonContent>
 
@@ -383,12 +514,11 @@ const Leaderboard: React.FC = () => {
         </IonHeader>
         <IonContent className="ion-padding bg-gray-50 dark:bg-gray-900">
           <div className="max-w-3xl mx-auto py-6">
-            {/* Sample Certificate Preview */}
             <div className="bg-white dark:bg-gray-800 border-2 border-yellow-400 dark:border-yellow-600 rounded-lg p-8 shadow-lg mb-6">
               <div className="text-center">
                 <div className="mb-6">
                   <div className="inline-block bg-gradient-to-r from-primary-500 to-secondary-500 text-white px-8 py-3 rounded-full text-sm font-bold mb-2">
-                    PILIMARKET CERTIFICATE OF EXCELLENCE
+                    ACBMARKET CERTIFICATE OF EXCELLENCE
                   </div>
                 </div>
                 <h4 className="text-3xl font-bold text-gray-900 dark:text-white mb-3">
@@ -397,66 +527,7 @@ const Leaderboard: React.FC = () => {
                 <p className="text-xl text-gray-700 dark:text-gray-300 mb-6">
                   <span className="font-semibold">January 2026</span> Cycle
                 </p>
-                <div className="border-t-2 border-gray-300 dark:border-gray-600 pt-6 mt-6">
-                  <p className="text-base text-gray-600 dark:text-gray-400 italic mb-3">
-                    This certificate recognizes exceptional ability to analyze trends, interpret data signals, and make accurate predictions in complex, real-world scenarios.
-                  </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-500">
-                    Demonstrates mastery in pattern recognition, statistical reasoning, and strategic thinking—skills essential for navigating uncertain futures.
-                  </p>
-                </div>
               </div>
-            </div>
-
-            {/* Additional Information */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm mb-4">
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">About the Certificate</h3>
-              <div className="space-y-4 text-gray-700 dark:text-gray-300">
-                <div>
-                  <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Recognition Criteria</h4>
-                  <p className="text-sm leading-relaxed">
-                    This certificate is awarded to forecasters who achieve top rankings in the monthly leaderboard, demonstrating consistent accuracy and superior analytical capabilities across multiple prediction markets.
-                  </p>
-                </div>
-                <div>
-                  <h4 className="font-semibold text-gray-900 dark:text-white mb-2">What It Represents</h4>
-                  <p className="text-sm leading-relaxed">
-                    Earning this certificate showcases your ability to synthesize information, identify key indicators, and make well-reasoned predictions—the same skills valued in political analysis, market research, strategic planning, and data-driven decision making.
-                  </p>
-                </div>
-                <div>
-                  <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Professional Value</h4>
-                  <p className="text-sm leading-relaxed">
-                    This achievement demonstrates your proficiency in quantitative reasoning, risk assessment, and probabilistic thinking. These competencies are highly sought after in fields requiring analytical rigor and strategic foresight.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* How to Earn Section */}
-            <div className="bg-gradient-to-br from-yellow/20 to-orange/20 dark:from-yellow/30 dark:to-orange/30 rounded-lg p-6 border border-yellow-300 dark:border-yellow-700">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-                <IonIcon icon={trophyOutline} className="text-yellow-600 dark:text-yellow-400 text-xl" />
-                How to Earn This Certificate
-              </h3>
-              <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
-                <li className="flex items-start gap-2">
-                  <span className="text-yellow-600 dark:text-yellow-400 font-bold mt-0.5">•</span>
-                  <span>Climb to the top of the monthly leaderboard by making accurate forecasts</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-yellow-600 dark:text-yellow-400 font-bold mt-0.5">•</span>
-                  <span>Maintain high accuracy rates across multiple markets and categories</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-yellow-600 dark:text-yellow-400 font-bold mt-0.5">•</span>
-                  <span>Build your reputation score through consistent, well-reasoned predictions</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-yellow-600 dark:text-yellow-400 font-bold mt-0.5">•</span>
-                  <span>Stay active and engaged throughout the month to maximize your ranking</span>
-                </li>
-              </ul>
             </div>
           </div>
         </IonContent>

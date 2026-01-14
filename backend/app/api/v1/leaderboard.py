@@ -1,13 +1,16 @@
 """
 Leaderboard endpoints
 """
-from typing import Optional
+from typing import Optional, List, Dict
+from datetime import datetime
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.dependencies import get_current_user_optional
 from app.models.user import User
+from app.models.forecast import Forecast
+from app.models.market import Market
 from app.services.leaderboard_service import (
     get_cached_leaderboard,
     get_user_rank,
@@ -77,6 +80,109 @@ async def get_leaderboard(
                 "total": total,
                 "pages": pages,
             },
+        },
+        "errors": None,
+    }
+
+
+@router.get("/biggest-wins", response_model=dict)
+async def get_biggest_wins(
+    limit: int = Query(8, ge=1, le=50, description="Number of wins to return"),
+    db: Session = Depends(get_db),
+):
+    """
+    Get biggest wins from resolved markets in the current month
+    
+    Returns:
+    - List of biggest wins with user info, market title, and profit
+    """
+    # Get start of current month
+    now = datetime.utcnow()
+    month_start = datetime(now.year, now.month, 1)
+    
+    # Get all won forecasts from resolved markets this month
+    won_forecasts = (
+        db.query(Forecast)
+        .join(Market, Forecast.market_id == Market.id)
+        .filter(
+            Forecast.status == 'won',
+            Market.status == 'resolved',
+            Market.resolution_time >= month_start,
+        )
+        .order_by(Forecast.created_at.desc())
+        .all()
+    )
+    
+    # Group by user and market to get the biggest win per user per market
+    wins_by_user_market: Dict[str, Dict] = {}
+    
+    for forecast in won_forecasts:
+        key = f"{forecast.user_id}_{forecast.market_id}"
+        
+        if key not in wins_by_user_market:
+            # Get market info
+            market = db.query(Market).filter(Market.id == forecast.market_id).first()
+            user = db.query(User).filter(User.id == forecast.user_id).first()
+            
+            if not market or not user:
+                continue
+            
+            # Calculate actual profit from stored reward_amount
+            # Initial bet = forecast.points
+            # Actual reward = forecast.reward_amount (if available) or estimate
+            initial_amount = forecast.points
+            if forecast.reward_amount is not None:
+                # Use actual reward amount if available
+                final_amount = forecast.reward_amount
+                profit = final_amount - initial_amount
+            else:
+                # Fallback to estimated profit for older forecasts without reward_amount
+                estimated_profit = int(forecast.points * 0.5)  # Simplified: 50% profit on average
+                final_amount = initial_amount + estimated_profit
+                profit = estimated_profit
+            
+            wins_by_user_market[key] = {
+                'user_id': user.id,
+                'display_name': user.display_name,
+                'market_id': market.id,
+                'market_title': market.title,
+                'initial_amount': initial_amount,
+                'final_amount': final_amount,
+                'profit': profit,
+                'resolved_at': market.resolution_time,
+            }
+        else:
+            # If user has multiple forecasts on same market, aggregate
+            additional_initial = forecast.points
+            if forecast.reward_amount is not None:
+                additional_final = forecast.reward_amount
+                additional_profit = additional_final - additional_initial
+            else:
+                # Fallback to estimated for older forecasts
+                additional_profit = int(forecast.points * 0.5)
+                additional_final = additional_initial + additional_profit
+            
+            wins_by_user_market[key]['initial_amount'] += additional_initial
+            wins_by_user_market[key]['profit'] += additional_profit
+            wins_by_user_market[key]['final_amount'] = (
+                wins_by_user_market[key]['initial_amount'] + wins_by_user_market[key]['profit']
+            )
+    
+    # Sort by profit (descending) and take top N
+    biggest_wins = sorted(
+        wins_by_user_market.values(),
+        key=lambda x: x['profit'],
+        reverse=True
+    )[:limit]
+    
+    # Add rank
+    for i, win in enumerate(biggest_wins, start=1):
+        win['rank'] = i
+    
+    return {
+        "success": True,
+        "data": {
+            "wins": biggest_wins,
         },
         "errors": None,
     }

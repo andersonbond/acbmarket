@@ -9,7 +9,7 @@ import re
 
 class UserBase(BaseModel):
     """Base user schema"""
-    email: EmailStr
+    email: Optional[EmailStr] = None  # Optional email
     display_name: str = Field(..., min_length=3, max_length=50)
     contact_number: str = Field(..., description="Contact number in format +63XXXXXXXXXX")
     bio: Optional[str] = Field(None, max_length=500)

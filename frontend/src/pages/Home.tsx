@@ -193,7 +193,7 @@ const Home: React.FC = () => {
                 </Link>
               </div>
               <div className="text-center mt-2 text-xs text-gray-500 dark:text-gray-500">
-                © {new Date().getFullYear()} Pilimarket. All rights reserved.
+                © {new Date().getFullYear()} ACBMarket. All rights reserved.
               </div>
             </div>
           </footer>

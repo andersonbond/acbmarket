@@ -5,6 +5,7 @@ import { arrowBack, informationCircle, trendingUp, people, calendar, layers, che
 import Header from '../components/Header';
 import ForecastSlip from '../components/ForecastSlip';
 import MarketGraph from '../components/MarketGraph';
+import CommentSection from '../components/CommentSection';
 import api from '../services/api';
 import { Market, MarketDetailResponse } from '../types/market';
 import { ForecastCreate, Forecast } from '../types/forecast';
@@ -262,15 +263,20 @@ const MarketDetail: React.FC = () => {
     <IonPage>
       <Header />
       <IonContent className="bg-gray-50 dark:bg-gray-900">
-        <div className="container mx-auto px-4 py-4 max-w-5xl">
+        <div className="container mx-auto px-4 py-4 max-w-7xl">
           {/* Back Button - Compact */}
           <IonButton fill="clear" onClick={() => history.goBack()} className="mb-4 -ml-2">
             <IonIcon icon={arrowBack} slot="start" />
             Back
           </IonButton>
 
+          {/* Two Column Layout for Large Screens */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-24 lg:pb-0">
+            {/* Left Column - Main Content */}
+            <div className="lg:col-span-2 space-y-4">
+
           {/* Market Header - Polymarket Style */}
-          <IonCard className="bg-white dark:bg-gray-800 mb-4">
+          <IonCard className="bg-white dark:bg-gray-800">
             <IonCardContent className="p-4">
               {/* Top Row: Image, Title, Icons */}
               <div className="flex items-start gap-3 mb-4">
@@ -364,7 +370,7 @@ const MarketDetail: React.FC = () => {
           </IonCard>
 
           {/* Graph Section - First */}
-          <div className="mb-4">
+          <div>
             <MarketGraph
               marketId={market.id}
               outcomes={market.outcomes.map((o) => ({ id: o.id, name: o.name }))}
@@ -372,7 +378,7 @@ const MarketDetail: React.FC = () => {
           </div>
 
           {/* Consensus Section - Second */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             {/* Resolution Rules - Compact */}
             {market.rules && (
               <div className="lg:col-span-1">
@@ -453,7 +459,7 @@ const MarketDetail: React.FC = () => {
           </div>
 
           {/* Resolution Section - Third (Accordion) */}
-          <IonCard className="bg-white dark:bg-gray-800 mb-4 overflow-hidden">
+          <IonCard className="bg-white dark:bg-gray-800 overflow-hidden">
             <IonCardContent className="p-0">
               <IonAccordionGroup 
                 value={resolutionAccordionValue}
@@ -613,32 +619,47 @@ const MarketDetail: React.FC = () => {
             </IonCardContent>
           </IonCard>
 
-          {/* Forecast Section */}
-          {isAuthenticated && market.status === 'open' && (
-            <ForecastSlip
-              market={market}
-              userForecast={userForecast || undefined}
-              onPlaceForecast={handlePlaceForecast}
-              onUpdateForecast={userForecast ? handleUpdateForecast : undefined}
-              isLoading={isPlacingForecast}
-            />
-          )}
+              {/* Comments Section */}
+              <CommentSection marketId={market.id} />
+            </div>
 
-          {!isAuthenticated && market.status === 'open' && (
-            <IonCard className="bg-white dark:bg-gray-800">
-              <IonCardContent className="p-4">
-                <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-3">
-                  Trade on This Market
-                </h2>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                  Sign in to buy positions on this market.
-                </p>
-                <IonButton onClick={() => history.push('/login')} className="button-primary">
-                  Sign In
-                </IonButton>
-              </IonCardContent>
-            </IonCard>
-          )}
+            {/* Right Column - Trading Interface (Sticky on Large Screens) */}
+            <div className="lg:col-span-1">
+              <div className="lg:sticky lg:top-4">
+                {isAuthenticated && market.status === 'open' ? (
+                  <ForecastSlip
+                    market={market}
+                    userForecast={userForecast || undefined}
+                    onPlaceForecast={handlePlaceForecast}
+                    onUpdateForecast={userForecast ? handleUpdateForecast : undefined}
+                    isLoading={isPlacingForecast}
+                  />
+                ) : !isAuthenticated && market.status === 'open' ? (
+                  <IonCard className="bg-white dark:bg-gray-800">
+                    <IonCardContent className="p-4">
+                      <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-3">
+                        Trade on This Market
+                      </h2>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                        Sign in to buy positions on this market.
+                      </p>
+                      <IonButton onClick={() => history.push('/login')} className="button-primary">
+                        Sign In
+                      </IonButton>
+                    </IonCardContent>
+                  </IonCard>
+                ) : (
+                  <IonCard className="bg-white dark:bg-gray-800">
+                    <IonCardContent className="p-4">
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        This market is {market.status}. Trading is no longer available.
+                      </p>
+                    </IonCardContent>
+                  </IonCard>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
 
         <IonToast

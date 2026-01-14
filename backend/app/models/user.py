@@ -14,10 +14,10 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(String, primary_key=True, index=True)
-    email = Column(String, unique=True, index=True, nullable=False)
+    email = Column(String, nullable=True, index=True)  # Optional email
     display_name = Column(String, nullable=False, index=True)
     hashed_password = Column(String, nullable=False)
-    contact_number = Column(String, nullable=False, index=True)  # Format: +63XXXXXXXXXX
+    contact_number = Column(String, nullable=False, unique=True, index=True)  # Format: +63XXXXXXXXXX, unique
     bio = Column(Text, nullable=True)
     
     # Virtual chips (non-redeemable)

@@ -10,8 +10,8 @@ interface FAQItem {
 
 const faqData: FAQItem[] = [
   {
-    question: 'What is Pilimarket?',
-    answer: 'Pilimarket is a Philippine prediction market platform where users can forecast events using virtual chips. It\'s a fun way to test your prediction skills and compete with others on the leaderboard.'
+    question: 'What is ACBMarket?',
+    answer: 'ACBMarket is a Philippine prediction market platform where users can forecast events using virtual chips. It\'s a fun way to test your prediction skills and compete with others on the leaderboard.'
   },
   {
     question: 'Are the chips real money?',
@@ -46,8 +46,8 @@ const faqData: FAQItem[] = [
     answer: 'Yes, you can request account deletion through the platform settings or by contacting support. Please note that this action is irreversible and will delete all your data, including reputation and badges.'
   },
   {
-    question: 'Is Pilimarket legal?',
-    answer: 'Yes, Pilimarket operates as a virtual forecasting platform using non-redeemable chips. Since chips have no monetary value and cannot be converted to real money, the platform is designed for entertainment and educational purposes only.'
+    question: 'Is ACBMarket legal?',
+    answer: 'Yes, ACBMarket operates as a virtual forecasting platform using non-redeemable chips. Since chips have no monetary value and cannot be converted to real money, the platform is designed for entertainment and educational purposes only.'
   }
 ];
 

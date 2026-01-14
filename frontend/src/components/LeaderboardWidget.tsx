@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonButton, IonSpinner, IonIcon } from '@ionic/react';
+import { IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonButton, IonIcon } from '@ionic/react';
 import { trophyOutline, arrowForward } from 'ionicons/icons';
 import { useHistory } from 'react-router-dom';
 import api from '../services/api';
@@ -12,6 +12,24 @@ interface LeaderboardUser {
   rank_score: number;
   badges: string[];
 }
+
+// Generate gradient avatar colors based on user ID (same as Leaderboard page)
+const getAvatarGradient = (userId: string): string => {
+  const gradients = [
+    'from-orange-400 to-yellow-500',
+    'from-purple-400 to-pink-500',
+    'from-teal-400 to-blue-500',
+    'from-green-400 to-emerald-500',
+    'from-red-400 to-orange-500',
+    'from-blue-400 to-indigo-500',
+    'from-pink-400 to-rose-500',
+    'from-cyan-400 to-teal-500',
+  ];
+  
+  // Use userId to consistently pick a gradient
+  const index = userId.charCodeAt(0) % gradients.length;
+  return gradients[index];
+};
 
 const LeaderboardWidget: React.FC = () => {
   const [topUsers, setTopUsers] = useState<LeaderboardUser[]>([]);
@@ -91,7 +109,7 @@ const LeaderboardWidget: React.FC = () => {
                     {getRankIcon(user.rank)}
                   </div>
                   {/* User Avatar */}
-                  <div className="w-8 h-8 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                  <div className={`w-8 h-8 bg-gradient-to-br ${getAvatarGradient(user.user_id)} rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 shadow-sm`}>
                     {user.display_name.charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">

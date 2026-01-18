@@ -192,7 +192,7 @@ const Purchase: React.FC = () => {
                           key={amount}
                           fill={chipsAmount === amount ? 'solid' : 'outline'}
                           onClick={() => handleQuickSelect(amount)}
-                          className={chipsAmount === amount ? 'button-primary' : ''}
+                          className={chipsAmount === amount ? 'button-primary' : 'text-gray-900 dark:text-white'}
                           size="small"
                         >
                           ₱{amount.toLocaleString()}

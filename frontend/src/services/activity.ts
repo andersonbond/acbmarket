@@ -67,5 +67,25 @@ export const activityService = {
     const response = await api.get(`/api/v1/activity/users/${userId}?${params.toString()}`);
     return response.data;
   },
+
+  /**
+   * Get activity feed for a specific market (public)
+   */
+  getMarketActivity: async (
+    marketId: string,
+    page: number = 1,
+    limit: number = 20,
+    type?: string
+  ): Promise<ActivityListResponse> => {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+    });
+    if (type) {
+      params.append('type', type);
+    }
+    const response = await api.get(`/api/v1/activity/markets/${marketId}?${params.toString()}`);
+    return response.data;
+  },
 };
 

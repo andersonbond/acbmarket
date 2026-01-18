@@ -24,8 +24,8 @@ pydantic-settings==2.1.0
 pydantic==2.5.0
 email-validator==2.3.0
 
-# Stripe
-stripe==7.4.0
+# Payment Gateway (Philippines - PayMongo)
+# Using httpx (already included) for PayMongo API calls
 
 # Utilities
 python-slugify==8.0.1

@@ -1,7 +1,7 @@
 """
 Forecast model
 """
-from sqlalchemy import Column, String, Integer, DateTime, ForeignKey, Boolean, UniqueConstraint, CheckConstraint
+from sqlalchemy import Column, String, Integer, DateTime, ForeignKey, Boolean, UniqueConstraint, CheckConstraint, Index
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from datetime import datetime
@@ -37,10 +37,14 @@ class Forecast(Base):
     market = relationship("Market", backref="forecasts")
     outcome = relationship("Outcome", backref="forecasts")
     
-    # Constraints
+    # Constraints and indexes
     __table_args__ = (
         UniqueConstraint('user_id', 'market_id', name='uq_forecast_user_market'),  # One forecast per user per market
         CheckConstraint('points > 0', name='check_points_positive'),
         CheckConstraint("status IN ('pending', 'won', 'lost')", name='check_status'),
+        # Optimized composite indexes for common queries
+        Index('idx_forecasts_market_user_points', 'market_id', 'user_id', 'points'),  # For top holders query
+        Index('idx_forecasts_market_created', 'market_id', 'created_at', postgresql_ops={'created_at': 'DESC'}),  # For market activity
+        Index('idx_forecasts_user_market', 'user_id', 'market_id'),  # For user's forecast on market
     )
 

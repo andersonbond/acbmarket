@@ -20,9 +20,8 @@ class Purchase(Base):
     amount_cents = Column(Integer, nullable=False)  # Amount in centavos (₱1.00 = 100 cents)
     chips_added = Column(Integer, nullable=False)  # Number of chips added (1 chip = ₱1.00)
     
-    # Payment provider (for future use: 'stripe', 'gcash', 'paymaya')
-    # For testing: 'test' provider
-    provider = Column(String, default="test", nullable=False)  # 'test', 'stripe', 'gcash', 'paymaya'
+    # Payment provider: 'test', 'paymongo', 'terminal3'
+    provider = Column(String, default="test", nullable=False)  # 'test', 'paymongo', 'terminal3'
     provider_tx_id = Column(String, nullable=True)  # Transaction ID from payment provider
     
     # Status: pending, completed, failed, refunded
@@ -39,7 +38,7 @@ class Purchase(Base):
     __table_args__ = (
         CheckConstraint('amount_cents > 0', name='check_amount_positive'),
         CheckConstraint('chips_added > 0', name='check_chips_positive'),
-        CheckConstraint("provider IN ('test', 'stripe', 'gcash', 'paymaya')", name='check_provider'),
+        CheckConstraint("provider IN ('test', 'paymongo', 'terminal3')", name='check_provider'),
         CheckConstraint("status IN ('pending', 'completed', 'failed', 'refunded')", name='check_status'),
     )
 

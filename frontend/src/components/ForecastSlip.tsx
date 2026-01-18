@@ -26,7 +26,7 @@ const ForecastSlip: React.FC<ForecastSlipProps> = ({
   const [selectedOutcomeId, setSelectedOutcomeId] = useState<string>(
     userForecast?.outcome_id || market.outcomes[0]?.id || ''
   );
-  const [points, setPoints] = useState<number>(userForecast?.points || 100);
+  const [points, setPoints] = useState<number>(userForecast?.points || 20);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -62,8 +62,8 @@ const ForecastSlip: React.FC<ForecastSlipProps> = ({
     if (!selectedOutcomeId) {
       return 'Please select an outcome';
     }
-    if (!points || points < 1) {
-      return 'Points must be at least 1';
+    if (!points || points < 20) {
+      return 'Points must be at least 20';
     }
     
     // If updating existing forecast, new amount must be greater than current
@@ -119,7 +119,7 @@ const ForecastSlip: React.FC<ForecastSlipProps> = ({
       }
       // Reset form after successful forecast
       if (!userForecast) {
-        setPoints(100);
+        setPoints(20);
       }
     } catch (err: any) {
       setError(err.message || 'Failed to place forecast');
@@ -258,7 +258,7 @@ const ForecastSlip: React.FC<ForecastSlipProps> = ({
                   value={points}
                   onIonInput={(e) => setPoints(parseInt(e.detail.value!) || 0)}
                   placeholder={userForecast ? `Min: ₱${(userForecast.points + 1).toLocaleString()}` : "Enter amount"}
-                  min={userForecast ? userForecast.points + 1 : 1}
+                  min={userForecast ? userForecast.points + 1 : 20}
                   max={market.max_points_per_user}
                   className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg"
                 />
@@ -267,7 +267,7 @@ const ForecastSlip: React.FC<ForecastSlipProps> = ({
                 {userForecast ? (
                   <>Min: ₱{(userForecast.points + 1).toLocaleString()} | Max: ₱{market.max_points_per_user.toLocaleString()} | Available: ₱{userChips.toLocaleString()}</>
                 ) : (
-                  <>Min: ₱1 | Max: ₱{market.max_points_per_user.toLocaleString()} | Available: ₱{userChips.toLocaleString()}</>
+                  <>Min: ₱20 | Max: ₱{market.max_points_per_user.toLocaleString()} | Available: ₱{userChips.toLocaleString()}</>
                 )}
                 {userChips === 0 && (
                   <span className="text-primary font-semibold ml-1">(Purchase chips to continue)</span>
@@ -319,7 +319,7 @@ const ForecastSlip: React.FC<ForecastSlipProps> = ({
               ) : (
                 <button
                   onClick={handleSubmit}
-                  disabled={isLoading || !points || points < 1 || points > market.max_points_per_user}
+                  disabled={isLoading || !points || points < 20 || points > market.max_points_per_user}
                   className="w-full text-white text-center uppercase border-none rounded-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all duration-150 ease-in-out hover:-translate-y-0.5 disabled:hover:translate-y-0"
                   style={{
                     padding: '16px 0',
@@ -328,7 +328,7 @@ const ForecastSlip: React.FC<ForecastSlipProps> = ({
                     fontWeight: 700,
                   }}
                   onMouseEnter={(e) => {
-                    if (!isLoading && points >= 1 && points <= market.max_points_per_user) {
+                    if (!isLoading && points >= 20 && points <= market.max_points_per_user) {
                       e.currentTarget.style.transform = 'translateY(-1px)';
                     }
                   }}
@@ -377,7 +377,7 @@ const ForecastSlip: React.FC<ForecastSlipProps> = ({
         ) : (
           <button
             onClick={handleSubmit}
-            disabled={isLoading || !points || points < 1 || points > market.max_points_per_user}
+            disabled={isLoading || !points || points < 20 || points > market.max_points_per_user}
             className="w-full text-white text-center uppercase border-none rounded-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all duration-150 ease-in-out hover:-translate-y-0.5 disabled:hover:translate-y-0"
             style={{
               padding: '16px 0',
@@ -386,7 +386,7 @@ const ForecastSlip: React.FC<ForecastSlipProps> = ({
               fontWeight: 700,
             }}
             onMouseEnter={(e) => {
-              if (!isLoading && points >= 1 && points <= market.max_points_per_user) {
+              if (!isLoading && points >= 20 && points <= market.max_points_per_user) {
                 e.currentTarget.style.transform = 'translateY(-1px)';
               }
             }}

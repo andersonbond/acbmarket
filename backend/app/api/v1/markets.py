@@ -154,6 +154,112 @@ async def list_markets(
     }
 
 
+@router.get("/{market_id}/top-holders", response_model=dict)
+async def get_market_top_holders(
+    market_id: str,
+    limit: int = Query(10, ge=1, le=50, description="Number of top holders to return"),
+    db: Session = Depends(get_db),
+):
+    """
+    Get top holders for a market (users with largest forecast amounts)
+    
+    Returns users sorted by their total forecast points on this market
+    """
+    from app.models.forecast import Forecast
+    from sqlalchemy import func
+    
+    # Verify market exists
+    market = db.query(Market).filter(Market.id == market_id).first()
+    if not market:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Market not found",
+        )
+    
+    # Get top holders by aggregating forecasts per user
+    # Use a single optimized query with subquery to avoid N+1 problem
+    from sqlalchemy.orm import joinedload
+    
+    # First, get total points per user (optimized with index)
+    top_holders_subquery = (
+        db.query(
+            Forecast.user_id,
+            func.sum(Forecast.points).label('total_points')
+        )
+        .filter(Forecast.market_id == market_id)
+        .group_by(Forecast.user_id)
+        .order_by(func.sum(Forecast.points).desc())
+        .limit(limit)
+        .subquery()
+    )
+    
+    # Join with users to get user details
+    top_holders_query = (
+        db.query(
+            User.id,
+            User.display_name,
+            User.avatar_url,
+            User.reputation,
+            top_holders_subquery.c.total_points
+        )
+        .join(top_holders_subquery, User.id == top_holders_subquery.c.user_id)
+        .order_by(top_holders_subquery.c.total_points.desc())
+    )
+    
+    # Execute query and get results
+    results = top_holders_query.all()
+    
+    # Get all user IDs for batch loading forecasts
+    user_ids = [row.id for row in results]
+    
+    # Batch load all forecasts for these users on this market (single query instead of N queries)
+    if user_ids:
+        all_forecasts = (
+            db.query(Forecast, Outcome.name)
+            .join(Outcome, Forecast.outcome_id == Outcome.id)
+            .filter(
+                Forecast.user_id.in_(user_ids),
+                Forecast.market_id == market_id
+            )
+            .all()
+        )
+        
+        # Group forecasts by user_id
+        forecasts_by_user = {}
+        for forecast, outcome_name in all_forecasts:
+            if forecast.user_id not in forecasts_by_user:
+                forecasts_by_user[forecast.user_id] = []
+            forecasts_by_user[forecast.user_id].append({
+                'outcome_id': forecast.outcome_id,
+                'outcome_name': outcome_name,
+                'points': forecast.points
+            })
+    else:
+        forecasts_by_user = {}
+    
+    # Build holders list with outcome details
+    holders_list = []
+    for i, row in enumerate(results, start=1):
+        outcomes = forecasts_by_user.get(row.id, [])
+        
+        holders_list.append({
+            'rank': i,
+            'user_id': row.id,
+            'display_name': row.display_name,
+            'avatar_url': row.avatar_url,
+            'reputation': row.reputation,
+            'total_points': row.total_points,
+            'outcomes': outcomes
+        })
+    
+    return {
+        "success": True,
+        "data": {
+            "holders": holders_list,
+        },
+    }
+
+
 @router.get("/{market_id}", response_model=dict)
 async def get_market(market_id: str, db: Session = Depends(get_db)):
     """Get market detail with consensus"""

@@ -151,26 +151,13 @@ async def get_market_comments(
     
     # Filter by holders only
     if holders_only:
-        # Get user IDs who have forecasts on this market
-        holder_ids = db.query(Forecast.user_id).filter(
+        # Get user IDs who have forecasts on this market (optimized with index)
+        # Use exists subquery for better performance than IN with large lists
+        from sqlalchemy import exists
+        holder_subquery = db.query(Forecast.user_id).filter(
             Forecast.market_id == market_id
-        ).distinct().all()
-        holder_ids = [h[0] for h in holder_ids]
-        if holder_ids:
-            query = query.filter(Comment.user_id.in_(holder_ids))
-        else:
-            # No holders, return empty
-            return {
-                "success": True,
-                "data": {
-                    "comments": [],
-                    "total": 0,
-                    "page": page,
-                    "limit": limit,
-                    "pages": 0,
-                },
-                "errors": None,
-            }
+        ).distinct()
+        query = query.filter(Comment.user_id.in_(holder_subquery))
     
     # Get total count
     total = query.count()

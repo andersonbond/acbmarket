@@ -26,10 +26,7 @@ alembic upgrade head
 
 **For macOS:**
 ```bash
-# Option 1: Using venv Python directly (recommended for macOS)
-./venv/bin/python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
-
-# Option 2: Activate venv first, then run
+# Option 2: Activate venv, then run
 source venv/bin/activate
 python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```

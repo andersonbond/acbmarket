@@ -12,8 +12,11 @@ class PurchaseBase(BaseModel):
 
 
 class PurchaseCreate(PurchaseBase):
-    """Purchase creation schema (for test mode - bypasses payment)"""
-    pass
+    """Purchase creation schema"""
+    payment_provider: Optional[str] = Field(
+        default=None, 
+        description="Payment provider: 'paymongo', 'terminal3', or None for test mode"
+    )
 
 
 class PurchaseResponse(BaseModel):

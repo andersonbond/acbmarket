@@ -9,7 +9,7 @@ from datetime import datetime
 class ForecastBase(BaseModel):
     """Base forecast schema"""
     outcome_id: str = Field(..., description="ID of the outcome to forecast")
-    points: int = Field(..., ge=1, description="Number of chips to allocate (must be > 0)")
+    points: int = Field(..., ge=20, description="Number of chips to allocate (minimum 20)")
 
 
 class ForecastCreate(ForecastBase):
@@ -20,7 +20,7 @@ class ForecastCreate(ForecastBase):
 class ForecastUpdate(BaseModel):
     """Forecast update schema"""
     outcome_id: Optional[str] = None
-    points: Optional[int] = Field(None, ge=1)
+    points: Optional[int] = Field(None, ge=20)
 
 
 class ForecastResponse(BaseModel):

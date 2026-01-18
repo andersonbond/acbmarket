@@ -29,9 +29,14 @@ class Settings(BaseSettings):
     # CORS
     CORS_ORIGINS: List[str] = ["http://localhost:8100", "http://localhost:3000"]
     
-    # Stripe
-    STRIPE_SECRET_KEY: str = ""
-    STRIPE_WEBHOOK_SECRET: str = ""
+    # PayMongo (Philippines Payment Gateway)
+    PAYMONGO_SECRET_KEY: str = ""
+    PAYMONGO_PUBLIC_KEY: str = ""
+    PAYMONGO_WEBHOOK_SECRET: str = ""
+    
+    # Terminal3 (Payment Gateway - supports GCash, ShopeePay, GrabPay, etc.)
+    TERMINAL3_API_KEY: str = ""
+    TERMINAL3_WEBHOOK_SECRET: str = ""
     
     # Celery
     CELERY_BROKER_URL: str = "redis://localhost:6379/0"

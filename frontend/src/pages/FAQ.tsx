@@ -92,8 +92,11 @@ const FAQ: React.FC = () => {
 
           <div className="mt-8 p-6 bg-primary/10 dark:bg-primary/20 rounded-lg border border-primary/20">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Still have questions?</h2>
+            <p className="text-gray-700 dark:text-gray-300 mb-2">
+              If you can't find the answer you're looking for, please contact our support team:
+            </p>
             <p className="text-gray-700 dark:text-gray-300">
-              If you can't find the answer you're looking for, please contact our support team through the platform's support channels.
+              <strong>Email:</strong> <a href="mailto:support@acbmarket.com" className="text-primary-600 dark:text-primary-400 hover:underline">support@acbmarket.com</a>
             </p>
           </div>
         </div>

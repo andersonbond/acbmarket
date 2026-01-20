@@ -67,14 +67,14 @@ const LeaderboardWidget: React.FC = () => {
       <IonCardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <IonIcon icon={trophyOutline} className="text-primary text-xl" />
-            <IonCardTitle className="text-lg font-bold text-gray-900 dark:text-white">Top Forecasters</IonCardTitle>
+            <IonIcon icon={trophyOutline} className="text-primary text-lg lg:text-base" />
+            <IonCardTitle className="text-base lg:text-sm font-bold text-gray-900 dark:text-white">Top Forecasters</IonCardTitle>
           </div>
           <IonButton
             fill="clear"
             size="small"
             onClick={() => history.push('/leaderboard')}
-            className="text-primary-600 dark:text-primary-400 text-sm"
+            className="text-primary-600 dark:text-primary-400 text-xs lg:text-[10px]"
           >
             View All
             <IonIcon icon={arrowForward} slot="end" />
@@ -106,7 +106,7 @@ const LeaderboardWidget: React.FC = () => {
                 onClick={() => history.push(`/users/${user.user_id}/profile`)}
               >
                 <div className="flex items-center space-x-2 flex-1 min-w-0">
-                  <div className="w-8 h-8 flex items-center justify-center font-bold text-gray-700 dark:text-gray-300 text-sm flex-shrink-0">
+                  <div className="w-7 h-7 lg:w-6 lg:h-6 flex items-center justify-center font-bold text-gray-700 dark:text-gray-300 text-xs lg:text-[10px] flex-shrink-0">
                     {getRankIcon(user.rank)}
                   </div>
                   {/* User Avatar */}
@@ -115,7 +115,7 @@ const LeaderboardWidget: React.FC = () => {
                       <img
                         src={user.avatar_url}
                         alt={user.display_name}
-                        className="w-8 h-8 rounded-full object-cover flex-shrink-0 shadow-sm"
+                        className="w-7 h-7 lg:w-6 lg:h-6 rounded-full object-cover flex-shrink-0 shadow-sm"
                         onError={(e) => {
                           // Hide image and show gradient fallback if image fails to load
                           const target = e.target as HTMLImageElement;
@@ -125,21 +125,21 @@ const LeaderboardWidget: React.FC = () => {
                         }}
                       />
                     ) : null}
-                    <div className={`avatar-fallback w-8 h-8 bg-gradient-to-br ${getAvatarGradient(user.user_id)} rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 shadow-sm ${user.avatar_url ? 'hidden' : 'flex'}`}>
+                    <div className={`avatar-fallback w-7 h-7 lg:w-6 lg:h-6 bg-gradient-to-br ${getAvatarGradient(user.user_id)} rounded-full flex items-center justify-center text-white text-[10px] lg:text-[9px] font-bold flex-shrink-0 shadow-sm ${user.avatar_url ? 'hidden' : 'flex'}`}>
                       {user.display_name.charAt(0).toUpperCase()}
                     </div>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-gray-900 dark:text-white truncate text-sm">
+                    <p className="font-medium text-gray-900 dark:text-white truncate text-xs lg:text-[11px]">
                       {user.display_name}
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                    <p className="text-[10px] lg:text-[9px] text-gray-500 dark:text-gray-400">
                       Rep: {user.reputation.toFixed(1)} • Score: {user.rank_score.toFixed(0)}
                     </p>
                   </div>
                 </div>
                 {user.badges && user.badges.length > 0 && (
-                  <span className="px-1.5 py-0.5 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 rounded text-xs font-medium flex-shrink-0 ml-2">
+                  <span className="px-1.5 py-0.5 lg:px-1 lg:py-0.5 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 rounded text-[10px] lg:text-[9px] font-medium flex-shrink-0 ml-2">
                     {user.badges[0]}
                   </span>
                 )}

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { IonContent, IonPage, IonIcon } from '@ionic/react';
 import { chevronDown, chevronUp } from 'ionicons/icons';
 import Header from '../components/Header';
+import { useSEO } from '../hooks/useSEO';
 
 interface FAQItem {
   question: string;
@@ -53,6 +54,26 @@ const faqData: FAQItem[] = [
 
 const FAQ: React.FC = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+
+  useSEO({
+    title: 'FAQ',
+    description: 'Frequently Asked Questions about ACBMarket. Learn about virtual chips, how to make forecasts, reputation system, and more about the Philippine prediction market platform.',
+    keywords: 'FAQ, frequently asked questions, ACBMarket help, virtual chips, how to use, prediction market guide',
+    canonical: `${baseUrl}/faq`,
+    structuredData: {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: faqData.map(item => ({
+        '@type': 'Question',
+        name: item.question,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: item.answer,
+        },
+      })),
+    },
+  });
 
   const toggleItem = (index: number) => {
     setOpenIndex(openIndex === index ? null : index);

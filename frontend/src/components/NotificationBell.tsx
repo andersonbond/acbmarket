@@ -75,7 +75,7 @@ const NotificationBell: React.FC = () => {
       >
         <IonIcon icon={unreadCount > 0 ? notificationsIcon : notificationsOutline} />
         {unreadCount > 0 && (
-          <IonBadge color="danger" className="absolute top-0 right-0 -mt-1 -mr-1 min-w-[18px] h-[18px] text-xs flex items-center justify-center">
+          <IonBadge color="danger" className="absolute top-0 right-0 -mt-2 -mr-1 min-w-[16px] h-[16px] text-[10px] leading-none flex items-center justify-center font-medium">
             {unreadCount > 99 ? '99+' : unreadCount}
           </IonBadge>
         )}

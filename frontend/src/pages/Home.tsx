@@ -10,6 +10,7 @@ import MarketCard from '../components/MarketCard';
 import MarketFilters from '../components/MarketFilters';
 import api from '../services/api';
 import { Market } from '../types/market';
+import { useSEO } from '../hooks/useSEO';
 
 const Home: React.FC = () => {
   //const { isAuthenticated, user } = useAuth();
@@ -19,6 +20,31 @@ const Home: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [hideSports, setHideSports] = useState(false);
   const [hidePolitics, setHidePolitics] = useState(false);
+
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+
+  // SEO with structured data
+  useSEO({
+    title: 'Home',
+    description: 'ACBMarket is a Philippine prediction market platform where users can make forecasts on various events using virtual chips. Browse active markets, make predictions, and compete on the leaderboard.',
+    keywords: 'prediction market, Philippines, forecasting, virtual chips, ACBMarket, prediction platform, market predictions, Philippine events, active markets',
+    canonical: baseUrl,
+    structuredData: {
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: 'ACBMarket',
+      url: baseUrl,
+      description: 'Philippine Prediction Market Platform',
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: {
+          '@type': 'EntryPoint',
+          urlTemplate: `${baseUrl}/markets?search={search_term_string}`,
+        },
+        'query-input': 'required name=search_term_string',
+      },
+    },
+  });
 
   useEffect(() => {
     const fetchMarkets = async () => {
@@ -162,8 +188,8 @@ const Home: React.FC = () => {
 
           {/* Sticky Footer */}
           <footer className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 sticky bottom-0 z-20 mt-auto">
-            <div className="container mx-auto px-4 py-4">
-              <div className="flex flex-wrap items-center justify-center gap-4 text-sm">
+            <div className="container mx-auto px-4 py-2">
+              <div className="flex flex-wrap items-center justify-center gap-3 text-xs">
                 <Link
                   to="/terms"
                   className="text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors"
@@ -191,9 +217,10 @@ const Home: React.FC = () => {
                 >
                   Disclaimer
                 </Link>
-              </div>
-              <div className="text-center mt-2 text-xs text-gray-500 dark:text-gray-500">
-                © {new Date().getFullYear()} ACBMarket. All rights reserved.
+                <span className="text-gray-400 dark:text-gray-600">•</span>
+                <span className="text-gray-500 dark:text-gray-500">
+                  © {new Date().getFullYear()} ACBMarket. All rights reserved.
+                </span>
               </div>
             </div>
           </footer>

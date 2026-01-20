@@ -3,9 +3,25 @@ import { IonContent, IonPage, IonHeader, IonToolbar, IonTitle, IonButtons, IonBu
 import { arrowBack } from 'ionicons/icons';
 import { useHistory } from 'react-router-dom';
 import Header from '../components/Header';
+import { useSEO } from '../hooks/useSEO';
 
 const TermsOfService: React.FC = () => {
   const history = useHistory();
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+
+  useSEO({
+    title: 'Terms of Service',
+    description: 'Read ACBMarket\'s Terms of Service. Learn about user responsibilities, account policies, virtual chips, and platform rules for the Philippine prediction market.',
+    keywords: 'terms of service, ACBMarket terms, user agreement, platform rules, virtual chips policy',
+    canonical: `${baseUrl}/terms`,
+    structuredData: {
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      name: 'ACBMarket Terms of Service',
+      description: 'Terms of Service for ACBMarket prediction platform',
+      url: `${baseUrl}/terms`,
+    },
+  });
 
   return (
     <IonPage>

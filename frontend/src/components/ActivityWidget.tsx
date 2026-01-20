@@ -109,12 +109,12 @@ const ActivityWidget: React.FC = () => {
     <IonCard className="h-full">
       <IonCardHeader>
         <div className="flex items-center justify-between">
-          <IonCardTitle className="text-lg font-semibold">Recent Activity</IonCardTitle>
+          <IonCardTitle className="text-base lg:text-sm font-semibold">Recent Activity</IonCardTitle>
           <IonButton
             fill="clear"
             size="small"
             onClick={() => history.push('/activity')}
-            className="text-sm"
+            className="text-xs lg:text-[10px]"
           >
             View All
             <IonIcon icon={arrowForward} slot="end" />
@@ -136,14 +136,14 @@ const ActivityWidget: React.FC = () => {
               <div
                 key={activity.id}
                 onClick={() => handleActivityClick(activity)}
-                className="flex items-start gap-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer transition-colors"
+                className="flex items-start gap-2 lg:gap-1.5 p-2 lg:p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer transition-colors"
               >
                 <IonIcon
                   icon={getActivityIcon(activity.activity_type)}
-                  className={`text-xl ${getActivityColor(activity.activity_type)} flex-shrink-0 mt-0.5`}
+                  className={`text-lg lg:text-base ${getActivityColor(activity.activity_type)} flex-shrink-0 mt-0.5`}
                 />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-gray-900 dark:text-white truncate">
+                  <p className="text-xs lg:text-[11px] text-gray-900 dark:text-white truncate">
                     {activity.user_display_name && (
                       <span className="font-semibold">{activity.user_display_name}</span>
                     )}
@@ -161,11 +161,11 @@ const ActivityWidget: React.FC = () => {
                     )}
                   </p>
                   {activity.market_title && (
-                    <p className="text-xs text-blue-600 dark:text-blue-400 truncate mt-0.5">
+                    <p className="text-[10px] lg:text-[9px] text-blue-600 dark:text-blue-400 truncate mt-0.5">
                       {activity.market_title}
                     </p>
                   )}
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  <p className="text-[10px] lg:text-[9px] text-gray-500 dark:text-gray-400 mt-0.5">
                     {formatTime(activity.created_at)}
                   </p>
                 </div>

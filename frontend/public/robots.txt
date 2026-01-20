@@ -1,0 +1,32 @@
+# robots.txt for ACBMarket
+
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /purchase
+Disallow: /purchase/history
+Disallow: /forecasts
+Disallow: /notifications
+Disallow: /activity
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password/
+
+# Allow public pages
+Allow: /
+Allow: /markets
+Allow: /markets/*
+Allow: /leaderboard
+Allow: /users/*/profile
+Allow: /terms
+Allow: /privacy
+Allow: /faq
+Allow: /disclaimer
+
+# Sitemap location
+Sitemap: https://acbmarket.com/sitemap.xml
+
+# Crawl delay (optional, be respectful)
+Crawl-delay: 1

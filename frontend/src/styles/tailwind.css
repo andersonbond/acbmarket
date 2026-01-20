@@ -759,6 +759,41 @@ ion-button.button-secondary:focus .button-inner {
   color: #ffffff !important;
 }
 
+/* Header button font size reduction for desktop */
+.header-buttons ion-button {
+  --padding-start: 0.375rem !important;
+  --padding-end: 0.375rem !important;
+  --padding-top: 0.375rem !important;
+  --padding-bottom: 0.375rem !important;
+  font-size: 0.75rem !important; /* text-xs equivalent */
+  min-height: 2rem !important;
+}
+
+.header-buttons ion-button .button-native {
+  padding-left: 0.375rem !important;
+  padding-right: 0.375rem !important;
+  padding-top: 0.375rem !important;
+  padding-bottom: 0.375rem !important;
+  font-size: 0.75rem !important;
+  min-height: 2rem !important;
+}
+
+.header-buttons ion-button .button-inner {
+  font-size: 0.75rem !important;
+}
+
+.header-buttons ion-button span {
+  font-size: 0.75rem !important;
+  line-height: 1rem !important;
+  white-space: nowrap !important;
+}
+
+.header-buttons ion-button ion-icon {
+  font-size: 1rem !important;
+  width: 1rem !important;
+  height: 1rem !important;
+}
+
 ion-button.button-secondary span,
 ion-button.button-secondary ion-icon,
 ion-button.button-secondary:hover span,

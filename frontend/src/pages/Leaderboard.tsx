@@ -23,6 +23,7 @@ import Header from '../components/Header';
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { useHistory } from 'react-router-dom';
+import { useSEO } from '../hooks/useSEO';
 
 interface LeaderboardUser {
   rank: number;
@@ -108,6 +109,23 @@ const Leaderboard: React.FC = () => {
   const [showCertificateModal, setShowCertificateModal] = useState(false);
   const [biggestWins, setBiggestWins] = useState<BiggestWin[]>([]);
   const [isLoadingWins, setIsLoadingWins] = useState(false);
+
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+
+  // SEO
+  useSEO({
+    title: 'Leaderboard',
+    description: 'View the top forecasters on ACBMarket. See who has the highest reputation, biggest wins, and best prediction accuracy in the Philippine prediction market.',
+    keywords: 'leaderboard, top forecasters, prediction accuracy, reputation, biggest wins, ACBMarket',
+    canonical: `${baseUrl}/leaderboard`,
+    structuredData: {
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      name: 'ACBMarket Leaderboard',
+      description: 'Top forecasters and prediction market leaders',
+      url: `${baseUrl}/leaderboard`,
+    },
+  });
 
   // Map frontend period to backend period
   const backendPeriod = period === 'today' ? 'weekly' : period === 'all' ? 'global' : period;

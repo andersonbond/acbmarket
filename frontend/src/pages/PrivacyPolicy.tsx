@@ -1,8 +1,24 @@
 import React from 'react';
 import { IonContent, IonPage } from '@ionic/react';
 import Header from '../components/Header';
+import { useSEO } from '../hooks/useSEO';
 
 const PrivacyPolicy: React.FC = () => {
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+
+  useSEO({
+    title: 'Privacy Policy',
+    description: 'Read ACBMarket\'s Privacy Policy. Learn how we collect, use, and protect your personal information on the Philippine prediction market platform.',
+    keywords: 'privacy policy, data protection, ACBMarket privacy, user data, information security',
+    canonical: `${baseUrl}/privacy`,
+    structuredData: {
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      name: 'ACBMarket Privacy Policy',
+      description: 'Privacy Policy for ACBMarket prediction platform',
+      url: `${baseUrl}/privacy`,
+    },
+  });
   return (
     <IonPage>
       <Header />

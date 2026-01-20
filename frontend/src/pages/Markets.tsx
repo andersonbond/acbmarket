@@ -7,6 +7,7 @@ import MarketFilters from '../components/MarketFilters';
 import CategoriesBar from '../components/CategoriesBar';
 import api from '../services/api';
 import { Market, MarketListResponse } from '../types/market';
+import { useSEO } from '../hooks/useSEO';
 
 const MARKETS_PER_PAGE = 25;
 
@@ -24,6 +25,24 @@ const Markets: React.FC = () => {
   const [totalMarkets, setTotalMarkets] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const observerTarget = useRef<HTMLDivElement>(null);
+
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+  const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
+
+  // SEO
+  useSEO({
+    title: 'Markets',
+    description: 'Browse all active prediction markets on ACBMarket. Make forecasts on politics, sports, entertainment, economy, and more using virtual chips.',
+    keywords: 'prediction markets, active markets, Philippines, forecasting, virtual chips, market predictions',
+    canonical: currentUrl,
+    structuredData: {
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      name: 'ACBMarket - All Markets',
+      description: 'Browse all active prediction markets',
+      url: `${baseUrl}/markets`,
+    },
+  });
 
   // Get search query from URL params
   useEffect(() => {

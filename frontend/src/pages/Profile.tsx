@@ -42,6 +42,7 @@ import { Forecast } from '../types/forecast';
 import { activityService } from '../services/activity';
 import { Activity } from '../types/activity';
 import { Badge } from '../types/badge';
+import { useSEO } from '../hooks/useSEO';
 // Simple date formatter (avoiding date-fns dependency)
 const formatTimeAgo = (dateString: string): string => {
   try {
@@ -119,6 +120,32 @@ const Profile: React.FC = () => {
   const [isLoadingActivities, setIsLoadingActivities] = useState(false);
   const [activityPage, setActivityPage] = useState(1);
   const [hasMoreActivities, setHasMoreActivities] = useState(true);
+
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+  const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
+
+  // SEO - Update when profileUser changes
+  useSEO({
+    title: profileUser ? `${profileUser.display_name}'s Profile` : 'Profile',
+    description: profileUser 
+      ? `View ${profileUser.display_name}'s profile on ACBMarket. See their reputation, badges, forecasts, and activity on the Philippine prediction market.`
+      : 'View user profiles on ACBMarket. See reputation, badges, forecasts, and activity.',
+    keywords: profileUser 
+      ? `${profileUser.display_name}, ACBMarket profile, prediction market, reputation, badges`
+      : 'ACBMarket profile, user profile, prediction market',
+    canonical: currentUrl,
+    structuredData: profileUser ? {
+      '@context': 'https://schema.org',
+      '@type': 'ProfilePage',
+      name: `${profileUser.display_name}'s Profile`,
+      description: `Profile page for ${profileUser.display_name} on ACBMarket`,
+      url: currentUrl,
+      mainEntity: {
+        '@type': 'Person',
+        name: profileUser.display_name,
+      },
+    } : undefined,
+  });
 
   // Fetch profile user data
   useEffect(() => {

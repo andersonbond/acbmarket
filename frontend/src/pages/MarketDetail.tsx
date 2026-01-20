@@ -10,6 +10,7 @@ import api from '../services/api';
 import { Market, MarketDetailResponse } from '../types/market';
 import { ForecastCreate, Forecast } from '../types/forecast';
 import { useAuth } from '../contexts/AuthContext';
+import { useSEO } from '../hooks/useSEO';
 
 const MarketDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -102,75 +103,62 @@ const MarketDetail: React.FC = () => {
     }
   }, [market, fetchResolution]);
 
-  // Update Open Graph meta tags for Facebook sharing
-  useEffect(() => {
-    if (!market) return;
+  // Get current top outcome for description
+  const consensus = market?.consensus || {};
+  const sortedOutcomes = market ? [...market.outcomes].sort((a, b) => {
+    const aPercent = consensus[a.name] || 0;
+    const bPercent = consensus[b.name] || 0;
+    return bPercent - aPercent;
+  }) : [];
+  const topOutcome = sortedOutcomes.length > 0 ? sortedOutcomes[0] : null;
+  const topOutcomePercent = topOutcome ? (consensus[topOutcome.name] || 0).toFixed(0) : '0';
 
-    const baseUrl = window.location.origin;
-    const marketUrl = `${baseUrl}/markets/${market.id}`;
-    
-    // Get current top outcome for description
-    const consensus = market.consensus || {};
-    const sortedOutcomes = [...market.outcomes].sort((a, b) => {
-      const aPercent = consensus[a.name] || 0;
-      const bPercent = consensus[b.name] || 0;
-      return bPercent - aPercent;
-    });
-    const topOutcome = sortedOutcomes.length > 0 ? sortedOutcomes[0] : null;
-    const topOutcomePercent = topOutcome ? (consensus[topOutcome.name] || 0).toFixed(0) : '0';
-    
-    // Update or create Open Graph meta tags
-    const updateMetaTag = (property: string, content: string) => {
-      let meta = document.querySelector(`meta[property="${property}"]`) as HTMLMetaElement;
-      if (!meta) {
-        meta = document.createElement('meta');
-        meta.setAttribute('property', property);
-        document.head.appendChild(meta);
-      }
-      meta.setAttribute('content', content);
-    };
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+  const marketUrl = market ? `${baseUrl}/markets/${market.id}` : '';
+  const marketImage = market?.image_url || `${baseUrl}/logo.png`;
+  const marketDescription = topOutcome 
+    ? `${topOutcome.name}: ${topOutcomePercent}% chance | ${market?.description || 'Philippine Prediction Market'}`
+    : market?.description || 'Philippine Prediction Market';
 
-    const updateMetaTagName = (name: string, content: string) => {
-      let meta = document.querySelector(`meta[name="${name}"]`) as HTMLMetaElement;
-      if (!meta) {
-        meta = document.createElement('meta');
-        meta.setAttribute('name', name);
-        document.head.appendChild(meta);
-      }
-      meta.setAttribute('content', content);
-    };
-
-    // Open Graph tags
-    updateMetaTag('og:title', market.title);
-    updateMetaTag('og:description', topOutcome 
-      ? `${topOutcome.name}: ${topOutcomePercent}% chance | ${market.description || 'Philippine Prediction Market'}`
-      : market.description || 'Philippine Prediction Market');
-    updateMetaTag('og:image', market.image_url || `${baseUrl}/logo.png`);
-    updateMetaTag('og:url', marketUrl);
-    updateMetaTag('og:type', 'website');
-    updateMetaTag('og:site_name', 'ACBMarket');
-
-    // Twitter Card tags
-    updateMetaTagName('twitter:card', 'summary_large_image');
-    updateMetaTagName('twitter:title', market.title);
-    updateMetaTagName('twitter:description', topOutcome 
-      ? `${topOutcome.name}: ${topOutcomePercent}% chance`
-      : market.description || 'Philippine Prediction Market');
-    updateMetaTagName('twitter:image', market.image_url || `${baseUrl}/logo.png`);
-
-    // Update page title
-    document.title = `${market.title} | ACBMarket`;
-
-    // Cleanup function to restore default meta tags when component unmounts
-    return () => {
-      document.title = 'ACBMarket - Philippine Prediction Market';
-    };
-  }, [market]);
+  // SEO with structured data
+  useSEO({
+    title: market?.title,
+    description: marketDescription,
+    keywords: `prediction market, ${market?.category}, ${market?.title}, ACBMarket, Philippines`,
+    image: marketImage,
+    url: marketUrl,
+    type: 'article',
+    canonical: marketUrl,
+    structuredData: market ? {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: market.title,
+      description: marketDescription,
+      image: marketImage,
+      datePublished: market.created_at,
+      dateModified: market.updated_at || market.created_at,
+      author: {
+        '@type': 'Organization',
+        name: 'ACBMarket',
+      },
+      publisher: {
+        '@type': 'Organization',
+        name: 'ACBMarket',
+        logo: {
+          '@type': 'ImageObject',
+          url: `${baseUrl}/logo.png`,
+        },
+      },
+      mainEntityOfPage: {
+        '@type': 'WebPage',
+        '@id': marketUrl,
+      },
+    } : undefined,
+  });
 
   const handleCopyLink = async () => {
     if (!market) return;
     
-    const baseUrl = window.location.origin;
     const marketUrl = `${baseUrl}/markets/${market.id}`;
     
     try {
@@ -350,10 +338,11 @@ const MarketDetail: React.FC = () => {
     );
   }
 
-  const consensus = market.consensus || {};
-  const sortedOutcomes = [...market.outcomes].sort((a, b) => {
-    const aPercent = consensus[a.name] || 0;
-    const bPercent = consensus[b.name] || 0;
+  // Calculate consensus and sorted outcomes for render (market is guaranteed to exist here)
+  const renderConsensus = market.consensus || {};
+  const renderSortedOutcomes = [...market.outcomes].sort((a, b) => {
+    const aPercent = renderConsensus[a.name] || 0;
+    const bPercent = renderConsensus[b.name] || 0;
     return bPercent - aPercent;
   });
 
@@ -451,10 +440,10 @@ const MarketDetail: React.FC = () => {
                 <div className="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
                   <div className="flex items-baseline gap-3">
                     <span className="text-3xl font-bold text-gray-900 dark:text-white">
-                      {consensus[sortedOutcomes[0].name]?.toFixed(0) || 0}% chance
+                      {renderConsensus[renderSortedOutcomes[0].name]?.toFixed(0) || 0}% chance
                     </span>
                     <span className="text-sm text-green-600 dark:text-green-400 font-semibold">
-                      {sortedOutcomes[0].name}
+                      {renderSortedOutcomes[0].name}
                     </span>
                   </div>
                 </div>
@@ -509,8 +498,8 @@ const MarketDetail: React.FC = () => {
                     Current Consensus
                   </h2>
                   <div className="space-y-3">
-                    {sortedOutcomes.map((outcome) => {
-                      const percentage = consensus[outcome.name] || 0;
+                    {renderSortedOutcomes.map((outcome) => {
+                      const percentage = renderConsensus[outcome.name] || 0;
                       const isYes = outcome.name.toLowerCase() === 'yes';
                       const isNo = outcome.name.toLowerCase() === 'no';
                       const barColor = isYes

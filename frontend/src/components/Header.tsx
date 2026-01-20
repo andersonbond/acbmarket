@@ -63,10 +63,10 @@ const Header: React.FC = () => {
         </IonButtons>
 
         {/* Desktop: All buttons */}
-        <IonButtons slot="end" className="hidden md:flex">
+        <IonButtons slot="end" className="hidden md:flex header-buttons">
           <IonButton onClick={() => setIsHowItWorksOpen(true)} fill="clear" className="text-gray-700 dark:text-gray-300 font-dm-sans">
             <IonIcon icon={helpCircle} slot="start" />
-            <span>How it Works</span>
+            <span className="text-xs">How it Works</span>
           </IonButton>
           <IonButton onClick={toggleTheme} fill="clear" className="theme-toggle font-dm-sans">
             <IonIcon icon={isDark ? sunny : moon} />
@@ -76,36 +76,36 @@ const Header: React.FC = () => {
               <NotificationBell />
               <IonButton onClick={() => history.push('/purchase')} className="bg-primary-600 text-white rounded-md font-dm-sans">
                 <IonIcon icon={wallet} slot="start" />
-                <span className="hidden lg:inline">₱{user?.chips?.toLocaleString() || '0'}</span>
-                <span className="lg:hidden">₱{user?.chips?.toLocaleString() || '0'}</span>
+                <span className="hidden lg:inline text-xs">₱{user?.chips?.toLocaleString() || '0'}</span>
+                <span className="lg:hidden text-xs">₱{user?.chips?.toLocaleString() || '0'}</span>
               </IonButton>
               <IonButton onClick={() => history.push('/profile')} className="button-primary font-dm-sans">
                 <IonIcon icon={person} slot="start" />
-                <span className="hidden lg:inline">{user?.display_name || 'Profile'}</span>
+                <span className="hidden lg:inline text-xs">{user?.display_name || 'Profile'}</span>
               </IonButton>
               <IonButton onClick={() => history.push('/markets')} className="button-primary font-dm-sans">
                 <IonIcon icon={statsChart} slot="start" />
-                <span className="hidden lg:inline">Markets</span>
+                <span className="hidden lg:inline text-xs">Markets</span>
               </IonButton>
               <IonButton onClick={() => history.push('/leaderboard')} className="button-primary font-dm-sans">
                 <IonIcon icon={trophy} slot="start" />
-                <span className="hidden lg:inline">Leaderboard</span>
+                <span className="hidden lg:inline text-xs">Leaderboard</span>
               </IonButton>
               {user?.is_admin && (
                 <IonButton onClick={() => history.push('/admin')} className="bg-gray-200 text-black rounded-md font-dm-sans">
                   <IonIcon icon={statsChart} slot="start" />
-                  <span className="hidden lg:inline">Admin</span>
+                  <span className="hidden lg:inline text-xs">Admin</span>
                 </IonButton>
               )}
               {(user?.is_admin || user?.is_market_moderator) && (
                 <>
                   <IonButton onClick={() => history.push('/admin/markets')} className="bg-gray-200 text-black rounded-md font-dm-sans">
                     <IonIcon icon={settingsOutline} slot="start" />
-                    <span className="hidden lg:inline">Manage Markets</span>
+                    <span className="hidden lg:inline text-xs">Manage Markets</span>
                   </IonButton>
                   <IonButton onClick={() => history.push('/admin/markets/create')} className="bg-gray-200 text-black rounded-md font-dm-sans">
                     <IonIcon icon={add} slot="start" />
-                    <span className="hidden lg:inline">Create Market</span>
+                    <span className="hidden lg:inline text-xs">Create Market</span>
                   </IonButton>
                 </>
               )}
@@ -117,18 +117,18 @@ const Header: React.FC = () => {
                 className="bg-gray-100 text-black rounded-md font-dm-sans"
               >
                 <IonIcon icon={logOut} slot="start" />
-                <span className="hidden lg:inline">Logout</span>
+                <span className="hidden lg:inline text-xs">Logout</span>
               </IonButton>
             </>
           ) : (
             <>
               <IonButton onClick={() => history.push('/login')} className="button-primary font-dm-sans">
                 <IonIcon icon={logIn} slot="start" />
-                <span className="hidden lg:inline">Log In</span>
+                <span className="hidden lg:inline text-xs">Log In</span>
               </IonButton>
               <IonButton onClick={() => history.push('/register')} className="bg-primary-600 text-white rounded-md font-dm-sans">
                 <IonIcon icon={personAdd} slot="start" />
-                <span className="hidden lg:inline">Sign Up</span>
+                <span className="hidden lg:inline text-xs">Sign Up</span>
               </IonButton>
             </>
           )}

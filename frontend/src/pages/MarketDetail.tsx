@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { IonContent, IonPage, IonSpinner, IonButton, IonIcon, IonCard, IonCardContent, IonToast, IonAccordion, IonAccordionGroup, IonItem, IonLabel } from '@ionic/react';
+import { IonContent, IonPage, IonSpinner, IonButton, IonIcon, IonCard, IonCardContent, IonToast } from '@ionic/react';
 import { useParams, useHistory } from 'react-router-dom';
-import { arrowBack, informationCircle, trendingUp, people, calendar, layers, checkmarkCircle, bookmarkOutline, chevronDown, linkOutline, trophyOutline, closeCircleOutline, settingsOutline } from 'ionicons/icons';
+import { arrowBack, informationCircle, trendingUp, calendar, checkmarkCircle, bookmarkOutline, linkOutline, trophyOutline, closeCircleOutline, settingsOutline, chevronDown } from 'ionicons/icons';
 import Header from '../components/Header';
 import ForecastSlip from '../components/ForecastSlip';
 import MarketGraph from '../components/MarketGraph';
@@ -24,7 +24,7 @@ const MarketDetail: React.FC = () => {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastColor, setToastColor] = useState<'success' | 'danger'>('success');
-  const [resolutionAccordionValue, setResolutionAccordionValue] = useState<string | undefined>(undefined);
+  const [isResolutionOpen, setIsResolutionOpen] = useState(false);
   const [resolution, setResolution] = useState<any | null>(null);
   const [showCopiedToast, setShowCopiedToast] = useState(false);
 
@@ -319,13 +319,13 @@ const MarketDetail: React.FC = () => {
       <IonPage>
         <Header />
         <IonContent className="bg-gray-50 dark:bg-gray-900">
-          <div className="container mx-auto px-4 py-4 max-w-4xl">
-            <IonButton fill="clear" onClick={() => history.goBack()} className="mb-3 -ml-2">
-              <IonIcon icon={arrowBack} slot="start" />
+          <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4 max-w-4xl">
+            <IonButton fill="clear" onClick={() => history.goBack()} className="mb-3 -ml-1 sm:-ml-2 text-sm sm:text-base">
+              <IonIcon icon={arrowBack} slot="start" className="text-lg sm:text-xl" />
               Back
             </IonButton>
-            <div className="text-center py-12">
-              <p className="text-red-500 dark:text-red-400 text-lg mb-4">
+            <div className="text-center py-8 sm:py-12">
+              <p className="text-red-500 dark:text-red-400 text-base sm:text-lg mb-3 sm:mb-4">
                 {error || 'Market not found'}
               </p>
               <IonButton onClick={() => history.push('/markets')} className="button-primary">
@@ -350,30 +350,30 @@ const MarketDetail: React.FC = () => {
     <IonPage>
       <Header />
       <IonContent className="bg-gray-50 dark:bg-gray-900">
-        <div className="container mx-auto px-4 py-4 max-w-7xl">
+        <div className="container mx-auto px-2.5 sm:px-3 md:px-4 py-2 sm:py-3 md:py-4 max-w-7xl">
           {/* Back Button - Compact */}
-          <IonButton fill="clear" onClick={() => history.goBack()} className="mb-4 -ml-2">
-            <IonIcon icon={arrowBack} slot="start" />
+          <IonButton fill="clear" onClick={() => history.goBack()} className="mb-2 sm:mb-3 md:mb-4 -ml-1 sm:-ml-2 text-xs sm:text-sm md:text-base !h-8 sm:!h-9">
+            <IonIcon icon={arrowBack} slot="start" className="text-base sm:text-lg md:text-xl" />
             Back
           </IonButton>
 
           {/* Two Column Layout for Large Screens */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-24 lg:pb-0">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 pb-24 lg:pb-0">
             {/* Left Column - Main Content */}
-            <div className="lg:col-span-2 space-y-4">
+            <div className="lg:col-span-2 space-y-2.5 sm:space-y-2 md:space-y-4">
 
-          {/* Market Header - Polymarket Style */}
-          <IonCard className="bg-white dark:bg-gray-800">
-            <IonCardContent className="p-4">
+          {/* Market Header */}
+          <IonCard className="bg-white dark:bg-gray-800 !m-0">
+            <IonCardContent className="p-0">
               {/* Top Row: Image, Title, Icons */}
-              <div className="flex items-start gap-3 mb-4">
+              <div className="flex items-start gap-2 sm:gap-3 mb-2 sm:mb-3 md:mb-4 p-2.5 sm:p-0 md:p-2">
                 {/* Market Image - Left side, small square */}
                 {market.image_url && (
                   <div className="flex-shrink-0">
                     <img
                       src={market.image_url}
                       alt={market.title}
-                      className="w-16 h-16 object-cover rounded-lg"
+                      className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 object-cover rounded-lg"
                       onError={(e) => {
                         (e.target as HTMLImageElement).style.display = 'none';
                       }}
@@ -383,31 +383,32 @@ const MarketDetail: React.FC = () => {
                 
                 {/* Title and Info */}
                 <div className="flex-1 min-w-0">
-                  <h1 className="market-title text-xl md:text-2xl font-black text-gray-900 dark:text-white mb-3 leading-tight">
+                  <h1 className="market-title text-base md:text-lg lg:text-xl xl:text-2xl font-bold sm:font-black text-gray-900 dark:text-white mb-1.5 sm:mb-2 md:mb-3 leading-snug sm:leading-tight break-words" style={{ wordBreak: 'break-word', hyphens: 'auto' }}>
                     {market.title}
                   </h1>
                   
                   {/* Volume and Created Date */}
-                  <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 mb-2">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-600 dark:text-gray-400 mb-1.5 sm:mb-2">
                     <span className="flex items-center gap-1">
-                      <IonIcon icon={trendingUp} className="text-base" />
-                      ₱{market.total_volume ? market.total_volume.toLocaleString() : '0'} Vol.
+                      <IonIcon icon={trendingUp} className="text-xs sm:text-sm" />
+                      <span className="whitespace-nowrap">₱{market.total_volume ? market.total_volume.toLocaleString() : '0'} Vol.</span>
                     </span>
                     <span className="flex items-center gap-1">
-                      <IonIcon icon={calendar} className="text-base" />
-                      Created: {new Date(market.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      <IonIcon icon={calendar} className="text-xs sm:text-sm" />
+                      <span className="hidden sm:inline">Created: </span>
+                      <span className="whitespace-nowrap">{new Date(market.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                     </span>
                   </div>
 
                   {/* Deadline - Enhanced Display */}
                   {market.end_date && (
-                    <div className="flex items-center gap-2 mt-2 px-3 py-2 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg">
-                      <IonIcon icon={calendar} className="text-orange-600 dark:text-orange-400 text-lg flex-shrink-0" />
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-semibold text-orange-700 dark:text-orange-300 uppercase tracking-wide">
+                    <div className="flex items-center gap-1.5 sm:gap-2 mt-1.5 sm:mt-2 px-2 sm:px-3 py-1 sm:py-1.5 sm:py-2 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg">
+                      <IonIcon icon={calendar} className="text-orange-600 dark:text-orange-400 text-sm sm:text-base flex-shrink-0" />
+                      <div className="flex items-center gap-1 sm:gap-2 flex-wrap min-w-0">
+                        <span className="text-xs font-semibold text-orange-700 dark:text-orange-300 uppercase tracking-wide whitespace-nowrap">
                           Ends:
                         </span>
-                        <span className="text-sm font-semibold text-orange-800 dark:text-orange-200">
+                        <span className="text-xs sm:text-sm font-semibold text-orange-800 dark:text-orange-200 whitespace-nowrap">
                           {new Date(market.end_date).toLocaleDateString('en-US', { 
                             month: 'short', 
                             day: 'numeric', 
@@ -419,30 +420,33 @@ const MarketDetail: React.FC = () => {
                   )}
                 </div>
 
-                {/* Action Icons */}
-                <div className="flex items-center gap-2 flex-shrink-0">
+                {/* Action Icons - Desktop */}
+                <div className="sm:flex items-center gap-1 sm:gap-2 flex-shrink-0">
                   <IonButton 
                     fill="clear" 
-                    size="default"
+                    size="small"
                     onClick={handleCopyLink}
                     title="Copy link"
                   >
-                    <IonIcon icon={linkOutline} className="text-xl" />
+                    <IonIcon icon={linkOutline} className="text-lg sm:text-xl" />
                   </IonButton>
-                  <IonButton fill="clear" size="default">
-                    <IonIcon icon={bookmarkOutline} className="text-xl" />
+                  <IonButton 
+                    fill="clear" 
+                    size="small"
+                  >
+                    <IonIcon icon={bookmarkOutline} className="text-lg sm:text-xl" />
                   </IonButton>
                 </div>
               </div>
 
               {/* Current Chance Display - Prominent */}
               {sortedOutcomes.length > 0 && (
-                <div className="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
-                  <div className="flex items-baseline gap-3">
-                    <span className="text-3xl font-bold text-gray-900 dark:text-white">
+                <div className="mb-2 sm:mb-3 md:mb-4 pb-2 sm:pb-3 md:pb-4 border-b border-gray-200 dark:border-gray-700 px-2.5 sm:px-0 md:px-2">
+                  <div className="flex flex-col sm:flex-row sm:items-baseline gap-0.5 sm:gap-3">
+                    <span className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
                       {renderConsensus[renderSortedOutcomes[0].name]?.toFixed(0) || 0}% chance
                     </span>
-                    <span className="text-sm text-green-600 dark:text-green-400 font-semibold">
+                    <span className="text-xs sm:text-sm text-green-600 dark:text-green-400 font-semibold">
                       {renderSortedOutcomes[0].name}
                     </span>
                   </div>
@@ -450,11 +454,11 @@ const MarketDetail: React.FC = () => {
               )}
 
               {/* Category and Status Tags */}
-              <div className="flex items-center gap-2">
-                <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${getCategoryColor(market.category)}`}>
+              <div className="flex items-center gap-1 sm:gap-1.5 sm:gap-2 flex-wrap mt-1.5 sm:mt-0 px-2.5 sm:px-0 md:px-2 pb-2.5 sm:pb-0 md:pb-2">
+                <span className={`px-1.5 sm:px-2 md:px-2.5 py-0.5 sm:py-1 rounded-full text-xs font-medium ${getCategoryColor(market.category)}`}>
                   {market.category}
                 </span>
-                <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(market.status)}`}>
+                <span className={`px-1.5 sm:px-2 md:px-2.5 py-0.5 sm:py-1 rounded-full text-xs font-medium ${getStatusColor(market.status)}`}>
                   {market.status}
                 </span>
               </div>
@@ -475,12 +479,12 @@ const MarketDetail: React.FC = () => {
             {market.rules && (
               <div className="lg:col-span-1">
                 <IonCard className="bg-white dark:bg-gray-800 h-full">
-                  <IonCardContent className="p-4">
-                    <h2 className="text-sm font-bold text-gray-900 dark:text-white mb-2 flex items-center">
-                      <IonIcon icon={informationCircle} className="mr-1.5 text-primary" />
+                  <IonCardContent className="p-2.5 sm:p-3 md:p-4">
+                    <h2 className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white mb-1.5 sm:mb-2 flex items-center">
+                      <IonIcon icon={informationCircle} className="mr-1 sm:mr-1.5 text-primary text-sm sm:text-base md:text-lg" />
                       Resolution Rules
                     </h2>
-                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-2 sm:p-3">
                       <p className="text-xs text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
                         {market.rules}
                       </p>
@@ -493,11 +497,11 @@ const MarketDetail: React.FC = () => {
             {/* Outcomes & Consensus - Takes remaining space */}
             <div className={market.rules ? 'lg:col-span-2' : 'lg:col-span-3'}>
               <IonCard className="bg-white dark:bg-gray-800">
-                <IonCardContent className="p-4">
-                  <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+                <IonCardContent className="p-2.5 sm:p-3 md:p-4">
+                  <h2 className="text-sm sm:text-base md:text-lg font-bold text-gray-900 dark:text-white mb-2 sm:mb-3 md:mb-4">
                     Current Consensus
                   </h2>
-                  <div className="space-y-3">
+                  <div className="space-y-2 sm:space-y-3">
                     {renderSortedOutcomes.map((outcome) => {
                       const percentage = renderConsensus[outcome.name] || 0;
                       const isYes = outcome.name.toLowerCase() === 'yes';
@@ -510,36 +514,40 @@ const MarketDetail: React.FC = () => {
                       const isUserForecast = userForecast?.outcome_id === outcome.id;
 
                       return (
-                        <div key={outcome.id} className="space-y-1.5">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                        <div key={outcome.id} className="space-y-1">
+                          <div className="flex items-center justify-between gap-1.5 sm:gap-2">
+                            <div className="flex items-center gap-1 sm:gap-1.5 sm:gap-2 min-w-0 flex-1">
+                              <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">
                                 {outcome.name}
                               </span>
                               {isUserForecast && (
-                                <IonIcon icon={checkmarkCircle} className="text-primary text-base" title="Your forecast" />
+                                <IonIcon icon={checkmarkCircle} className="text-primary text-xs sm:text-sm md:text-base flex-shrink-0" title="Your forecast" />
                               )}
                             </div>
-                            <div className="flex items-center gap-3">
-                              <span className="text-xs text-gray-500 dark:text-gray-400">
+                            <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 flex-shrink-0">
+                              <span className="text-xs text-gray-500 dark:text-gray-400 hidden sm:inline">
                                 {outcome.total_points.toLocaleString()} chips
                               </span>
-                              <span className="text-sm font-bold text-gray-900 dark:text-white min-w-[3rem] text-right">
+                              <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white min-w-[2.25rem] sm:min-w-[2.5rem] md:min-w-[3rem] text-right">
                                 {percentage.toFixed(1)}%
                               </span>
                             </div>
                           </div>
-                          <div className="w-full h-7 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden relative">
+                          <div className="w-full h-5 sm:h-6 md:h-7 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden relative">
                             <div
-                              className={`h-full ${barColor} flex items-center justify-end pr-2 transition-all duration-300`}
+                              className={`h-full ${barColor} flex items-center justify-end pr-1 sm:pr-1.5 md:pr-2 transition-all duration-300`}
                               style={{ width: `${percentage}%` }}
                             >
-                              {percentage > 12 && (
+                              {percentage > 15 && (
                                 <span className="text-white text-xs font-semibold">
                                   {percentage.toFixed(0)}%
                                 </span>
                               )}
                             </div>
+                          </div>
+                          {/* Mobile: Show chips below bar */}
+                          <div className="sm:hidden text-xs text-gray-500 dark:text-gray-400 -mt-0.5">
+                            {outcome.total_points.toLocaleString()} chips
                           </div>
                         </div>
                       );
@@ -550,31 +558,43 @@ const MarketDetail: React.FC = () => {
             </div>
           </div>
 
-          {/* Resolution Section - Third (Accordion) */}
+          {/* Resolution Section - Custom Collapsible */}
           <IonCard className="bg-white dark:bg-gray-800 overflow-hidden">
             <IonCardContent className="p-0">
-              <IonAccordionGroup 
-                value={resolutionAccordionValue}
-                onIonChange={(e) => setResolutionAccordionValue(e.detail.value as string | undefined)}
+              {/* Clickable Header */}
+              <button
+                onClick={() => setIsResolutionOpen(!isResolutionOpen)}
+                className="w-full flex items-center justify-between p-3 sm:p-4 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border-b border-gray-200 dark:border-gray-700"
               >
-                <IonAccordion value="resolution">
-                  <IonItem slot="header" className="bg-white dark:bg-gray-800">
-                    <IonLabel>
-                      <div className="flex items-center gap-2">
-                        <IonIcon icon={informationCircle} className="text-primary text-lg" />
-                        <span className="font-semibold text-gray-900 dark:text-white">Resolution Information</span>
-                      </div>
-                    </IonLabel>
-                  </IonItem>
-                  <div slot="content" className="p-4 bg-white dark:bg-gray-800">
+                <div className="flex items-center gap-2">
+                  <IonIcon icon={informationCircle} className="text-primary text-base sm:text-lg" />
+                  <span className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white">
+                    Resolution Information
+                  </span>
+                </div>
+                <IonIcon 
+                  icon={chevronDown} 
+                  className={`text-gray-500 dark:text-gray-400 text-lg transition-transform duration-200 ${
+                    isResolutionOpen ? 'rotate-180' : ''
+                  }`}
+                />
+              </button>
+
+              {/* Collapsible Content */}
+              <div
+                className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                  isResolutionOpen ? 'max-h-[5000px] opacity-100' : 'max-h-0 opacity-0'
+                }`}
+              >
+                <div className="p-3 sm:p-4 bg-white dark:bg-gray-800">
                     {market.status === 'resolved' && market.resolution_outcome ? (
                       <div className="space-y-4">
                         {/* Winning Outcome */}
                         {resolution && (
-                          <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+                          <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3 sm:p-4">
                             <div className="flex items-center gap-2 mb-2">
-                              <IonIcon icon={trophyOutline} className="text-green-600 dark:text-green-400 text-xl" />
-                              <p className="text-sm font-semibold text-green-800 dark:text-green-300">
+                              <IonIcon icon={trophyOutline} className="text-green-600 dark:text-green-400 text-lg sm:text-xl" />
+                              <p className="text-xs sm:text-sm font-semibold text-green-800 dark:text-green-300">
                                 Winning Outcome: {resolution.outcome_name || 'N/A'}
                               </p>
                             </div>
@@ -593,7 +613,7 @@ const MarketDetail: React.FC = () => {
 
                         {/* User Forecast Result */}
                         {isAuthenticated && userForecast && (
-                          <div className={`border rounded-lg p-4 ${
+                          <div className={`border rounded-lg p-3 sm:p-4 ${
                             userForecast.status === 'won'
                               ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
                               : userForecast.status === 'lost'
@@ -602,12 +622,12 @@ const MarketDetail: React.FC = () => {
                           }`}>
                             <div className="flex items-center gap-2 mb-2">
                               {userForecast.status === 'won' && (
-                                <IonIcon icon={trophyOutline} className="text-green-600 dark:text-green-400 text-xl" />
+                                <IonIcon icon={trophyOutline} className="text-green-600 dark:text-green-400 text-lg sm:text-xl" />
                               )}
                               {userForecast.status === 'lost' && (
-                                <IonIcon icon={closeCircleOutline} className="text-red-600 dark:text-red-400 text-xl" />
+                                <IonIcon icon={closeCircleOutline} className="text-red-600 dark:text-red-400 text-lg sm:text-xl" />
                               )}
-                              <p className={`text-sm font-semibold ${
+                              <p className={`text-xs sm:text-sm font-semibold ${
                                 userForecast.status === 'won'
                                   ? 'text-green-800 dark:text-green-300'
                                   : userForecast.status === 'lost'
@@ -631,11 +651,11 @@ const MarketDetail: React.FC = () => {
 
                         {/* Resolution Note */}
                         {resolution && resolution.resolution_note && (
-                          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 sm:p-4">
                             <p className="text-xs font-semibold text-blue-800 dark:text-blue-300 mb-2">
                               Resolution Explanation:
                             </p>
-                            <p className="text-sm text-blue-700 dark:text-blue-400 whitespace-pre-wrap">
+                            <p className="text-xs sm:text-sm text-blue-700 dark:text-blue-400 whitespace-pre-wrap">
                               {resolution.resolution_note}
                             </p>
                           </div>
@@ -643,9 +663,9 @@ const MarketDetail: React.FC = () => {
 
                         {/* Evidence URLs */}
                         {resolution && resolution.evidence_urls && resolution.evidence_urls.length > 0 && (
-                          <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                          <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 sm:p-4">
                             <p className="text-xs font-semibold text-gray-800 dark:text-gray-300 mb-2 flex items-center gap-2">
-                              <IonIcon icon={linkOutline} className="text-lg" />
+                              <IonIcon icon={linkOutline} className="text-base sm:text-lg" />
                               Evidence:
                             </p>
                             <div className="space-y-2">
@@ -666,20 +686,20 @@ const MarketDetail: React.FC = () => {
 
                         {/* Resolution Rules (if exists) */}
                         {market.rules && (
-                          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+                          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-2 sm:p-3">
                             <p className="text-xs font-semibold text-blue-800 dark:text-blue-300 mb-1">
                               Resolution Rules:
                             </p>
-                            <p className="text-xs text-blue-700 dark:text-blue-400 whitespace-pre-wrap">
+                            <p className="text-xs text-blue-700 dark:text-blue-400 whitespace-pre-wrap leading-relaxed">
                               {market.rules}
                             </p>
                           </div>
                         )}
                       </div>
                     ) : (
-                      <div className="space-y-4">
-                        <div className="text-center py-4">
-                          <p className="text-gray-500 dark:text-gray-400 text-sm mb-3">
+                      <div className="space-y-3 sm:space-y-4">
+                        <div className="text-center py-3 sm:py-4">
+                          <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm mb-2 sm:mb-3">
                             This market has not been resolved yet.
                           </p>
                           {(user?.is_admin || user?.is_market_moderator) && market.status === 'open' && (
@@ -694,20 +714,19 @@ const MarketDetail: React.FC = () => {
                           )}
                         </div>
                         {market.rules && (
-                          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 text-left">
+                          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-2 sm:p-3 text-left">
                             <p className="text-xs font-semibold text-blue-800 dark:text-blue-300 mb-1">
                               Resolution Rules:
                             </p>
-                            <p className="text-xs text-blue-700 dark:text-blue-400 whitespace-pre-wrap">
+                            <p className="text-xs text-blue-700 dark:text-blue-400 whitespace-pre-wrap leading-relaxed">
                               {market.rules}
                             </p>
                           </div>
                         )}
                       </div>
                     )}
-                  </div>
-                </IonAccordion>
-              </IonAccordionGroup>
+                </div>
+              </div>
             </IonCardContent>
           </IonCard>
 
@@ -728,11 +747,11 @@ const MarketDetail: React.FC = () => {
                   />
                 ) : !isAuthenticated && market.status === 'open' ? (
                   <IonCard className="bg-white dark:bg-gray-800">
-                    <IonCardContent className="p-4">
-                      <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-3">
+                    <IonCardContent className="p-2.5 sm:p-3 md:p-4">
+                      <h2 className="text-sm sm:text-base md:text-lg font-bold text-gray-900 dark:text-white mb-2 sm:mb-3">
                         Trade on This Market
                       </h2>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                      <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-2.5 sm:mb-3 md:mb-4">
                         Sign in to buy positions on this market.
                       </p>
                       <IonButton onClick={() => history.push('/login')} className="button-primary">
@@ -742,8 +761,8 @@ const MarketDetail: React.FC = () => {
                   </IonCard>
                 ) : (
                   <IonCard className="bg-white dark:bg-gray-800">
-                    <IonCardContent className="p-4">
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <IonCardContent className="p-2.5 sm:p-3 md:p-4">
+                      <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                         This market is {market.status}. Trading is no longer available.
                       </p>
                     </IonCardContent>

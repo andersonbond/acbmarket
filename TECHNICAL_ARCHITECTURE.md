@@ -1,9 +1,9 @@
-# Pilimarket.com - Technical Architecture
+# ACBMarket.com - Technical Architecture
 
 ## Project Structure
 
 ```
-Pilimarket/
+ACBMarket/
 ├── backend/                 # FastAPI backend
 │   ├── app/
 │   │   ├── __init__.py
@@ -161,13 +161,6 @@ Pilimarket/
   - Access token: 15 minutes expiry
   - Refresh token: 7 days expiry
 - **Storage**: HTTP-only cookies (preferred) or secure localStorage
-
-#### Stripe Integration
-- **Library**: `stripe`
-- **Features**:
-  - Payment intents
-  - Webhook handling
-  - Test mode for development
 
 ### Frontend
 

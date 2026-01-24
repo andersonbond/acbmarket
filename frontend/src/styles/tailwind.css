@@ -701,6 +701,29 @@ ion-card-content h3 {
   font-weight: 700 !important;
 }
 
+/* Override Ionic's default font-size for market detail title on small screens */
+.market-title {
+  font-size: 1rem !important;
+}
+
+@media (min-width: 768px) {
+  .market-title {
+    font-size: 1.125rem !important; /* md:text-lg */
+  }
+}
+
+@media (min-width: 1024px) {
+  .market-title {
+    font-size: 1.25rem !important; /* lg:text-xl */
+  }
+}
+
+@media (min-width: 1280px) {
+  .market-title {
+    font-size: 1.5rem !important; /* xl:text-2xl */
+  }
+}
+
 /* Notification popover width override - force width using Ionic CSS variables */
 .notification-popover {
   --width: 500px !important;

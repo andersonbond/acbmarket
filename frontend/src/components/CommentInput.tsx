@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { IonButton, IonTextarea, IonIcon } from '@ionic/react';
-import { sendOutline, closeOutline } from 'ionicons/icons';
+import { closeOutline } from 'ionicons/icons';
+import { PaperAirplaneIcon } from '@heroicons/react/24/outline';
 
 interface CommentInputProps {
   onSubmit: (content: string) => Promise<void>;
@@ -77,8 +78,7 @@ const CommentInput: React.FC<CommentInputProps> = ({
           disabled={!content.trim() || isSubmitting || isLoading || isOverLimit}
           className="button-primary"
         >
-          <IonIcon icon={sendOutline} slot="start" />
-          Post Comment
+          <PaperAirplaneIcon className="w-5 h-5 mr-1" />
         </IonButton>
       </div>
     </div>

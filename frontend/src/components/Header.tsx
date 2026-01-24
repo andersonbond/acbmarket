@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonSearchbar, IonIcon, IonModal, IonContent } from '@ionic/react';
 import { person, statsChart, trophy, logOut, logIn, personAdd, moon, sunny, helpCircle, close, menu, add, wallet, settingsOutline } from 'ionicons/icons';
+import { UserGroupIcon } from '@heroicons/react/24/outline';
 import { useHistory } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -18,17 +19,30 @@ const Header: React.FC = () => {
     <IonHeader>
       <IonToolbar>
         {/* Mobile: Logo/Title and Menu */}
-        <div slot="start" className="flex items-center md:hidden">
-          <div onClick={() => history.push('/')} className="cursor-pointer flex items-center gap-2">
-            <img src="/logo.png" alt="ACBMarket" className="h-8 w-auto rounded ml-2" />
-            <IonTitle className="flex-shrink-0 text-lg pl-0 font-dm-sans font-extrabold">ACBMarket</IonTitle>
+        <div slot="start" className="flex items-center md:hidden h-full">
+          <div onClick={() => history.push('/')} className="cursor-pointer flex items-center gap-2 h-full">
+            <img 
+              src="/logo.png" 
+              alt="ACBMarket" 
+              className="h-6 w-auto rounded ml-2 mt-2 md:mt-0"
+            />
+            <IonTitle 
+              className="flex-shrink-0 text-lg pl-0 font-dm-sans font-extrabold my-0 leading-none" 
+              style={{ 
+                paddingTop: '0', 
+                paddingBottom: '0', 
+                lineHeight: '1.2'
+              }}
+            >
+              ACBMarket
+            </IonTitle>
           </div>
         </div>
 
         {/* Desktop: Logo/Title and Search */}
         <div slot="start" className="hidden md:flex items-center">
           <div onClick={() => history.push('/')} className="cursor-pointer flex items-center gap-2 mr-4">
-            <img src="/logo.png" alt="ACBMarket" className="h-10 w-auto rounded ml-2" />
+            <img src="/logo.png" alt="ACBMarket" className="h-8 w-auto rounded ml-2" />
             <IonTitle className="flex-shrink-0 pl-0 font-dm-sans font-extrabold">ACBMarket</IonTitle>
           </div>
           <div className="flex">
@@ -93,7 +107,7 @@ const Header: React.FC = () => {
               </IonButton>
               {user?.is_admin && (
                 <IonButton onClick={() => history.push('/admin')} className="bg-gray-200 text-black rounded-md font-dm-sans">
-                  <IonIcon icon={statsChart} slot="start" />
+                  <UserGroupIcon className="w-4 h-4 mr-1" />
                   <span className="hidden lg:inline text-xs">Admin</span>
                 </IonButton>
               )}
@@ -236,7 +250,7 @@ const Header: React.FC = () => {
                     }}
                     className="justify-start text-left font-dm-sans"
                   >
-                    <IonIcon icon={statsChart} slot="start" />
+                    <UserGroupIcon className="w-5 h-5 mr-2" />
                     Admin Panel
                   </IonButton>
                 )}

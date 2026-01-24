@@ -26,11 +26,18 @@ interface MarketHistoryResponse {
 const MarketGraph: React.FC<MarketGraphProps> = ({ marketId, outcomes }) => {
   const [history, setHistory] = useState<HistoryDataPoint[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [timeRange, setTimeRange] = useState<string>('all');
   const [error, setError] = useState<string | null>(null);
+  const [hasInitialData, setHasInitialData] = useState(false);
+  const [hasDataForCurrentRange, setHasDataForCurrentRange] = useState(true);
 
-  const fetchHistory = async (range: string) => {
-    setIsLoading(true);
+  const fetchHistory = async (range: string, isInitialLoad: boolean = false) => {
+    if (isInitialLoad) {
+      setIsLoading(true);
+    } else {
+      setIsRefreshing(true);
+    }
     setError(null);
     try {
       const response = await api.get<MarketHistoryResponse>(
@@ -38,7 +45,26 @@ const MarketGraph: React.FC<MarketGraphProps> = ({ marketId, outcomes }) => {
       );
       
       if (response.data.success) {
-        setHistory(response.data.data.history);
+        const newHistory = response.data.data.history;
+        // Only update history if we have data, otherwise keep previous data
+        if (newHistory.length > 0) {
+          setHistory(newHistory);
+          setHasDataForCurrentRange(true);
+          if (!hasInitialData) {
+            setHasInitialData(true);
+          }
+        } else {
+          // No data for this time range
+          setHasDataForCurrentRange(false);
+          // If this is initial load and no data, set empty array
+          // Otherwise, keep the previous history data so chart doesn't disappear
+          if (isInitialLoad) {
+            setHistory([]);
+            setHasInitialData(false);
+          }
+          // If we have previous data, keep it (don't update history)
+          // This ensures chart stays visible when switching to empty time ranges
+        }
       } else {
         setError('Failed to load history');
       }
@@ -47,13 +73,16 @@ const MarketGraph: React.FC<MarketGraphProps> = ({ marketId, outcomes }) => {
       setError('Could not load market history');
     } finally {
       setIsLoading(false);
+      setIsRefreshing(false);
     }
   };
 
   useEffect(() => {
     if (marketId) {
-      fetchHistory(timeRange);
+      const isInitialLoad = !hasInitialData;
+      fetchHistory(timeRange, isInitialLoad);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [marketId, timeRange]);
 
   // Determine which outcome to display
@@ -105,7 +134,7 @@ const MarketGraph: React.FC<MarketGraphProps> = ({ marketId, outcomes }) => {
     );
   }
 
-  if (isLoading) {
+  if (isLoading && !hasInitialData) {
     return (
       <IonCard className="bg-white dark:bg-gray-800">
         <IonCardContent className="p-4">
@@ -117,7 +146,7 @@ const MarketGraph: React.FC<MarketGraphProps> = ({ marketId, outcomes }) => {
     );
   }
 
-  if (chartData.length === 0) {
+  if (chartData.length === 0 && !hasInitialData) {
     return (
       <IonCard className="bg-white dark:bg-gray-800">
         <IonCardContent className="p-4">
@@ -147,9 +176,33 @@ const MarketGraph: React.FC<MarketGraphProps> = ({ marketId, outcomes }) => {
           ))}
         </div>
 
+        {/* Warning message if no data for current range but showing previous data */}
+        {!hasDataForCurrentRange && chartData.length > 0 && (
+          <div className="mb-3 p-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+            <p className="text-xs text-yellow-700 dark:text-yellow-300 text-center">
+              No data available for {timeRange.toUpperCase()} time range. Showing all available data.
+            </p>
+          </div>
+        )}
+
         {/* Chart */}
-        <div className="w-full h-[300px] md:h-[250px]">
-          <ResponsiveContainer width="100%" height="100%">
+        <div className="w-full h-[300px] md:h-[250px] relative">
+          {isRefreshing && (
+            <div className="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-gray-800/80 z-10 rounded-lg">
+              <IonSpinner name="crescent" />
+            </div>
+          )}
+          {chartData.length === 0 ? (
+            <div className="flex items-center justify-center h-full">
+              <p className="text-gray-500 dark:text-gray-400 text-sm text-center">
+                {hasInitialData 
+                  ? `No data available for ${timeRange.toUpperCase()} time range. Try selecting a different time range.`
+                  : 'No historical data available yet. Make forecasts to see trends!'
+                }
+              </p>
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={chartData}
               margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
@@ -197,6 +250,7 @@ const MarketGraph: React.FC<MarketGraphProps> = ({ marketId, outcomes }) => {
               ))}
             </LineChart>
           </ResponsiveContainer>
+          )}
         </div>
       </IonCardContent>
     </IonCard>

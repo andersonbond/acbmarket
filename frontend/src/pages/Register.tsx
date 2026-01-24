@@ -116,42 +116,42 @@ const Register: React.FC = () => {
   return (
     <IonPage>
       <IonContent className="ion-padding">
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-4 py-8">
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-4 py-4 md:py-8">
           <div className="max-w-md lg:max-w-4xl xl:max-w-5xl w-full">
             {/* Close Button */}
-            <div className="flex justify-end mb-2">
+            <div className="flex justify-end mb-1 md:mb-2">
               <IonButton 
                 fill="clear" 
                 onClick={() => history.push('/')} 
                 className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
                 size="default"
               >
-                <IonIcon icon={close} slot="icon-only" className="text-2xl" />
+                <IonIcon icon={close} slot="icon-only" className="text-xl md:text-2xl" />
               </IonButton>
             </div>
 
             {/* Logo/Header */}
-            <div className="text-center mb-8">
-              <div className="flex justify-center mb-4">
+            <div className="text-center mb-4 md:mb-8">
+              <div className="flex justify-center mb-2 md:mb-4">
                 <img 
                   src="/logo.png" 
                   alt="ACBMarket" 
-                  className="h-16 w-auto rounded-lg shadow-md"
+                  className="h-12 md:h-16 w-auto rounded-lg shadow-md"
                   onError={(e) => {
                     (e.target as HTMLImageElement).style.display = 'none';
                   }}
                 />
               </div>
-              <h1 className="text-5xl font-dm-sans font-extrabold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent mb-2">
+              <h1 className="text-3xl md:text-5xl font-dm-sans font-extrabold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent mb-1 md:mb-2">
                 ACBMarket
               </h1>
-              <p className="text-gray-600 dark:text-gray-300 text-lg">Join the prediction market community</p>
+              <p className="text-gray-600 dark:text-gray-300 text-sm md:text-lg">Join the prediction market community</p>
             </div>
 
             {/* Register Card */}
-            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-3xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 p-8 md:p-10">
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Create Account</h2>
-              <p className="text-gray-500 dark:text-gray-400 mb-8">Fill in your details to get started</p>
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-3xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 p-4 md:p-8 lg:p-10">
+              <h2 className="text-xl md:text-3xl font-bold text-gray-900 dark:text-white mb-1 md:mb-2">Create Account</h2>
+              <p className="text-gray-500 dark:text-gray-400 mb-4 md:mb-8 text-sm md:text-base">Fill in your details to get started</p>
 
               {error && (
                 <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 rounded-lg animate-fade-in">
@@ -159,7 +159,7 @@ const Register: React.FC = () => {
                 </div>
               )}
 
-              <form onSubmit={handleSubmit} className="space-y-5 lg:grid lg:grid-cols-2 lg:gap-5 lg:space-y-0">
+              <form onSubmit={handleSubmit} className="space-y-3 md:space-y-5 lg:grid lg:grid-cols-2 lg:gap-5 lg:space-y-0">
                 <style>{`
                   ion-item {
                     --inner-padding-end: 0;
@@ -191,7 +191,7 @@ const Register: React.FC = () => {
                     lines="none"
                   >
                     <IonIcon icon={personOutline} slot="start" className="text-gray-400 dark:text-gray-500 text-xl" />
-                    <IonLabel position="stacked" className="text-gray-700 dark:text-gray-300 font-medium">
+                    <IonLabel position="stacked" className="text-gray-700 dark:text-gray-300 font-medium text-sm md:text-base">
                       Display Name
                     </IonLabel>
                     <IonInput
@@ -242,7 +242,7 @@ const Register: React.FC = () => {
                     lines="none"
                   >
                     <IonIcon icon={callOutline} slot="start" className="text-gray-400 dark:text-gray-500 text-xl" />
-                    <IonLabel position="stacked" className="text-gray-700 dark:text-gray-300 font-medium">
+                    <IonLabel position="stacked" className="text-gray-700 dark:text-gray-300 font-medium text-sm md:text-base">
                       Contact Number
                     </IonLabel>
                     <div className="contact-number-wrapper">
@@ -273,7 +273,7 @@ const Register: React.FC = () => {
                     lines="none"
                   >
                     <IonIcon icon={lockClosedOutline} slot="start" className="text-gray-400 dark:text-gray-500 text-xl" />
-                    <IonLabel position="stacked" className="text-gray-700 dark:text-gray-300 font-medium">
+                    <IonLabel position="stacked" className="text-gray-700 dark:text-gray-300 font-medium text-sm md:text-base">
                       Password
                     </IonLabel>
                     <IonInput
@@ -326,7 +326,7 @@ const Register: React.FC = () => {
                     lines="none"
                   >
                     <IonIcon icon={lockClosedOutline} slot="start" className="text-gray-400 dark:text-gray-500 text-xl" />
-                    <IonLabel position="stacked" className="text-gray-700 dark:text-gray-300 font-medium">
+                    <IonLabel position="stacked" className="text-gray-700 dark:text-gray-300 font-medium text-sm md:text-base">
                       Confirm Password
                     </IonLabel>
                     <IonInput
@@ -392,11 +392,11 @@ const Register: React.FC = () => {
                   <button
                     type="submit"
                     disabled={isLoading || !isFormValid()}
-                    className="w-full text-white text-center uppercase border-none rounded-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all duration-150 ease-in-out hover:-translate-y-0.5 disabled:hover:translate-y-0 mt-6"
+                    className="w-full text-white text-center uppercase border-none rounded-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all duration-150 ease-in-out hover:-translate-y-0.5 disabled:hover:translate-y-0 mt-4 md:mt-6"
                     style={{
-                      padding: '16px 0',
+                      padding: '12px 0',
                       background: '#1d4ed8',
-                      fontSize: '20px',
+                      fontSize: '16px',
                       fontWeight: 700,
                     }}
                     onMouseEnter={(e) => {
@@ -415,7 +415,7 @@ const Register: React.FC = () => {
                       </>
                     ) : (
                       <>
-                        <IonIcon icon={personAdd} className="text-xl" />
+                        <IonIcon icon={personAdd} className="text-lg md:text-xl" />
                         Create Account
                       </>
                     )}
@@ -424,8 +424,8 @@ const Register: React.FC = () => {
               </form>
 
               {/* Sign In Link */}
-              <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700 text-center">
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+              <div className="mt-6 md:mt-8 pt-4 md:pt-6 border-t border-gray-200 dark:border-gray-700 text-center">
+                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
                   Already have an account?{' '}
                   <Link 
                     to="/login" 

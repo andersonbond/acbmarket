@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonSearchbar, IonIcon, IonModal, IonContent } from '@ionic/react';
 import { person, statsChart, trophy, logOut, logIn, personAdd, moon, sunny, helpCircle, close, menu, add, wallet, settingsOutline } from 'ionicons/icons';
 import { UserGroupIcon } from '@heroicons/react/24/outline';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import NotificationBell from './NotificationBell';
@@ -11,9 +11,49 @@ const Header: React.FC = () => {
   const { isAuthenticated, user, logout } = useAuth();
   const { toggleTheme, isDark } = useTheme();
   const history = useHistory();
+  const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
   const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Sync search query with URL parameter
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const search = params.get('search');
+    if (search) {
+      setSearchQuery(search);
+    } else if (location.pathname !== '/markets') {
+      // Only clear if we're not on the markets page (to preserve search when navigating away and back)
+      setSearchQuery('');
+    }
+  }, [location.search, location.pathname]);
+
+  // Debounced navigation function
+  const debouncedNavigate = (query: string) => {
+    // Clear existing timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    // Set new timeout
+    searchTimeoutRef.current = setTimeout(() => {
+      if (query.trim()) {
+        history.push(`/markets?search=${encodeURIComponent(query)}`);
+      } else {
+        history.push('/markets');
+      }
+    }, 500); // 500ms delay
+  };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, []);
 
   return (
     <IonHeader>
@@ -49,13 +89,19 @@ const Header: React.FC = () => {
             <IonSearchbar
               value={searchQuery}
               onIonInput={(e) => {
-                setSearchQuery(e.detail.value!);
-                // TODO: Implement search functionality
-                if (e.detail.value?.trim()) {
-                  history.push(`/markets?search=${encodeURIComponent(e.detail.value)}`);
-                }
+                const value = e.detail.value || '';
+                setSearchQuery(value);
+                // Debounce navigation to prevent losing focus
+                debouncedNavigate(value);
               }}
-              onIonClear={() => setSearchQuery('')}
+              onIonClear={() => {
+                setSearchQuery('');
+                // Clear timeout and navigate immediately on clear
+                if (searchTimeoutRef.current) {
+                  clearTimeout(searchTimeoutRef.current);
+                }
+                history.push('/markets');
+              }}
               placeholder="Search ACBMarket..."
               className="searchbar-custom searchbar-compact"
             />
@@ -154,12 +200,19 @@ const Header: React.FC = () => {
         <IonSearchbar
           value={searchQuery}
           onIonInput={(e) => {
-            setSearchQuery(e.detail.value!);
-            if (e.detail.value?.trim()) {
-              history.push(`/markets?search=${encodeURIComponent(e.detail.value)}`);
-            }
+            const value = e.detail.value || '';
+            setSearchQuery(value);
+            // Debounce navigation to prevent losing focus
+            debouncedNavigate(value);
           }}
-          onIonClear={() => setSearchQuery('')}
+          onIonClear={() => {
+            setSearchQuery('');
+            // Clear timeout and navigate immediately on clear
+            if (searchTimeoutRef.current) {
+              clearTimeout(searchTimeoutRef.current);
+            }
+            history.push('/markets');
+          }}
           placeholder="Search ACBMarket..."
           className="searchbar-custom"
         />

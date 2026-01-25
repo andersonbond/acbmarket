@@ -26,7 +26,7 @@ const MarketFilters: React.FC<MarketFiltersProps> = ({
   ];
 
   return (
-    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 text-sm">
+    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 text-sm mb-2">
       {/* Sort Section */}
       <div className="flex items-center gap-2">
         <IonIcon icon={swapVertical} className="text-gray-500 dark:text-gray-400 text-base" />

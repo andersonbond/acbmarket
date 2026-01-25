@@ -489,7 +489,7 @@ const Leaderboard: React.FC = () => {
                   <div className="mb-4 p-2 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg">
                     <p className="text-xs text-primary-700 dark:text-primary-300 flex items-center gap-1.5">
                       <InformationCircleIcon className="w-3 h-3 flex-shrink-0" />
-                      <span>Top 10 winners every 25th of the month will receive rewards.</span>
+                      <span>Monthly rewards are distributed to the top 10 winners on the 25th of each month. Keep forecasting to climb the ranks!</span>
                     </p>
                   </div>
                   {isLoadingWins ? (

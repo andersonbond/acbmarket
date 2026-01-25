@@ -56,7 +56,7 @@ const CategoriesBar: React.FC<CategoriesBarProps> = ({ selectedCategory = 'All',
   return (
     <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 sticky top-[56px] z-10">
       <div className="container mx-auto px-4">
-        <div className="flex items-center space-x-2 py-3">
+        <div className="flex items-center space-x-1.5 sm:space-x-2 py-2 sm:py-2.5 md:py-3">
           {/* Left Scroll Button */}
           <IonButton
             fill="clear"
@@ -76,19 +76,19 @@ const CategoriesBar: React.FC<CategoriesBarProps> = ({ selectedCategory = 'All',
               msOverflowStyle: 'none',
             }}
           >
-            <div className="flex space-x-2 min-w-max">
+            <div className="flex space-x-1.5 sm:space-x-2 min-w-max">
               {categories.map((category) => (
                 <button
                   key={category.name}
                   onClick={() => onCategorySelect?.(category.name)}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+                  className={`flex items-center space-x-1.5 sm:space-x-2 px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition-colors ${
                     selectedCategory === category.name
                       ? 'bg-primary-600 text-white font-semibold'
                       : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                   }`}
                 >
-                  <IonIcon icon={category.icon} className="text-base" />
-                  <span>{category.name}</span>
+                  <IonIcon icon={category.icon} className="text-sm sm:text-base" />
+                  <span className="text-xs sm:text-sm">{category.name}</span>
                 </button>
               ))}
             </div>

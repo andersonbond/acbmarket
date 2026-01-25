@@ -13,5 +13,6 @@ declare module '@heroicons/react/24/outline' {
   export const PaperAirplaneIcon: ForwardRefExoticComponent<
     HeroIconProps & RefAttributes<SVGSVGElement>
   >;
+
   // Add other icons as needed
 }

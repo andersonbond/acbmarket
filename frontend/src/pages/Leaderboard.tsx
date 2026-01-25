@@ -18,7 +18,8 @@ import {
   IonInput,
   IonItem,
 } from '@ionic/react';
-import { trophyOutline, searchOutline, chevronDownOutline, informationCircleOutline, close } from 'ionicons/icons';
+import { trophyOutline, searchOutline, chevronDownOutline, close } from 'ionicons/icons';
+import { InformationCircleIcon } from '@heroicons/react/24/outline';
 import Header from '../components/Header';
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
@@ -482,9 +483,15 @@ const Leaderboard: React.FC = () => {
             <div className="lg:col-span-1">
               <IonCard className="bg-white dark:bg-gray-800">
                 <IonCardContent className="p-4">
-                  <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
                     Biggest wins this month
                   </h2>
+                  <div className="mb-4 p-2 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg">
+                    <p className="text-xs text-primary-700 dark:text-primary-300 flex items-center gap-1.5">
+                      <InformationCircleIcon className="w-3 h-3 flex-shrink-0" />
+                      <span>Top 10 winners every 25th of the month will receive rewards.</span>
+                    </p>
+                  </div>
                   {isLoadingWins ? (
                     <div className="flex justify-center items-center py-8">
                       <IonSpinner name="crescent" />

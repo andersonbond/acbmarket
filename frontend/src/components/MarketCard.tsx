@@ -91,7 +91,7 @@ const MarketCard: React.FC<MarketCardProps> = ({ market }) => {
 
   return (
     <IonCard 
-      className="cursor-pointer hover:shadow-md transition-shadow overflow-hidden bg-white dark:bg-gray-800"
+      className="cursor-pointer hover:shadow-md transition-shadow overflow-hidden bg-white dark:bg-gray-800 m-0"
       onClick={() => history.push(`/markets/${market.id}`)}
       role="article"
       aria-label={`Market: ${market.title}`}
@@ -103,7 +103,7 @@ const MarketCard: React.FC<MarketCardProps> = ({ market }) => {
         }
       }}
     >
-      <IonCardContent className="p-4">
+      <IonCardContent className="p-2">
         <div className="flex items-start gap-3 mb-3">
           {/* Market Image - Left side, square with rounded corners */}
           <div className="flex-shrink-0">
@@ -122,7 +122,7 @@ const MarketCard: React.FC<MarketCardProps> = ({ market }) => {
 
           {/* Content - Right side of image */}
           <div className="flex-1 min-w-0">
-            <h3 className="text-base font-bold text-gray-900 dark:text-white mb-2 line-clamp-2">
+            <h3 className="text-base font-bold text-gray-900 dark:text-white mb-2 break-words">
               {market.title}
             </h3>
             <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${getCategoryColor(market.category)}`}>

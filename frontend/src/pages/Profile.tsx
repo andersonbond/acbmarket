@@ -32,6 +32,7 @@ import {
   layersOutline,
   pulseOutline,
 } from 'ionicons/icons';
+import { ChartBarIcon, CheckCircleIcon, TrophyIcon, PlusIcon, ArrowUpIcon } from '@heroicons/react/24/outline';
 import { useHistory, useParams } from 'react-router-dom';
 import Header from '../components/Header';
 import { useAuth } from '../contexts/AuthContext';
@@ -601,21 +602,21 @@ const Profile: React.FC = () => {
     <IonPage>
       <Header />
       <IonContent className="bg-gray-50 dark:bg-gray-900">
-        <div className="max-w-7xl mx-auto px-4 py-6">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4 md:py-6">
           {/* Top Section - User Info & Profit/Loss */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-3 sm:mb-4 md:mb-6">
             {/* Left Column - User Profile */}
             <div className="lg:col-span-2">
               <IonCard className="bg-white dark:bg-gray-800 shadow-sm">
-                <IonCardContent className="p-6">
-                  <div className="flex items-start gap-4">
+                <IonCardContent className="p-3 sm:p-4 md:p-6">
+                  <div className="flex items-start gap-2 sm:gap-3 md:gap-4">
                     {/* Avatar */}
                     <div className="relative">
                       {profileUser.avatar_url ? (
                         <img
                           src={profileUser.avatar_url}
                           alt={profileUser.display_name}
-                          className="w-16 h-16 rounded-full object-cover flex-shrink-0 shadow-md"
+                          className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full object-cover flex-shrink-0 shadow-md"
                           onError={(e) => {
                             // Hide image and show gradient fallback if image fails to load
                             const target = e.target as HTMLImageElement;
@@ -626,7 +627,7 @@ const Profile: React.FC = () => {
                         />
                       ) : null}
                       <div 
-                        className={`avatar-fallback w-16 h-16 bg-gradient-to-br ${getAvatarGradient(profileUser.id)} rounded-full flex items-center justify-center text-white text-2xl font-bold flex-shrink-0 shadow-md ${profileUser.avatar_url ? 'hidden' : 'flex'}`}
+                        className={`avatar-fallback w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-gradient-to-br ${getAvatarGradient(profileUser.id)} rounded-full flex items-center justify-center text-white text-lg sm:text-xl md:text-2xl font-bold flex-shrink-0 shadow-md ${profileUser.avatar_url ? 'hidden' : 'flex'}`}
                       >
                         {profileUser.display_name.charAt(0).toUpperCase()}
                       </div>
@@ -634,10 +635,10 @@ const Profile: React.FC = () => {
                     
                     {/* User Info */}
                     <div className="flex-1 min-w-0">
-                      <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+                      <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-0.5 sm:mb-1">
                       {profileUser.display_name}
                     </h1>
-                      <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mb-2">
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-3 md:gap-4 text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-1.5 sm:mb-2">
                         <span className="flex items-center gap-1">
                           <IonIcon icon={timeOutline} className="text-base" />
                           Joined {joinDate}
@@ -652,14 +653,14 @@ const Profile: React.FC = () => {
                       
                       {/* Badges */}
                       {badges.length > 0 && (
-                        <div className="flex flex-wrap items-center gap-2 mb-4">
+                        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-2 sm:mb-3 md:mb-4">
                           {badges.map((badge) => (
                             <div
                               key={badge.id}
-                              className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-800/20 border border-primary-200 dark:border-primary-700 rounded-full text-xs font-medium text-primary-700 dark:text-primary-300"
+                              className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 bg-gradient-to-r from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-800/20 border border-primary-200 dark:border-primary-700 rounded-full text-xs font-medium text-primary-700 dark:text-primary-300"
                               title={badge.description}
                             >
-                              <span className="text-base">{badge.icon}</span>
+                              <span className="text-sm sm:text-base">{badge.icon}</span>
                               <span>{badge.name}</span>
               </div>
                           ))}
@@ -667,22 +668,22 @@ const Profile: React.FC = () => {
                       )}
                       
                       {/* Summary Stats */}
-                      <div className="grid grid-cols-3 gap-4 mt-4">
+                      <div className="grid grid-cols-3 gap-2 sm:gap-3 md:gap-4 mt-2 sm:mt-3 md:mt-4">
                         <div>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Positions Value</p>
-                          <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5 sm:mb-1">Positions Value</p>
+                          <p className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 dark:text-white">
                             {positionsValue.toLocaleString()}
                           </p>
                   </div>
                   <div>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Biggest Win</p>
-                          <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5 sm:mb-1">Biggest Win</p>
+                          <p className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 dark:text-white">
                             {biggestWin !== null ? biggestWin.toLocaleString() : '—'}
                     </p>
                   </div>
                         <div>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Predictions</p>
-                          <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5 sm:mb-1">Predictions</p>
+                          <p className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 dark:text-white">
                             {forecastStats?.total_forecasts || 0}
                           </p>
                     </div>
@@ -709,26 +710,26 @@ const Profile: React.FC = () => {
             {/* Right Column - Profit/Loss */}
             <div className="lg:col-span-1">
               <IonCard className="bg-white dark:bg-gray-800 shadow-sm">
-                <IonCardHeader className="pb-3">
-                      <IonCardTitle className="text-lg font-semibold text-gray-900 dark:text-white">
+                <IonCardHeader className="pb-2 sm:pb-3">
+                      <IonCardTitle className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
                     Profit/Loss
                       </IonCardTitle>
                   </IonCardHeader>
-                <IonCardContent>
-                  <div className="mb-4">
-                    <p className={`text-3xl font-bold ${profitLoss >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                <IonCardContent className="p-3 sm:p-4 md:p-6">
+                  <div className="mb-2 sm:mb-3 md:mb-4">
+                    <p className={`text-xl sm:text-2xl md:text-3xl font-bold ${profitLoss >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                       {profitLoss >= 0 ? '+' : ''}{profitLoss.toLocaleString()}
                     </p>
                       </div>
 
                   {/* Timeframe Tabs - Only show for own profile (when we have forecasts) */}
                   {isOwnProfile && forecasts.length > 0 && (
-                    <div className="flex gap-2 mb-4">
+                    <div className="flex gap-1.5 sm:gap-2 mb-2 sm:mb-3 md:mb-4">
                       {(['all', '1d', '1w', '1m'] as const).map((period) => (
                         <button
                           key={period}
                           onClick={() => setProfitLossPeriod(period)}
-                          className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                          className={`px-2 sm:px-3 py-1 sm:py-1.5 text-xs font-medium rounded-md transition-colors ${
                             profitLossPeriod === period
                               ? 'bg-primary-600 text-white'
                               : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
@@ -741,7 +742,7 @@ const Profile: React.FC = () => {
                   )}
 
                   {/* Profit/Loss Chart */}
-                  <div className="h-32">
+                  <div className="h-24 sm:h-28 md:h-32">
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={profitLossChartData}>
                             <defs>
@@ -796,14 +797,14 @@ const Profile: React.FC = () => {
 
               {/* Positions Tab Content */}
               {activeTab === 'positions' && (
-                <div className="p-4">
+                <div className="p-2.5 sm:p-3 md:p-4">
                   {/* Sub-tabs and Search - Only show Active/Closed for own profile */}
                   {isOwnProfile && (
-                    <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-2 sm:mb-3 md:mb-4">
                       <div className="flex gap-2">
                         <button
                           onClick={() => setPositionFilter('active')}
-                          className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                          className={`px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-md transition-colors ${
                             positionFilter === 'active'
                               ? 'bg-primary-600 text-white'
                               : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
@@ -813,7 +814,7 @@ const Profile: React.FC = () => {
                         </button>
                         <button
                           onClick={() => setPositionFilter('closed')}
-                          className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                          className={`px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-md transition-colors ${
                             positionFilter === 'closed'
                               ? 'bg-primary-600 text-white'
                               : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
@@ -838,7 +839,7 @@ const Profile: React.FC = () => {
 
                   {/* For public profiles, show search only */}
                   {!isOwnProfile && (
-                    <div className="mb-4">
+                    <div className="mb-2 sm:mb-3 md:mb-4">
                       <IonItem className="rounded-lg border border-gray-200 dark:border-gray-700" lines="none">
                         <IonIcon icon={searchOutline} slot="start" className="text-gray-400" />
                         <IonInput
@@ -856,12 +857,12 @@ const Profile: React.FC = () => {
 
                       {/* Positions Table */}
                       {isLoadingForecasts ? (
-                        <div className="flex justify-center items-center py-12">
+                        <div className="flex justify-center items-center py-6 sm:py-8 md:py-12">
                           <IonSpinner name="crescent" />
                       </div>
                       ) : filteredPositions.length === 0 ? (
-                        <div className="text-center py-12">
-                          <p className="text-gray-500 dark:text-gray-400">
+                        <div className="text-center py-6 sm:py-8 md:py-12">
+                          <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400">
                             {!isOwnProfile 
                               ? 'No resolved positions found'
                               : `No ${positionFilter} positions found`
@@ -873,19 +874,19 @@ const Profile: React.FC = () => {
                       <table className="w-full">
                         <thead className="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
                           <tr>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                            <th className="px-2 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                               MARKET
                             </th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                            <th className="px-2 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                               PREDICTION
                             </th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                            <th className="px-2 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                               POINTS
                             </th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                            <th className="px-2 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                               STATUS
                             </th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                            <th className="px-2 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                               VALUE
                             </th>
                           </tr>
@@ -906,13 +907,13 @@ const Profile: React.FC = () => {
                                 className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer"
                                 onClick={() => forecast.market_id && history.push(`/markets/${forecast.market_id}`)}
                               >
-                                <td className="px-4 py-4">
-                                  <div className="text-sm font-medium text-gray-900 dark:text-white max-w-xs truncate">
+                                <td className="px-2 sm:px-3 md:px-4 py-2 sm:py-3 md:py-4">
+                                  <div className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white max-w-xs truncate">
                                     {forecast.market_title || 'Unknown Market'}
                                   </div>
                                 </td>
-                                <td className="px-4 py-4">
-                                  <span className={`px-2 py-1 text-xs font-medium rounded ${
+                                <td className="px-2 sm:px-3 md:px-4 py-2 sm:py-3 md:py-4">
+                                  <span className={`px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs font-medium rounded ${
                                     forecast.outcome_name?.toLowerCase() === 'yes'
                                       ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
                                       : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
@@ -920,13 +921,13 @@ const Profile: React.FC = () => {
                                     {forecast.outcome_name || 'N/A'}
                               </span>
                                 </td>
-                                <td className="px-4 py-4">
-                                  <span className="text-sm text-gray-900 dark:text-white">
+                                <td className="px-2 sm:px-3 md:px-4 py-2 sm:py-3 md:py-4">
+                                  <span className="text-xs sm:text-sm text-gray-900 dark:text-white">
                                     {forecast.points.toLocaleString()} chips
                                 </span>
                                 </td>
-                                <td className="px-4 py-4">
-                                  <span className={`px-2 py-1 text-xs font-medium rounded ${
+                                <td className="px-2 sm:px-3 md:px-4 py-2 sm:py-3 md:py-4">
+                                  <span className={`px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs font-medium rounded ${
                                     isPending
                                       ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300'
                                       : isWon
@@ -936,14 +937,14 @@ const Profile: React.FC = () => {
                                     {isPending ? 'Pending' : isWon ? 'Won' : 'Lost'}
                               </span>
                                 </td>
-                                <td className="px-4 py-4">
+                                <td className="px-2 sm:px-3 md:px-4 py-2 sm:py-3 md:py-4">
                                   {isPending ? (
-                                    <span className="text-sm text-gray-900 dark:text-white">
+                                    <span className="text-xs sm:text-sm text-gray-900 dark:text-white">
                                       {forecast.points.toLocaleString()}
                                     </span>
                                   ) : (
                                     <div>
-                                      <div className={`text-sm font-semibold ${
+                                      <div className={`text-xs sm:text-sm font-semibold ${
                                         profit >= 0
                                           ? 'text-green-600 dark:text-green-400'
                                           : 'text-red-600 dark:text-red-400'
@@ -968,31 +969,31 @@ const Profile: React.FC = () => {
 
               {/* Activity Tab Content */}
               {activeTab === 'activity' && (
-                <div className="p-4">
+                <div className="p-2.5 sm:p-3 md:p-4">
                   {isLoadingActivities && activities.length === 0 ? (
-                    <div className="flex justify-center items-center py-12">
+                    <div className="flex justify-center items-center py-8 sm:py-10 md:py-12">
                       <IonSpinner name="crescent" />
                     </div>
                   ) : activities.length === 0 ? (
-                    <div className="text-center py-12">
-                      <IonIcon icon={statsChart} className="text-4xl text-gray-400 mb-2" />
-                      <p className="text-gray-500 dark:text-gray-400">No activity yet</p>
+                    <div className="text-center py-8 sm:py-10 md:py-12">
+                      <IonIcon icon={statsChart} className="text-3xl sm:text-4xl text-gray-400 mb-2" />
+                      <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400">No activity yet</p>
                     </div>
                   ) : (
-                    <div className="space-y-3">
+                    <div className="space-y-2 sm:space-y-2.5 md:space-y-3">
                       {activities.map((activity) => {
                         const getActivityIcon = (type: string) => {
                           switch (type) {
                             case 'forecast_placed':
-                              return '📊';
+                              return <ChartBarIcon className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500 dark:text-blue-400" />;
                             case 'market_resolved':
-                              return '✅';
+                              return <CheckCircleIcon className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 dark:text-green-400" />;
                             case 'badge_earned':
-                              return '🏆';
+                              return <TrophyIcon className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 dark:text-yellow-400" />;
                             case 'market_created':
-                              return '➕';
+                              return <PlusIcon className="w-4 h-4 sm:w-5 sm:h-5 text-purple-500 dark:text-purple-400" />;
                             default:
-                              return '📈';
+                              return <ArrowUpIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 dark:text-gray-400" />;
                           }
                         };
 
@@ -1017,17 +1018,17 @@ const Profile: React.FC = () => {
                         return (
                           <div
                             key={activity.id}
-                            className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                            className="flex items-start gap-2 sm:gap-2.5 md:gap-3 p-2 sm:p-2.5 md:p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
                             onClick={() => activity.market_id && history.push(`/markets/${activity.market_id}`)}
                           >
-                            <div className="text-2xl flex-shrink-0">
+                            <div className="flex-shrink-0 mt-0.5">
                               {getActivityIcon(activity.activity_type)}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm text-gray-900 dark:text-white">
+                              <p className="text-xs sm:text-sm text-gray-900 dark:text-white">
                                 {getActivityMessage(activity)}
                               </p>
-                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 sm:mt-1">
                                 {formatTimeAgo(activity.created_at)}
                       </p>
                     </div>

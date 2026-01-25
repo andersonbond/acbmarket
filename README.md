@@ -249,10 +249,6 @@ See deployment guide in `docs/DEPLOYMENT.md` (to be created).
 3. Write tests
 4. Submit a pull request
 
-## 📄 License
-
-[To be determined]
-
 
 ## ⚠️ Important Notes
 

@@ -1,4 +1,4 @@
-# Pilimarket.com
+# ACBMarket.com
 
 A Philippine prediction market platform where users purchase non-redeemable virtual chips to place forecasts on questions (markets). Focus on Filipino elections and topical markets.
 
@@ -6,7 +6,7 @@ A Philippine prediction market platform where users purchase non-redeemable virt
 
 ## 📋 Project Overview
 
-Pilimarket is a forecasting platform inspired by Polymarket, designed specifically for the Philippine market. Users purchase virtual chips (non-redeemable) to place forecasts on various markets, including elections, crypto, entertainment, and more.
+ACBMarket is a forecasting platform inspired by Polymarket, designed specifically for the Philippine market. Users purchase virtual chips (non-redeemable) to place forecasts on various markets, including elections, crypto, entertainment, and more.
 
 ### Key Features
 - 🎯 Prediction markets with multiple outcomes
@@ -53,7 +53,7 @@ Pilimarket is a forecasting platform inspired by Polymarket, designed specifical
 ## 📁 Project Structure
 
 ```
-Pilimarket/
+ACBMarket/
 ├── backend/          # FastAPI backend
 ├── frontend/         # Ionic 8 + React frontend
 ├── docs/             # Documentation

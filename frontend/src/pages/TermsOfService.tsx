@@ -202,7 +202,29 @@ const TermsOfService: React.FC = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">10. Virtual Chips and Purchases</h2>
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">10. Monthly Rewards</h2>
+              <p className="mb-2">
+                ACBMarket distributes monthly rewards to recognize and incentivize top performers on the platform. 
+                Rewards are given to the top 30 monthly biggest winners based on their performance during each calendar month.
+              </p>
+              <p className="mb-2">Important information regarding monthly rewards:</p>
+              <ul className="list-disc list-inside ml-4 mt-2 space-y-1 mb-3">
+                <li>Monthly rewards are distributed to the top 30 winners on the 25th of each month</li>
+                <li>Winners are determined based on their overall performance, including forecast accuracy, profit/loss, and other performance metrics</li>
+                <li>Rewards may include virtual chips, badges, recognition, or other platform benefits as determined by ACBMarket</li>
+                <li>ACBMarket reserves the right to modify reward amounts, eligibility criteria, or distribution schedule at any time</li>
+                <li>Users must maintain an active account in good standing to be eligible for rewards</li>
+                <li>ACBMarket reserves the right to disqualify users from rewards if they violate these Terms of Service</li>
+                <li>All reward decisions are final and at the sole discretion of ACBMarket</li>
+              </ul>
+              <p>
+                By participating on the platform, you acknowledge that rewards are provided at ACBMarket's discretion and 
+                are not guaranteed. Keep forecasting to climb the ranks and increase your chances of earning monthly rewards!
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">11. Virtual Chips and Purchases</h2>
               <p className="mb-2">
                 Virtual chips can be purchased through the platform using approved payment methods. All chip purchases are final 
                 and non-refundable. Chips remain virtual and non-redeemable regardless of how they were obtained. ACBMarket 
@@ -226,7 +248,7 @@ const TermsOfService: React.FC = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">11. Termination by User</h2>
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">12. Termination by User</h2>
               <p className="mb-2">
                 You may terminate your account at any time by contacting support at support@acbmarket.com or through your account 
                 settings (if available). Upon termination:
@@ -245,7 +267,7 @@ const TermsOfService: React.FC = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">12. Intellectual Property</h2>
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">13. Intellectual Property</h2>
               <p className="mb-2">
                 All content on ACBMarket, including but not limited to text, graphics, logos, images, software, market data, 
                 and platform design, is the property of ACBMarket or its content suppliers and is protected by copyright, 
@@ -266,7 +288,7 @@ const TermsOfService: React.FC = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">13. Disclaimers and Warranties</h2>
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">14. Disclaimers and Warranties</h2>
               <p className="mb-2">
                 THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, 
                 INCLUDING BUT NOT LIMITED TO:
@@ -284,7 +306,7 @@ const TermsOfService: React.FC = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">14. Limitation of Liability</h2>
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">15. Limitation of Liability</h2>
               <p className="mb-2">
                 TO THE MAXIMUM EXTENT PERMITTED BY LAW, ACBMARKET AND ITS OFFICERS, DIRECTORS, EMPLOYEES, AND AGENTS SHALL NOT 
                 BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING BUT NOT LIMITED TO:
@@ -309,7 +331,7 @@ const TermsOfService: React.FC = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">15. Indemnification</h2>
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">16. Indemnification</h2>
               <p>
                 You agree to indemnify, defend, and hold harmless ACBMarket and its officers, directors, employees, and agents 
                 from and against any claims, liabilities, damages, losses, costs, or expenses (including reasonable attorneys' fees) 
@@ -320,7 +342,7 @@ const TermsOfService: React.FC = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">16. Third-Party Services</h2>
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">17. Third-Party Services</h2>
               <p className="mb-2">
                 The Service may integrate with or link to third-party services, including payment processors, analytics providers, 
                 and other services. Your use of third-party services is subject to their respective terms of service and privacy 
@@ -339,7 +361,7 @@ const TermsOfService: React.FC = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">17. Dispute Resolution</h2>
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">18. Dispute Resolution</h2>
               <p className="mb-2">
                 If you have a dispute with ACBMarket, you agree to first contact us at support@acbmarket.com to attempt to 
                 resolve the dispute informally. If we cannot resolve the dispute within 30 days, you agree to resolve the 
@@ -357,7 +379,7 @@ const TermsOfService: React.FC = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">18. Geographic Restrictions</h2>
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">19. Geographic Restrictions</h2>
               <p>
                 ACBMarket is designed for users in the Philippines. While we may allow access from other jurisdictions, we make 
                 no representation that the Service is appropriate or available for use in all locations. You are responsible for 
@@ -368,7 +390,7 @@ const TermsOfService: React.FC = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">19. Force Majeure</h2>
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">20. Force Majeure</h2>
               <p>
                 ACBMarket shall not be liable for any failure or delay in performance under these Terms that is due to causes 
                 beyond our reasonable control, including but not limited to: natural disasters, war, terrorism, labor disputes, 
@@ -378,7 +400,7 @@ const TermsOfService: React.FC = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">20. Changes to Terms</h2>
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">21. Changes to Terms</h2>
               <p className="mb-2">
                 We reserve the right to modify these Terms at any time. We will notify users of significant changes via email 
                 or platform notifications at least 30 days before the changes take effect. Material changes may include:
@@ -397,7 +419,7 @@ const TermsOfService: React.FC = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">21. Governing Law and Jurisdiction</h2>
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">22. Governing Law and Jurisdiction</h2>
               <p>
                 These Terms shall be governed by and construed in accordance with the laws of the Republic of the Philippines, 
                 without regard to its conflict of law provisions. Any legal action or proceeding arising out of or related to 
@@ -407,7 +429,7 @@ const TermsOfService: React.FC = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">22. Severability</h2>
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">23. Severability</h2>
               <p>
                 If any provision of these Terms is found to be invalid, illegal, or unenforceable by a court of competent 
                 jurisdiction, the remaining provisions shall remain in full force and effect. The invalid provision shall be 
@@ -417,7 +439,7 @@ const TermsOfService: React.FC = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">23. Entire Agreement</h2>
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">24. Entire Agreement</h2>
               <p>
                 These Terms, together with our Privacy Policy and any other legal notices published on the Platform, constitute 
                 the entire agreement between you and ACBMarket regarding the Service and supersede all prior agreements, 
@@ -426,7 +448,7 @@ const TermsOfService: React.FC = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">24. Waiver</h2>
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">25. Waiver</h2>
               <p>
                 The failure of ACBMarket to enforce any right or provision of these Terms shall not constitute a waiver of 
                 such right or provision. Any waiver of any provision of these Terms must be in writing and signed by an 
@@ -435,7 +457,7 @@ const TermsOfService: React.FC = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">25. Assignment</h2>
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">26. Assignment</h2>
               <p>
                 You may not assign or transfer these Terms or your account without ACBMarket's prior written consent. ACBMarket 
                 may assign or transfer these Terms or any rights or obligations hereunder, in whole or in part, without your 
@@ -444,7 +466,7 @@ const TermsOfService: React.FC = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">26. Contact Information</h2>
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">27. Contact Information</h2>
               <p className="mb-2">
                 If you have any questions, concerns, or complaints about these Terms of Service, please contact us at:
               </p>
@@ -464,4 +486,3 @@ const TermsOfService: React.FC = () => {
 };
 
 export default TermsOfService;
-

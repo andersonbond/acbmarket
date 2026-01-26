@@ -3,7 +3,7 @@ export interface Purchase {
   user_id: string;
   amount_cents: number;
   chips_added: number;
-  provider: 'test' | 'stripe' | 'gcash' | 'paymaya';
+  provider: 'test' | 'stripe' | 'gcash' | 'paymaya' | 'paymongo' | 'terminal3' | 'admin';
   provider_tx_id?: string;
   status: 'pending' | 'completed' | 'failed' | 'refunded';
   created_at: string;

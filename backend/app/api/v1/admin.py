@@ -27,7 +27,12 @@ from app.schemas.admin import (
     FreezeChipsRequest,
     FlagItemRequest,
     UnflagItemRequest,
+    VerifyPasswordRequest,
+    SendChipsRequest,
 )
+from app.utils.security import verify_password
+from app.config import CHIP_TO_PESO_RATIO
+import uuid as uuid_module
 
 router = APIRouter()
 
@@ -325,6 +330,7 @@ async def get_users(
             or_(
                 User.email.ilike(f"%{search}%"),
                 User.display_name.ilike(f"%{search}%"),
+                User.contact_number.ilike(f"%{search}%"),
             )
         )
     
@@ -533,4 +539,106 @@ async def get_purchases(
                 "pages": (total_count + limit - 1) // limit,
             },
         },
+    }
+
+
+@router.post("/verify-password", response_model=dict)
+async def verify_admin_password(
+    request: VerifyPasswordRequest,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin),
+):
+    """Verify admin password for accessing admin purchase page"""
+    if not verify_password(request.password, admin.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect password",
+        )
+    
+    return {
+        "success": True,
+        "message": "Password verified successfully",
+    }
+
+
+@router.post("/users/{user_id}/send-chips", response_model=dict, status_code=status.HTTP_201_CREATED)
+async def send_chips_to_user(
+    user_id: str,
+    request: SendChipsRequest,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin),
+):
+    """Send chips to a user (admin only)"""
+    # Verify admin password
+    if not verify_password(request.password, admin.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect password",
+        )
+    
+    # Validate target user
+    target_user = db.query(User).filter(User.id == user_id).first()
+    if not target_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Target user not found",
+        )
+    
+    # Validate chips amount
+    if request.chips_added <= 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Chips amount must be positive",
+        )
+    
+    # Optional: Check if target user is banned
+    if target_user.is_banned:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot send chips to a banned user",
+        )
+    
+    # Calculate amount in centavos (1 chip = ₱1.00 = 100 cents)
+    amount_cents = int(request.chips_added * 100 * CHIP_TO_PESO_RATIO)
+    
+    # Create purchase record
+    purchase_id = str(uuid_module.uuid4())
+    purchase = Purchase(
+        id=purchase_id,
+        user_id=target_user.id,
+        amount_cents=amount_cents,
+        chips_added=request.chips_added,
+        provider="admin",
+        provider_tx_id=f"admin_{admin.id}_{purchase_id}",
+        status="completed",
+    )
+    
+    # Atomically: Create purchase + credit chips
+    try:
+        db.add(purchase)
+        target_user.chips += request.chips_added
+        db.commit()
+        db.refresh(purchase)
+        db.refresh(target_user)
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to send chips: {str(e)}",
+        )
+    
+    return {
+        "success": True,
+        "data": {
+            "purchase_id": purchase.id,
+            "target_user": {
+                "id": target_user.id,
+                "display_name": target_user.display_name,
+                "email": target_user.email,
+            },
+            "chips_added": request.chips_added,
+            "new_balance": target_user.chips,
+            "reason": request.reason,
+        },
+        "message": f"Successfully sent {request.chips_added} chips to {target_user.display_name}",
     }

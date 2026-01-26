@@ -132,3 +132,15 @@ class UnflagItemRequest(BaseModel):
     item_type: str
     item_id: str
 
+
+class VerifyPasswordRequest(BaseModel):
+    """Verify admin password request"""
+    password: str = Field(..., description="Admin password to verify")
+
+
+class SendChipsRequest(BaseModel):
+    """Send chips request (user_id is in URL path)"""
+    chips_added: int = Field(..., gt=0, description="Amount of chips to send")
+    password: str = Field(..., description="Admin password for verification")
+    reason: Optional[str] = Field(None, description="Optional reason/note")
+

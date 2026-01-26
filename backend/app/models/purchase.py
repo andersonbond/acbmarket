@@ -38,7 +38,7 @@ class Purchase(Base):
     __table_args__ = (
         CheckConstraint('amount_cents > 0', name='check_amount_positive'),
         CheckConstraint('chips_added > 0', name='check_chips_positive'),
-        CheckConstraint("provider IN ('test', 'paymongo', 'terminal3')", name='check_provider'),
+        CheckConstraint("provider IN ('test', 'paymongo', 'terminal3', 'admin')", name='check_provider'),
         CheckConstraint("status IN ('pending', 'completed', 'failed', 'refunded')", name='check_status'),
     )
 

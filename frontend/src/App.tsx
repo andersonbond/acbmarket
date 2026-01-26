@@ -24,6 +24,7 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminProtectedRoute from './components/AdminProtectedRoute';
+import AdminPurchaseProtectedRoute from './components/AdminPurchaseProtectedRoute';
 import MarketModeratorProtectedRoute from './components/MarketModeratorProtectedRoute';
 
 // Import pages directly (code splitting disabled for development stability)
@@ -45,6 +46,7 @@ import AdminPurchaseMonitoring from './pages/AdminPurchaseMonitoring';
 import AdminFlaggedItems from './pages/AdminFlaggedItems';
 import Purchase from './pages/Purchase';
 import PurchaseHistory from './pages/PurchaseHistory';
+import AdminPurchase from './pages/AdminPurchase';
 import ForecastHistory from './pages/ForecastHistory';
 import Notifications from './pages/Notifications';
 import ActivityFeed from './pages/ActivityFeed';
@@ -80,6 +82,7 @@ const App: React.FC = () => {
             <MarketModeratorProtectedRoute exact path="/admin/markets/:id/resolve" component={AdminResolveMarket} />
             <ProtectedRoute exact path="/purchase" component={Purchase} />
             <ProtectedRoute exact path="/purchase/history" component={PurchaseHistory} />
+            <AdminPurchaseProtectedRoute exact path="/admin_purchase" component={AdminPurchase} />
             <ProtectedRoute exact path="/forecasts" component={ForecastHistory} />
             <ProtectedRoute exact path="/notifications" component={Notifications} />
             <ProtectedRoute exact path="/activity" component={ActivityFeed} />

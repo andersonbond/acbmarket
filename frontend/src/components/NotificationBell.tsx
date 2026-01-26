@@ -65,21 +65,22 @@ const NotificationBell: React.FC = () => {
 
   return (
     <>
-      <IonButton
-        fill="clear"
+      <button
         onClick={(e) => {
           setPopoverEvent(e.nativeEvent);
           setIsOpen(true);
         }}
-        className="relative text-gray-700 dark:text-gray-300"
+        className="relative p-2 min-w-[44px] min-h-[44px] max-w-[44px] max-h-[44px] flex items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 active:bg-gray-200 dark:active:bg-gray-700 rounded-lg transition-colors"
+        aria-label="Notifications"
+        type="button"
       >
-        <IonIcon icon={unreadCount > 0 ? notificationsIcon : notificationsOutline} />
+        <IonIcon icon={unreadCount > 0 ? notificationsIcon : notificationsOutline} className="w-6 h-6 pointer-events-none" />
         {unreadCount > 0 && (
-          <IonBadge color="danger" className="absolute top-0 right-0 -mt-2 -mr-1 min-w-[16px] h-[16px] text-[10px] leading-none flex items-center justify-center font-medium">
+          <IonBadge color="danger" className="absolute top-0 right-0 -mt-1 -mr-1 min-w-[18px] h-[18px] text-[10px] leading-none flex items-center justify-center font-medium px-1">
             {unreadCount > 99 ? '99+' : unreadCount}
           </IonBadge>
         )}
-      </IonButton>
+      </button>
 
       <IonPopover
         isOpen={isOpen}

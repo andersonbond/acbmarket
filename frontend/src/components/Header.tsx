@@ -1,7 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonSearchbar, IonIcon, IonModal, IonContent } from '@ionic/react';
-import { person, statsChart, trophy, logOut, logIn, personAdd, moon, sunny, helpCircle, close, menu, add, wallet, settingsOutline } from 'ionicons/icons';
-import { UserGroupIcon } from '@heroicons/react/24/outline';
+import { person, statsChart, trophy, logOut, logIn, personAdd, moon, sunny, helpCircle, close, add, wallet, settingsOutline } from 'ionicons/icons';
+import {
+  UserGroupIcon,
+  QuestionMarkCircleIcon,
+  WalletIcon,
+  UserIcon,
+  ChartBarIcon,
+  TrophyIcon,
+  Cog6ToothIcon,
+  PlusIcon,
+  ArrowRightOnRectangleIcon,
+  UserPlusIcon,
+  XMarkIcon,
+  Bars3Icon,
+  MoonIcon,
+  SunIcon,
+} from '@heroicons/react/24/outline';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -59,12 +74,12 @@ const Header: React.FC = () => {
     <IonHeader>
       <IonToolbar>
         {/* Mobile: Logo/Title and Menu */}
-        <div slot="start" className="flex items-center md:hidden h-full">
-          <div onClick={() => history.push('/')} className="cursor-pointer flex items-center gap-2 h-full">
+        <div slot="start" className="flex items-center md:hidden">
+          <div onClick={() => history.push('/')} className="cursor-pointer flex items-center gap-2 py-2">
             <img 
               src="/logo.png" 
               alt="ACBMarket" 
-              className="h-6 w-auto rounded ml-2 mt-2 md:mt-0"
+              className="h-6 w-auto rounded ml-2"
             />
             <IonTitle 
               className="flex-shrink-0 text-lg pl-0 font-dm-sans font-extrabold my-0 leading-none" 
@@ -110,16 +125,31 @@ const Header: React.FC = () => {
 
         {/* Mobile: Right side buttons (How it Works, theme, notifications and menu) */}
         <IonButtons slot="end" className="md:hidden">
-          <IonButton onClick={() => setIsHowItWorksOpen(true)} fill="clear" className="text-gray-700 dark:text-gray-300 font-dm-sans">
-            <IonIcon icon={helpCircle} />
-          </IonButton>
-          <IonButton onClick={toggleTheme} fill="clear" className="theme-toggle font-dm-sans">
-            <IonIcon icon={isDark ? sunny : moon} />
-          </IonButton>
+          <button
+            onClick={() => setIsHowItWorksOpen(true)}
+            className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 active:bg-gray-200 dark:active:bg-gray-700 rounded-lg transition-colors relative z-10"
+            aria-label="How it Works"
+            type="button"
+          >
+            <QuestionMarkCircleIcon className="w-6 h-6 pointer-events-none" />
+          </button>
+          <button
+            onClick={toggleTheme}
+            className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 active:bg-gray-200 dark:active:bg-gray-700 rounded-lg transition-colors relative z-10"
+            aria-label="Toggle theme"
+            type="button"
+          >
+            {isDark ? <SunIcon className="w-6 h-6 pointer-events-none" /> : <MoonIcon className="w-6 h-6 pointer-events-none" />}
+          </button>
           {isAuthenticated && <NotificationBell />}
-          <IonButton onClick={() => setIsMobileMenuOpen(true)} fill="clear" className="font-dm-sans">
-            <IonIcon icon={menu} />
-          </IonButton>
+          <button
+            onClick={() => setIsMobileMenuOpen(true)}
+            className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 active:bg-gray-200 dark:active:bg-gray-700 rounded-lg transition-colors relative z-10"
+            aria-label="Open menu"
+            type="button"
+          >
+            <Bars3Icon className="w-6 h-6 pointer-events-none" />
+          </button>
         </IonButtons>
 
         {/* Desktop: All buttons */}
@@ -223,156 +253,141 @@ const Header: React.FC = () => {
         <IonHeader>
           <IonToolbar>
             <IonTitle>Menu</IonTitle>
-            <IonButtons slot="end">
-              <IonButton onClick={() => setIsMobileMenuOpen(false)} className="font-dm-sans">
-                <IonIcon icon={close} />
-              </IonButton>
-            </IonButtons>
+            <div slot="end" className="flex items-center">
+              <button
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                aria-label="Close menu"
+              >
+                <XMarkIcon className="w-6 h-6" />
+              </button>
+            </div>
           </IonToolbar>
         </IonHeader>
         <IonContent className="ion-padding">
-          <div className="space-y-2">
-            <IonButton
-              expand="block"
-              fill="clear"
+          <div className="space-y-2 py-2">
+            <button
               onClick={() => {
                 setIsHowItWorksOpen(true);
                 setIsMobileMenuOpen(false);
               }}
-              className="justify-start text-left font-dm-sans"
+              className="w-full min-h-[48px] flex items-center gap-3 px-4 py-3 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors font-dm-sans active:scale-[0.98]"
             >
-              <IonIcon icon={helpCircle} slot="start" />
-              How it Works
-            </IonButton>
+              <QuestionMarkCircleIcon className="w-5 h-5 flex-shrink-0" />
+              <span className="text-base">How it Works</span>
+            </button>
             {isAuthenticated ? (
               <>
-                <IonButton
-                  expand="block"
+                <button
                   onClick={() => {
                     history.push('/purchase');
                     setIsMobileMenuOpen(false);
                   }}
-                  className="bg-primary-600 text-white rounded-md justify-start font-dm-sans"
+                  className="w-full min-h-[48px] flex items-center gap-3 px-4 py-3 bg-[#f7b801] hover:bg-[#e0a600] active:scale-[0.98] text-black font-semibold rounded-lg transition-all duration-150 font-dm-sans"
                 >
-                  <IonIcon icon={wallet} slot="start" />
-                  Buy Chips (₱{user?.chips?.toLocaleString() || '0'})
-                </IonButton>
-                <IonButton
-                  expand="block"
-                  fill="clear"
+                  <WalletIcon className="w-5 h-5 flex-shrink-0" />
+                  <span className="text-base">Buy Chips (₱{user?.chips?.toLocaleString() || '0'})</span>
+                </button>
+                <button
                   onClick={() => {
                     history.push('/profile');
                     setIsMobileMenuOpen(false);
                   }}
-                  className="justify-start text-left font-dm-sans"
+                  className="w-full min-h-[48px] flex items-center gap-3 px-4 py-3 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors font-dm-sans active:scale-[0.98]"
                 >
-                  <IonIcon icon={person} slot="start" />
-                  Profile
-                </IonButton>
-                <IonButton
-                  expand="block"
-                  fill="clear"
+                  <UserIcon className="w-5 h-5 flex-shrink-0" />
+                  <span className="text-base">Profile</span>
+                </button>
+                <button
                   onClick={() => {
                     history.push('/markets');
                     setIsMobileMenuOpen(false);
                   }}
-                  className="justify-start text-left font-dm-sans"
+                  className="w-full min-h-[48px] flex items-center gap-3 px-4 py-3 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors font-dm-sans active:scale-[0.98]"
                 >
-                  <IonIcon icon={statsChart} slot="start" />
-                  Markets
-                </IonButton>
-                <IonButton
-                  expand="block"
-                  fill="clear"
+                  <ChartBarIcon className="w-5 h-5 flex-shrink-0" />
+                  <span className="text-base">Markets</span>
+                </button>
+                <button
                   onClick={() => {
                     history.push('/leaderboard');
                     setIsMobileMenuOpen(false);
                   }}
-                  className="justify-start text-left font-dm-sans"
+                  className="w-full min-h-[48px] flex items-center gap-3 px-4 py-3 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors font-dm-sans active:scale-[0.98]"
                 >
-                  <IonIcon icon={trophy} slot="start" />
-                  Leaderboard
-                </IonButton>
+                  <TrophyIcon className="w-5 h-5 flex-shrink-0" />
+                  <span className="text-base">Leaderboard</span>
+                </button>
                 {user?.is_admin && (
-                  <IonButton
-                    expand="block"
-                    fill="clear"
+                  <button
                     onClick={() => {
                       history.push('/admin');
                       setIsMobileMenuOpen(false);
                     }}
-                    className="justify-start text-left font-dm-sans"
+                    className="w-full min-h-[48px] flex items-center gap-3 px-4 py-3 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors font-dm-sans active:scale-[0.98]"
                   >
-                    <UserGroupIcon className="w-5 h-5 mr-2" />
-                    Admin Panel
-                  </IonButton>
+                    <UserGroupIcon className="w-5 h-5 flex-shrink-0" />
+                    <span className="text-base">Admin Panel</span>
+                  </button>
                 )}
                 {(user?.is_admin || user?.is_market_moderator) && (
                   <>
-                    <IonButton
-                      expand="block"
-                      fill="clear"
+                    <button
                       onClick={() => {
                         history.push('/admin/markets');
                         setIsMobileMenuOpen(false);
                       }}
-                      className="justify-start text-left font-dm-sans"
+                      className="w-full min-h-[48px] flex items-center gap-3 px-4 py-3 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors font-dm-sans active:scale-[0.98]"
                     >
-                      <IonIcon icon={settingsOutline} slot="start" />
-                      Manage Markets
-                    </IonButton>
-                    <IonButton
-                      expand="block"
-                      fill="clear"
+                      <Cog6ToothIcon className="w-5 h-5 flex-shrink-0" />
+                      <span className="text-base">Manage Markets</span>
+                    </button>
+                    <button
                       onClick={() => {
                         history.push('/admin/markets/create');
                         setIsMobileMenuOpen(false);
                       }}
-                      className="justify-start text-left font-dm-sans"
+                      className="w-full min-h-[48px] flex items-center gap-3 px-4 py-3 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors font-dm-sans active:scale-[0.98]"
                     >
-                      <IonIcon icon={add} slot="start" />
-                      Create Market
-                    </IonButton>
+                      <PlusIcon className="w-5 h-5 flex-shrink-0" />
+                      <span className="text-base">Create Market</span>
+                    </button>
                   </>
                 )}
-                <IonButton
-                  expand="block"
-                  fill="clear"
+                <button
                   onClick={() => {
                     logout();
                     setIsMobileMenuOpen(false);
                     history.push('/login');
                   }}
-                  className="justify-start text-left text-red-200 dark:text-red-400 font-dm-sans"
+                  className="w-full min-h-[48px] flex items-center gap-3 px-4 py-3 text-left text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors font-dm-sans active:scale-[0.98]"
                 >
-                  <IonIcon icon={logOut} slot="start" />
-                  Logout
-                </IonButton>
+                  <ArrowRightOnRectangleIcon className="w-5 h-5 flex-shrink-0" />
+                  <span className="text-base">Logout</span>
+                </button>
               </>
             ) : (
               <>
-                <IonButton
-                  expand="block"
+                <button
                   onClick={() => {
                     history.push('/login');
                     setIsMobileMenuOpen(false);
                   }}
-                  className="button-primary justify-start font-dm-sans"
+                  className="w-full min-h-[48px] flex items-center gap-3 px-4 py-3 bg-[#f7b801] hover:bg-[#e0a600] active:scale-[0.98] text-black font-semibold rounded-lg transition-all duration-150 font-dm-sans"
                 >
-                  <IonIcon icon={logIn} slot="start" />
-                  Log In
-                </IonButton>
-                <IonButton
-                  expand="block"
+                  <ArrowRightOnRectangleIcon className="w-5 h-5 flex-shrink-0" />
+                  <span className="text-base">Log In</span>
+                </button>
+                <button
                   onClick={() => {
                     history.push('/register');
                     setIsMobileMenuOpen(false);
                   }}
-                  className="button-secondary justify-start font-dm-sans"
+                  className="w-full min-h-[48px] flex items-center gap-3 px-4 py-3 border-2 border-[#f7b801] hover:bg-[#f7b801]/10 active:scale-[0.98] text-[#f7b801] font-semibold rounded-lg transition-all duration-150 font-dm-sans"
                 >
-                  <IonIcon icon={personAdd} slot="start" />
-                  Sign Up
-                </IonButton>
+                  <UserPlusIcon className="w-5 h-5 flex-shrink-0" />
+                  <span className="text-base">Sign Up</span>
+                </button>
               </>
             )}
           </div>

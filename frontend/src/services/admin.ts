@@ -191,3 +191,44 @@ export const getPurchases = async (
   return response.data;
 };
 
+export const verifyAdminPassword = async (
+  password: string
+): Promise<{ success: boolean; message: string }> => {
+  const response = await api.post('/api/v1/admin/verify-password', { password });
+  return response.data;
+};
+
+export interface SendChipsRequest {
+  user_id: string;
+  chips_added: number;
+  password: string;
+  reason?: string;
+}
+
+export interface SendChipsResponse {
+  success: boolean;
+  data: {
+    purchase_id: string;
+    target_user: {
+      id: string;
+      display_name: string;
+      email?: string;
+    };
+    chips_added: number;
+    new_balance: number;
+    reason?: string;
+  };
+  message: string;
+}
+
+export const sendChipsToUser = async (
+  request: SendChipsRequest
+): Promise<SendChipsResponse> => {
+  const response = await api.post(`/api/v1/admin/users/${request.user_id}/send-chips`, {
+    chips_added: request.chips_added,
+    password: request.password,
+    reason: request.reason,
+  });
+  return response.data;
+};
+

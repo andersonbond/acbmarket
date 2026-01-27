@@ -1,6 +1,6 @@
-# Pilimarket Frontend
+# ACBMarket Frontend
 
-Ionic 8 + React frontend for Pilimarket.
+Ionic 8 + React frontend for ACBMarket.
 
 ## Setup
 

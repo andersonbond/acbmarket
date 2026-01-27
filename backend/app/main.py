@@ -27,10 +27,15 @@ app = FastAPI(
     redoc_url="/api/redoc",
 )
 
-# CORS middleware
+# CORS middleware - conditionally include localhost in dev mode
+cors_origins = settings.CORS_ORIGINS.copy()
+if settings.DEBUG:
+    # Add localhost origins for development
+    cors_origins.extend(["http://localhost:8100", "http://localhost:3000"])
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

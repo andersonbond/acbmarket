@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     
     # CORS
-    CORS_ORIGINS: List[str] = ["http://localhost:8100", "http://localhost:3000"]
+    CORS_ORIGINS: List[str] = ["https://acbmarket.com"]
     
     # PayMongo (Philippines Payment Gateway)
     PAYMONGO_SECRET_KEY: str = ""

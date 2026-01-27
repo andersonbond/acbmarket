@@ -27,8 +27,11 @@ app = FastAPI(
     redoc_url="/api/redoc",
 )
 
-# CORS middleware - conditionally include localhost in dev mode
-cors_origins = settings.CORS_ORIGINS.copy()
+# CORS middleware - allow all subdomains of acbmarket.com, conditionally include localhost in dev mode
+cors_origins = []
+# Match https://acbmarket.com and https://*.acbmarket.com (all subdomains)
+cors_origin_regex = r"https://(.*\.)?acbmarket\.com"
+
 if settings.DEBUG:
     # Add localhost origins for development
     cors_origins.extend(["http://localhost:8100", "http://localhost:3000"])
@@ -36,6 +39,7 @@ if settings.DEBUG:
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
+    allow_origin_regex=cors_origin_regex,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -91,4 +95,3 @@ async def global_exception_handler(request, exc):
             "errors": [{"message": "Internal server error"}],
         },
     )
-

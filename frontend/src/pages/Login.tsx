@@ -14,19 +14,37 @@ const Login: React.FC = () => {
   const history = useHistory();
   const location = useLocation();
 
-  // Get return URL from query params
-  const getReturnUrl = () => {
+  // Get return URL: query param (from ProtectedRoute ?return=), then location.state.from (avoid /login), then home
+  const getReturnUrl = (): string => {
     const params = new URLSearchParams(location.search);
-    return params.get('return') || '/';
+    const returnParam = params.get('return');
+    if (returnParam) {
+      try {
+        const decoded = decodeURIComponent(returnParam);
+        // Never redirect to login (avoids /login?return=/login?return=... recursion)
+        if (decoded && decoded !== '/login' && !decoded.startsWith('/login?')) {
+          // Use only pathname so we don't land on e.g. /purchase?return=/purchase
+          const pathnameOnly = decoded.split('?')[0];
+          return pathnameOnly || '/';
+        }
+      } catch {
+        // ignore invalid encoding
+      }
+    }
+    const from = (location.state as { from?: { pathname: string; search?: string; hash?: string } })?.from;
+    if (from?.pathname && from.pathname !== '/login') {
+      return from.pathname + (from.search ?? '') + (from.hash ?? '');
+    }
+    return '/';
   };
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated (only when still on /login so we don't overwrite post-login redirect)
   useEffect(() => {
-    if (!authLoading && isAuthenticated) {
+    if (location.pathname === '/login' && !authLoading && isAuthenticated) {
       const returnUrl = getReturnUrl();
       history.replace(returnUrl);
     }
-  }, [isAuthenticated, authLoading, history, location.search]);
+  }, [isAuthenticated, authLoading, history, location]);
 
   const handleContactNumberChange = (value: string) => {
     // Only allow digits and limit to 10 characters
@@ -40,11 +58,11 @@ const Login: React.FC = () => {
     setIsLoading(true);
 
     try {
+      // Capture return URL before login so it's not lost after auth state update
+      const returnUrl = getReturnUrl();
       // Prepend +63 to the 10-digit number
       const fullContactNumber = `+63${contactNumber}`;
       await login({ contact_number: fullContactNumber, password });
-      // Redirect to return URL or home
-      const returnUrl = getReturnUrl();
       history.push(returnUrl);
     } catch (err: any) {
       setError(err.message || 'Login failed. Please try again.');

@@ -90,7 +90,7 @@ const App: React.FC = () => {
             <Route exact path="/privacy" component={PrivacyPolicy} />
             <Route exact path="/faq" component={FAQ} />
             <Route exact path="/disclaimer" component={Disclaimer} />
-            <Route exact path="/profile" component={Profile} />
+            <ProtectedRoute exact path="/profile" component={Profile} />
             <Route exact path="/users/:userId/profile" component={Profile} />
             <Route render={() => <Redirect to="/" />} />
           </IonRouterOutlet>

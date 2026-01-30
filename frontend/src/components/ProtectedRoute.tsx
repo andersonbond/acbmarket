@@ -20,13 +20,18 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ component: Component, .
   return (
     <Route
       {...rest}
-      render={(props) =>
-        isAuthenticated ? (
-          <Component {...props} />
-        ) : (
-          <Redirect to={{ pathname: '/login', state: { from: props.location } }} />
-        )
-      }
+      render={(props) => {
+        if (isAuthenticated) {
+          return <Component {...props} />;
+        }
+        // Use matched URL (e.g. /purchase) so return is correct even if IonReactRouter gives different location
+        const returnPath = props.match.url + (props.location.search || '') + (props.location.hash || '');
+        const isLoginPage = props.match.url === '/login' || returnPath.startsWith('/login?');
+        const to = isLoginPage
+          ? { pathname: '/login' }
+          : { pathname: '/login', search: `?return=${encodeURIComponent(returnPath)}` };
+        return <Redirect to={to} />;
+      }}
     />
   );
 };

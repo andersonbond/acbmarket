@@ -202,7 +202,7 @@ const Header: React.FC = () => {
               <IonButton 
                 onClick={() => {
                   logout();
-                  history.push('/login');
+                  history.push('/');
                 }} 
                 className="bg-gray-100 text-black rounded-md font-dm-sans"
               >
@@ -358,7 +358,7 @@ const Header: React.FC = () => {
                   onClick={() => {
                     logout();
                     setIsMobileMenuOpen(false);
-                    history.push('/login');
+                    history.push('/');
                   }}
                   className="w-full min-h-[48px] flex items-center gap-3 px-4 py-3 text-left text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors font-dm-sans active:scale-[0.98]"
                 >

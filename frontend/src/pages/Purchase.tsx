@@ -28,10 +28,6 @@ const Purchase: React.FC = () => {
   const returnUrl = searchParams.get('return');
   const requiredChips = searchParams.get('required');
   
-  // Payment: when false, only Terminal3 (no Test option). Default to terminal3 until health loads.
-  const [paymentTestAvailable, setPaymentTestAvailable] = useState<boolean>(true);
-  const [paymentProvider, setPaymentProvider] = useState<'test' | 'terminal3'>('terminal3');
-  
   // Set initial amount to required chips if provided, otherwise default to 100
   const [chipsAmount, setChipsAmount] = useState<number>(
     requiredChips ? Math.max(parseInt(requiredChips, 10), 20) : 100
@@ -58,22 +54,6 @@ const Purchase: React.FC = () => {
 
   // Predefined chip amounts
   const quickAmounts = [20, 50, 100, 200, 500, 1000];
-
-  // Fetch health for payment_test_available (when false, only Terminal3)
-  useEffect(() => {
-    let cancelled = false;
-    api.get('/health')
-      .then((res) => {
-        if (!cancelled && typeof res.data?.payment_test_available === 'boolean') {
-          setPaymentTestAvailable(res.data.payment_test_available);
-          if (res.data.payment_test_available) {
-            setPaymentProvider('test');
-          }
-        }
-      })
-      .catch(() => {});
-    return () => { cancelled = true; };
-  }, []);
 
   // Fetch purchase history
   useEffect(() => {
@@ -161,10 +141,10 @@ const Purchase: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      const purchaseData: PurchaseCreate =
-        paymentProvider === 'terminal3'
-          ? { chips_added: chipsAmount, payment_provider: 'terminal3' }
-          : { chips_added: chipsAmount };
+      const purchaseData: PurchaseCreate = {
+        chips_added: chipsAmount,
+        payment_provider: 'terminal3',
+      };
 
       const response = await api.post('/api/v1/purchases/checkout', purchaseData);
 
@@ -388,39 +368,6 @@ const Purchase: React.FC = () => {
                 </div>
               </div>
 
-              {/* Payment method: only when test is available */}
-              {paymentTestAvailable && (
-                <div>
-                  <label className="text-sm md:text-base font-medium text-gray-700 dark:text-gray-300 mb-3 block">
-                    Payment method
-                  </label>
-                  <div className="flex gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setPaymentProvider('test')}
-                      className={`flex-1 min-h-[44px] px-4 py-2.5 rounded-lg font-medium text-sm border transition-all ${
-                        paymentProvider === 'test'
-                          ? 'bg-[#fcdb6f] hover:bg-[#fbcf3f] text-black border-[#fcdb6f]'
-                          : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600'
-                      }`}
-                    >
-                      Test (no payment)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setPaymentProvider('terminal3')}
-                      className={`flex-1 min-h-[44px] px-4 py-2.5 rounded-lg font-medium text-sm border transition-all ${
-                        paymentProvider === 'terminal3'
-                          ? 'bg-[#fcdb6f] hover:bg-[#fbcf3f] text-black border-[#fcdb6f]'
-                          : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600'
-                      }`}
-                    >
-                      Terminal3 (GCash, etc.)
-                    </button>
-                  </div>
-                </div>
-              )}
-
               {/* Purchase Button */}
               <button
                 onClick={handlePurchase}
@@ -487,20 +434,10 @@ const Purchase: React.FC = () => {
                 <div className="flex items-start">
                   <InformationCircleIcon className="w-5 h-5 md:w-6 md:h-6 text-blue-600 dark:text-blue-400 mr-2 flex-shrink-0 mt-0.5" />
                   <div className="text-xs md:text-sm text-blue-800 dark:text-blue-300">
-                    {paymentTestAvailable ? (
-                      <>
-                        <p className="font-semibold mb-1">Test Mode - No Payment Required</p>
-                        <p>
-                          Chips are virtual, non-redeemable tokens (1 chip = ₱1.00 for reference only). 
-                          They cannot be converted to cash or withdrawn.
-                        </p>
-                      </>
-                    ) : (
-                      <p>
-                        Chips are virtual, non-redeemable tokens (1 chip = ₱1.00 for reference only). 
-                        Pay via Terminal3 (GCash, etc.). They cannot be converted to cash or withdrawn.
-                      </p>
-                    )}
+                    <p>
+                      Chips are virtual, non-redeemable tokens (1 chip = ₱1.00 for reference only). 
+                      Pay via Terminal3 (GCash, etc.). They cannot be converted to cash or withdrawn.
+                    </p>
                   </div>
                 </div>
               </div>

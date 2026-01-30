@@ -12,14 +12,28 @@ export interface Purchase {
 
 export interface PurchaseCreate {
   chips_added: number;
+  payment_provider?: 'paymongo' | 'terminal3' | null;
+}
+
+export interface Terminal3WidgetConfig {
+  key: string;
+  base_url: string;
+  widget_id: string;
+  evaluation: number;
+  ps: string;
+}
+
+export interface CheckoutResponseData {
+  purchase: Purchase;
+  new_balance?: number;
+  widget_config?: Terminal3WidgetConfig;
+  /** Signed Terminal3 checkout URL (use as iframe src to avoid error 06). */
+  checkout_url?: string;
 }
 
 export interface PurchaseResponse {
   success: boolean;
-  data: {
-    purchase: Purchase;
-    new_balance: number;
-  };
+  data: CheckoutResponseData;
   message: string;
 }
 

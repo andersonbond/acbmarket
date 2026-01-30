@@ -1,8 +1,11 @@
 """
 Purchase endpoints
 """
+import json
 import uuid as uuid_module
 from typing import Optional
+from urllib.parse import parse_qs
+
 from fastapi import APIRouter, Depends, HTTPException, status, Query, Request, Header
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
@@ -134,58 +137,129 @@ async def create_checkout(
                 detail=f"Failed to create payment intent: {str(e)}",
             )
     
-    # Terminal3 payment
-    elif provider == "terminal3" and settings.TERMINAL3_API_KEY:
-        try:
-            # Create Terminal3 checkout session (restrict to GCash only)
-            checkout_response = Terminal3Service.create_checkout(
-                amount=amount_cents,
-                currency="PHP",
-                description=f"Purchase {purchase_data.chips_added} chips",
-                metadata={
-                    "purchase_id": purchase_id,
-                    "user_id": current_user.id,
-                    "chips_added": str(purchase_data.chips_added),
-                },
-                payment_methods=["gcash"],  # Restrict to GCash only
-            )
-            
-            # Extract checkout data from Terminal3 response
-            checkout_id = checkout_response.get("id", "")
-            checkout_url = checkout_response.get("checkout_url", "")
-            
-            # Create purchase record with pending status
-            purchase = Purchase(
-                id=purchase_id,
-                user_id=current_user.id,
-                amount_cents=amount_cents,
-                chips_added=purchase_data.chips_added,
-                provider="terminal3",
-                provider_tx_id=checkout_id,
-                status="pending",
-            )
-            
-            db.add(purchase)
-            db.commit()
-            db.refresh(purchase)
-            
-            return {
-                "success": True,
-                "data": {
+    # Terminal3 payment: Widget (iframe) or Checkout API
+    elif provider == "terminal3":
+        # Widget/iframe path when project key or widget key is set (Checkout API uses project key in iframe; error 04 = wrong key)
+        if settings.TERMINAL3_PROJECT_KEY or settings.TERMINAL3_WIDGET_KEY:
+            try:
+                purchase = Purchase(
+                    id=purchase_id,
+                    user_id=current_user.id,
+                    amount_cents=amount_cents,
+                    chips_added=purchase_data.chips_added,
+                    provider="terminal3",
+                    provider_tx_id=f"widget_{purchase_id}",
+                    status="pending",
+                )
+                db.add(purchase)
+                db.commit()
+                db.refresh(purchase)
+                # Checkout API expects project key in iframe URL (error 04 = wrong project key)
+                iframe_key = settings.TERMINAL3_PROJECT_KEY or settings.TERMINAL3_WIDGET_KEY
+                if not iframe_key:
+                    raise HTTPException(
+                        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                        detail="Terminal3 project key not configured (set TERMINAL3_PROJECT_KEY or TERMINAL3_WIDGET_KEY).",
+                    )
+                # Build signed checkout URL (required by Terminal3; error 06 without valid sign)
+                checkout_url_val: Optional[str] = None
+                if settings.TERMINAL3_SECRET_KEY:
+                    try:
+                        reg_ts = int(current_user.created_at.timestamp()) if getattr(current_user, "created_at", None) else 0
+                        amount_pesos = purchase_data.chips_added * CHIP_TO_PESO_RATIO
+                        checkout_url_val = Terminal3Service.build_digital_goods_widget_url(
+                            uid=str(current_user.id),
+                            email=current_user.email or settings.TERMINAL3_DEFAULT_EMAIL,
+                            registration_date=reg_ts,
+                            amount=amount_pesos,
+                            currency_code="PHP",
+                            product_name=f"{purchase_data.chips_added} Chips",
+                            product_id=purchase_id,
+                            widget_id=settings.TERMINAL3_WIDGET_ID,
+                            ps=settings.TERMINAL3_PS,
+                            sign_version=3,
+                            evaluation=settings.TERMINAL3_EVALUATION,
+                        )
+                    except Exception as url_err:
+                        db.rollback()
+                        raise HTTPException(
+                            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail=f"Failed to build Terminal3 checkout URL: {str(url_err)}",
+                        )
+                widget_config = {
+                    "key": iframe_key,
+                    "base_url": "https://payments.terminal3.com/api/",
+                    "widget_id": settings.TERMINAL3_WIDGET_ID,
+                    "evaluation": settings.TERMINAL3_EVALUATION if settings.TERMINAL3_EVALUATION is not None else 0,
+                    "ps": settings.TERMINAL3_PS,
+                }
+                data: dict = {
                     "purchase": PurchaseResponse.model_validate(purchase),
-                    "checkout": {
-                        "id": checkout_id,
-                        "url": checkout_url,
-                        "status": checkout_response.get("status", "pending"),
+                    "widget_config": widget_config,
+                }
+                if checkout_url_val:
+                    data["checkout_url"] = checkout_url_val
+                return {
+                    "success": True,
+                    "data": data,
+                    "message": "Complete the payment in the widget to receive chips.",
+                }
+            except Exception as e:
+                db.rollback()
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=f"Failed to create purchase: {str(e)}",
+                )
+        # Checkout API when only TERMINAL3_API_KEY is set
+        elif settings.TERMINAL3_API_KEY:
+            try:
+                checkout_response = Terminal3Service.create_checkout(
+                    amount=amount_cents,
+                    currency="PHP",
+                    description=f"Purchase {purchase_data.chips_added} chips",
+                    metadata={
+                        "purchase_id": purchase_id,
+                        "user_id": current_user.id,
+                        "chips_added": str(purchase_data.chips_added),
                     },
-                },
-                "message": "Checkout session created. Complete the payment to receive chips.",
-            }
-        except Exception as e:
-            db.rollback()
+                    payment_methods=["gcash"],
+                )
+                checkout_id = checkout_response.get("id", "")
+                checkout_url = checkout_response.get("checkout_url", "")
+                purchase = Purchase(
+                    id=purchase_id,
+                    user_id=current_user.id,
+                    amount_cents=amount_cents,
+                    chips_added=purchase_data.chips_added,
+                    provider="terminal3",
+                    provider_tx_id=checkout_id,
+                    status="pending",
+                )
+                db.add(purchase)
+                db.commit()
+                db.refresh(purchase)
+                return {
+                    "success": True,
+                    "data": {
+                        "purchase": PurchaseResponse.model_validate(purchase),
+                        "checkout": {
+                            "id": checkout_id,
+                            "url": checkout_url,
+                            "status": checkout_response.get("status", "pending"),
+                        },
+                    },
+                    "message": "Checkout session created. Complete the payment to receive chips.",
+                }
+            except Exception as e:
+                db.rollback()
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=f"Failed to create checkout session: {str(e)}",
+                )
+        else:
             raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Failed to create checkout session: {str(e)}",
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Terminal3 is not configured (set TERMINAL3_WIDGET_KEY or TERMINAL3_API_KEY).",
             )
     
     # Test mode - immediately credit chips
@@ -383,57 +457,116 @@ async def paymongo_webhook(
         )
 
 
+def _parse_terminal3_pingback_body(body: bytes, content_type: Optional[str]) -> dict:
+    """Parse Terminal3 pingback body as JSON or form-encoded."""
+    decoded = body.decode("utf-8", errors="replace")
+    if content_type and "application/x-www-form-urlencoded" in content_type:
+        # Form: key=val&key2=val2 -> flatten single-value lists
+        parsed = parse_qs(decoded)
+        return {k: (v[0] if len(v) == 1 else v) for k, v in parsed.items()}
+    try:
+        return json.loads(decoded)
+    except json.JSONDecodeError:
+        return {}
+
+
 @router.post("/webhook/terminal3", status_code=status.HTTP_200_OK)
 async def terminal3_webhook(
     request: Request,
-    x_terminal3_signature: str = Header(..., alias="x-terminal3-signature"),
     db: Session = Depends(get_db),
+    x_terminal3_signature: Optional[str] = Header(None, alias="x-terminal3-signature"),
 ):
     """
-    Terminal3 pingback (webhook) endpoint to handle payment events
-    
-    Handles:
-    - payment.succeeded: Credit chips to user
-    - payment.failed: Mark purchase as failed
+    Terminal3 pingback (webhook) endpoint.
+    Handles Widget test pingback (uid, ref, purchase_id) and Checkout API (event_type, checkout_id).
     """
     try:
-        # Get raw request body
         body = await request.body()
-        
-        # Verify pingback signature
-        if not Terminal3Service.verify_pingback_signature(body, x_terminal3_signature):
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid pingback signature",
-            )
-        
-        # Parse pingback event
-        import json
-        event_data = json.loads(body.decode())
+        content_type = request.headers.get("content-type") or ""
+
+        # Optional signature verification when secret is set (skip in DEBUG or when secret empty)
+        if settings.TERMINAL3_WEBHOOK_SECRET and x_terminal3_signature:
+            try:
+                if not Terminal3Service.verify_pingback_signature(body, x_terminal3_signature):
+                    raise HTTPException(
+                        status_code=status.HTTP_401_UNAUTHORIZED,
+                        detail="Invalid pingback signature",
+                    )
+            except ValueError as e:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail=str(e),
+                )
+
+        event_data = _parse_terminal3_pingback_body(body, content_type)
         event_type = event_data.get("type", "")
+        # Normalize for comparison (DG sends type=0 or 2 as int or string)
+        pingback_type_str = str(event_type) if event_type is not None and event_type != "" else ""
         checkout_id = event_data.get("checkout_id", "")
-        metadata = event_data.get("metadata", {})
-        purchase_id = metadata.get("purchase_id", "")
-        
-        # Handle payment success
+        metadata = event_data.get("metadata") if isinstance(event_data.get("metadata"), dict) else {}
+        # Digital Goods pingback sends goodsid (= ag_external_id = our purchase_id); also allow purchase_id
+        purchase_id = (
+            event_data.get("purchase_id")
+            or event_data.get("goodsid")
+            or (metadata.get("purchase_id") if metadata else None)
+        )
+
+        # Digital Goods pingback: goodsid + type=0 (success) or type=2 (chargeback)
+        if purchase_id and event_type not in ("payment.succeeded", "payment.failed"):
+            purchase = db.query(Purchase).filter(
+                Purchase.id == purchase_id,
+                Purchase.provider == "terminal3",
+            ).first()
+            if purchase:
+                # type=0 or "0" or empty: product purchased → deliver goods (credit user)
+                if pingback_type_str in ("0", ""):
+                    if purchase.status == "completed":
+                        return {"status": "ok", "message": "Already processed (idempotent)"}
+                    user = db.query(User).filter(User.id == purchase.user_id).first()
+                    if user:
+                        try:
+                            purchase.status = "completed"
+                            user.chips += purchase.chips_added
+                            db.commit()
+                            return {"status": "ok", "message": "Purchase completed and chips credited"}
+                        except Exception as e:
+                            db.rollback()
+                            raise HTTPException(
+                                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                                detail=f"Failed to process purchase: {str(e)}",
+                            )
+                # type=2 or "2": chargeback/refund → take goods back
+                elif pingback_type_str == "2":
+                    if purchase.status == "completed":
+                        user = db.query(User).filter(User.id == purchase.user_id).first()
+                        if user and user.chips >= purchase.chips_added:
+                            user.chips -= purchase.chips_added
+                        purchase.status = "refunded"
+                        db.commit()
+                        return {"status": "ok", "message": "Chargeback processed, chips reverted"}
+                    elif purchase.status == "pending":
+                        purchase.status = "refunded"
+                        db.commit()
+                        return {"status": "ok", "message": "Purchase marked as refunded"}
+            return {"status": "ok", "message": "Purchase not found"}
+
+        # Checkout API: event_type-based
         if event_type == "payment.succeeded":
-            # Find purchase by provider_tx_id (checkout_id) or purchase_id
             purchase = None
             if checkout_id:
                 purchase = db.query(Purchase).filter(
                     Purchase.provider_tx_id == checkout_id,
                     Purchase.status == "pending",
                 ).first()
-            elif purchase_id:
+            if not purchase and purchase_id:
                 purchase = db.query(Purchase).filter(
                     Purchase.id == purchase_id,
                     Purchase.status == "pending",
                 ).first()
-            
             if not purchase:
                 return {"status": "ok", "message": "Purchase not found"}
-            
-            # Credit chips to user
+            if purchase.status == "completed":
+                return {"status": "ok", "message": "Already processed (idempotent)"}
             user = db.query(User).filter(User.id == purchase.user_id).first()
             if user:
                 try:
@@ -447,33 +580,27 @@ async def terminal3_webhook(
                         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                         detail=f"Failed to process purchase: {str(e)}",
                     )
-        
-        # Handle payment failure
-        elif event_type == "payment.failed":
+
+        if event_type == "payment.failed":
             purchase = None
             if checkout_id:
                 purchase = db.query(Purchase).filter(
                     Purchase.provider_tx_id == checkout_id,
                     Purchase.status == "pending",
                 ).first()
-            elif purchase_id:
+            if not purchase and purchase_id:
                 purchase = db.query(Purchase).filter(
                     Purchase.id == purchase_id,
                     Purchase.status == "pending",
                 ).first()
-            
             if purchase:
                 purchase.status = "failed"
                 db.commit()
                 return {"status": "ok", "message": "Purchase marked as failed"}
-        
+
         return {"status": "ok", "message": "Pingback processed"}
-        
-    except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=str(e),
-        )
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

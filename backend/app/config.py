@@ -2,7 +2,7 @@
 Application configuration
 """
 from pydantic_settings import BaseSettings
-from typing import List
+from typing import List, Optional
 
 
 class Settings(BaseSettings):
@@ -11,6 +11,8 @@ class Settings(BaseSettings):
     # App
     APP_NAME: str = "ACBMarket API"
     DEBUG: bool = False
+    # When False, frontend must use Terminal3 only (no Test / no payment option)
+    PAYMENT: bool = True
     
     # Database
     DATABASE_URL: str = "postgresql://andersonbondoc@localhost/dev_acbmarket"
@@ -36,6 +38,15 @@ class Settings(BaseSettings):
     
     # Terminal3 (Payment Gateway - supports GCash, ShopeePay, GrabPay, etc.)
     TERMINAL3_API_KEY: str = ""
+    # For Checkout API: use TERMINAL3_PROJECT_KEY in iframe URL (error 04 = wrong key if missing).
+    # For Widget API only: TERMINAL3_WIDGET_KEY can be used as the iframe key.
+    TERMINAL3_PROJECT_KEY: str = ""  # Project key from Merchant Area → My Projects (required for Checkout API)
+    TERMINAL3_WIDGET_KEY: str = ""   # Fallback widget key if PROJECT_KEY not set
+    TERMINAL3_SECRET_KEY: str = ""   # Secret key from Merchant Area (required to sign widget URL; error 06 without valid sign)
+    TERMINAL3_WIDGET_ID: str = "t3_2"  # Widget code from your project's Widgets section (e.g. t3_2, t3_1, p1). Error 06 = wrong code.
+    TERMINAL3_DEFAULT_EMAIL: str = "helloacbmarket@gmail.com"  # Fallback when user has no email (Terminal3 requires email for receipts)
+    TERMINAL3_PS: str = "test"  # Payment methods: "test" = sandbox (may auto-succeed), "all" = show GCash, cards, etc.
+    TERMINAL3_EVALUATION: Optional[int] = 1  # 1 = test/sandbox mode; 0 or unset = live
     TERMINAL3_WEBHOOK_SECRET: str = ""
     
     # Celery
@@ -52,6 +63,7 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         case_sensitive = True
+        extra = "ignore"  # Ignore extra env vars (e.g. PROD_DATABASE_URL, DEV_DATABASE_URL)
 
 
 settings = Settings()

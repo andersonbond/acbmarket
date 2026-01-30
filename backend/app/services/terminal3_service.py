@@ -1,20 +1,84 @@
 """
 Terminal3 payment service
 Supports: GCash, ShopeePay, GrabPay, Bank Transfers, Cash-based payments
+Uses Terminal3 Digital Goods (onetime payment) API with signed widget URL.
 """
 import base64
 import json
 import hmac
 import hashlib
 from typing import Optional, Dict, Any
+from urllib.parse import urlencode
 from app.config import settings
+
+
+# Terminal3 Widget API base URL for redirect/iframe (onetime payment)
+TERMINAL3_WIDGET_BASE = "https://payments.terminal3.com/api/subscription"
 
 
 class Terminal3Service:
     """Service for handling Terminal3 payments"""
     
     BASE_URL = "https://api.terminal3.com/v1"  # Update with actual Terminal3 API URL
-    
+
+    @staticmethod
+    def build_digital_goods_widget_url(
+        uid: str,
+        email: str,
+        registration_date: int,
+        amount: float,
+        currency_code: str,
+        product_name: str,
+        product_id: str,
+        widget_id: str,
+        ps: str = "all",
+        sign_version: int = 3,
+        success_url: Optional[str] = None,
+        failure_url: Optional[str] = None,
+        evaluation: Optional[int] = None,
+    ) -> str:
+        """
+        Build a signed Terminal3 Digital Goods (onetime payment) widget URL.
+        Required for iframe/redirect; without sign Terminal3 returns error 06.
+        See: https://docs.terminal3.com/apis (Onetime payment) and signature-calculation.
+        """
+        key = settings.TERMINAL3_PROJECT_KEY or settings.TERMINAL3_WIDGET_KEY
+        secret = settings.TERMINAL3_SECRET_KEY
+        if not key or not secret:
+            raise ValueError(
+                "Terminal3 key and secret required (TERMINAL3_PROJECT_KEY or TERMINAL3_WIDGET_KEY, TERMINAL3_SECRET_KEY)"
+            )
+        # Params per Onetime payment API (ag_* = product; history[registration_date] required)
+        params: Dict[str, str] = {
+            "key": key,
+            "uid": uid,
+            "widget": widget_id,
+            "email": email or "user@example.com",
+            "history[registration_date]": str(registration_date),
+            "amount": f"{amount:.2f}",
+            "currencyCode": currency_code,
+            "ag_name": product_name[:256],
+            "ag_external_id": product_id[:256],
+            "ag_type": "fixed",
+            "ps": ps.lower(),
+            "sign_version": str(sign_version),
+        }
+        if success_url:
+            params["success_url"] = success_url
+        if failure_url:
+            params["failure_url"] = failure_url
+        if evaluation is not None:
+            params["evaluation"] = str(evaluation)
+        # Signature: sort params by name, build "key=valuekey2=value2...SECRET", then hash
+        sorted_keys = sorted(params.keys())
+        base_string = "".join(f"{k}={params[k]}" for k in sorted_keys) + secret
+        if sign_version == 3:
+            sign = hashlib.sha256(base_string.encode("utf-8")).hexdigest().lower()
+        else:
+            sign = hashlib.md5(base_string.encode("utf-8")).hexdigest().lower()
+        params["sign"] = sign
+        return f"{TERMINAL3_WIDGET_BASE}?{urlencode(params)}"
+
     @staticmethod
     def _get_auth_header() -> str:
         """Get authorization header for Terminal3"""

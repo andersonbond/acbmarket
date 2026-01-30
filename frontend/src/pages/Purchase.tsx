@@ -16,7 +16,7 @@ import {
 import Header from '../components/Header';
 import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
-import { PurchaseCreate, type Purchase as PurchaseType } from '../types/purchase';
+import { PurchaseCreate, type Purchase as PurchaseType, type Terminal3WidgetConfig } from '../types/purchase';
 
 const Purchase: React.FC = () => {
   const history = useHistory();
@@ -27,6 +27,10 @@ const Purchase: React.FC = () => {
   const searchParams = new URLSearchParams(location.search);
   const returnUrl = searchParams.get('return');
   const requiredChips = searchParams.get('required');
+  
+  // Payment: when false, only Terminal3 (no Test option). Default to terminal3 until health loads.
+  const [paymentTestAvailable, setPaymentTestAvailable] = useState<boolean>(true);
+  const [paymentProvider, setPaymentProvider] = useState<'test' | 'terminal3'>('terminal3');
   
   // Set initial amount to required chips if provided, otherwise default to 100
   const [chipsAmount, setChipsAmount] = useState<number>(
@@ -39,6 +43,13 @@ const Purchase: React.FC = () => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [showCertificateModal, setShowCertificateModal] = useState(false);
 
+  // Terminal3 widget modal (use checkout_url when present to avoid error 06)
+  const [showTerminal3Modal, setShowTerminal3Modal] = useState(false);
+  const [terminal3WidgetConfig, setTerminal3WidgetConfig] = useState<Terminal3WidgetConfig | null>(null);
+  const [terminal3CheckoutUrl, setTerminal3CheckoutUrl] = useState<string | null>(null);
+  const [terminal3PurchaseId, setTerminal3PurchaseId] = useState<string | null>(null);
+  const [terminal3ChipsAdded, setTerminal3ChipsAdded] = useState<number>(0);
+
   // Purchase history state
   const [purchases, setPurchases] = useState<PurchaseType[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
@@ -48,12 +59,59 @@ const Purchase: React.FC = () => {
   // Predefined chip amounts
   const quickAmounts = [20, 50, 100, 200, 500, 1000];
 
+  // Fetch health for payment_test_available (when false, only Terminal3)
+  useEffect(() => {
+    let cancelled = false;
+    api.get('/health')
+      .then((res) => {
+        if (!cancelled && typeof res.data?.payment_test_available === 'boolean') {
+          setPaymentTestAvailable(res.data.payment_test_available);
+          if (res.data.payment_test_available) {
+            setPaymentProvider('test');
+          }
+        }
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
+
   // Fetch purchase history
   useEffect(() => {
     if (user) {
       fetchPurchases();
     }
   }, [user]);
+
+  // Poll for Terminal3 purchase completion when modal is open
+  useEffect(() => {
+    if (!showTerminal3Modal || !terminal3PurchaseId || !user) return;
+    const interval = setInterval(async () => {
+      try {
+        const res = await api.get(`/api/v1/purchases/${terminal3PurchaseId}`);
+        const purchase = res.data?.data?.purchase;
+        if (purchase?.status === 'completed') {
+          const profileRes = await api.get(`/api/v1/users/${user.id}/profile`);
+          const newBalance = profileRes.data?.data?.chips;
+          if (typeof newBalance === 'number') updateUser({ chips: newBalance });
+          setShowTerminal3Modal(false);
+          setTerminal3WidgetConfig(null);
+          setTerminal3CheckoutUrl(null);
+          setTerminal3PurchaseId(null);
+          setTerminal3ChipsAdded(0);
+          fetchPurchases();
+          setAlertHeader('Purchase Successful!');
+          setAlertMessage(
+            `You successfully purchased ${purchase.chips_added.toLocaleString()} chips. Your new balance is ₱${newBalance.toLocaleString()}.`
+          );
+          setIsSuccess(true);
+          setShowAlert(true);
+        }
+      } catch {
+        // ignore
+      }
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [showTerminal3Modal, terminal3PurchaseId, user, updateUser]);
 
   const fetchPurchases = async () => {
     setIsLoadingHistory(true);
@@ -103,40 +161,37 @@ const Purchase: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      const purchaseData: PurchaseCreate = {
-        chips_added: chipsAmount,
-      };
+      const purchaseData: PurchaseCreate =
+        paymentProvider === 'terminal3'
+          ? { chips_added: chipsAmount, payment_provider: 'terminal3' }
+          : { chips_added: chipsAmount };
 
       const response = await api.post('/api/v1/purchases/checkout', purchaseData);
 
       if (response.data.success) {
-        const { purchase, new_balance } = response.data.data;
-        
-        // Update user chips in context
-        if (user) {
-          updateUser({ chips: new_balance });
-        }
+        const { purchase, new_balance, widget_config, checkout_url } = response.data.data;
 
-        setAlertHeader('Purchase Successful!');
-        setAlertMessage(
-          `You successfully purchased ${purchase.chips_added.toLocaleString()} chips (₱${purchase.chips_added.toLocaleString()}). Your new balance is ₱${new_balance.toLocaleString()}.`
-        );
-        setIsSuccess(true);
-        setShowAlert(true);
-        
-        // Refresh purchase history
-        fetchPurchases();
-        
-        // If there's a return URL, redirect back after a short delay
-        if (returnUrl) {
-          setTimeout(() => {
-            history.push(returnUrl);
-          }, 2000);
-        } else {
-          // Reset form after success if no return URL
-          setTimeout(() => {
-            setChipsAmount(100);
-          }, 2000);
+        if ((widget_config || checkout_url) && user) {
+          setTerminal3WidgetConfig(widget_config ?? null);
+          setTerminal3CheckoutUrl(checkout_url ?? null);
+          setTerminal3PurchaseId(purchase.id);
+          setTerminal3ChipsAdded(purchase.chips_added);
+          setShowTerminal3Modal(true);
+          fetchPurchases();
+        } else if (typeof new_balance === 'number') {
+          if (user) updateUser({ chips: new_balance });
+          setAlertHeader('Purchase Successful!');
+          setAlertMessage(
+            `You successfully purchased ${purchase.chips_added.toLocaleString()} chips (₱${purchase.chips_added.toLocaleString()}). Your new balance is ₱${new_balance.toLocaleString()}.`
+          );
+          setIsSuccess(true);
+          setShowAlert(true);
+          fetchPurchases();
+          if (returnUrl) {
+            setTimeout(() => history.push(returnUrl), 2000);
+          } else {
+            setTimeout(() => setChipsAmount(100), 2000);
+          }
         }
       }
     } catch (error: any) {
@@ -333,6 +388,39 @@ const Purchase: React.FC = () => {
                 </div>
               </div>
 
+              {/* Payment method: only when test is available */}
+              {paymentTestAvailable && (
+                <div>
+                  <label className="text-sm md:text-base font-medium text-gray-700 dark:text-gray-300 mb-3 block">
+                    Payment method
+                  </label>
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setPaymentProvider('test')}
+                      className={`flex-1 min-h-[44px] px-4 py-2.5 rounded-lg font-medium text-sm border transition-all ${
+                        paymentProvider === 'test'
+                          ? 'bg-[#fcdb6f] hover:bg-[#fbcf3f] text-black border-[#fcdb6f]'
+                          : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600'
+                      }`}
+                    >
+                      Test (no payment)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPaymentProvider('terminal3')}
+                      className={`flex-1 min-h-[44px] px-4 py-2.5 rounded-lg font-medium text-sm border transition-all ${
+                        paymentProvider === 'terminal3'
+                          ? 'bg-[#fcdb6f] hover:bg-[#fbcf3f] text-black border-[#fcdb6f]'
+                          : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600'
+                      }`}
+                    >
+                      Terminal3 (GCash, etc.)
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Purchase Button */}
               <button
                 onClick={handlePurchase}
@@ -399,11 +487,20 @@ const Purchase: React.FC = () => {
                 <div className="flex items-start">
                   <InformationCircleIcon className="w-5 h-5 md:w-6 md:h-6 text-blue-600 dark:text-blue-400 mr-2 flex-shrink-0 mt-0.5" />
                   <div className="text-xs md:text-sm text-blue-800 dark:text-blue-300">
-                    <p className="font-semibold mb-1">Test Mode - No Payment Required</p>
-                    <p>
-                      Chips are virtual, non-redeemable tokens (1 chip = ₱1.00 for reference only). 
-                      They cannot be converted to cash or withdrawn.
-                    </p>
+                    {paymentTestAvailable ? (
+                      <>
+                        <p className="font-semibold mb-1">Test Mode - No Payment Required</p>
+                        <p>
+                          Chips are virtual, non-redeemable tokens (1 chip = ₱1.00 for reference only). 
+                          They cannot be converted to cash or withdrawn.
+                        </p>
+                      </>
+                    ) : (
+                      <p>
+                        Chips are virtual, non-redeemable tokens (1 chip = ₱1.00 for reference only). 
+                        Pay via Terminal3 (GCash, etc.). They cannot be converted to cash or withdrawn.
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -545,6 +642,69 @@ const Purchase: React.FC = () => {
           buttons={['OK']}
           cssClass={isSuccess ? 'alert-success' : ''}
         />
+
+        {/* Terminal3 Payment Widget Modal */}
+        <IonModal
+          isOpen={showTerminal3Modal}
+          onDidDismiss={() => {
+            setShowTerminal3Modal(false);
+            setTerminal3WidgetConfig(null);
+            setTerminal3CheckoutUrl(null);
+            setTerminal3PurchaseId(null);
+            setTerminal3ChipsAdded(0);
+            fetchPurchases();
+            if (user) {
+              api.get(`/api/v1/users/${user.id}/profile`).then((res) => {
+                const chips = res.data?.data?.chips;
+                if (typeof chips === 'number') updateUser({ chips });
+              }).catch(() => {});
+            }
+          }}
+        >
+          <IonHeader>
+            <IonToolbar>
+              <IonTitle>Complete Payment</IonTitle>
+              <button
+                onClick={() => {
+                  setShowTerminal3Modal(false);
+                  setTerminal3WidgetConfig(null);
+                  setTerminal3CheckoutUrl(null);
+                  setTerminal3PurchaseId(null);
+                  setTerminal3ChipsAdded(0);
+                  fetchPurchases();
+                  if (user) {
+                    api.get(`/api/v1/users/${user.id}/profile`).then((res) => {
+                      const chips = res.data?.data?.chips;
+                      if (typeof chips === 'number') updateUser({ chips });
+                    }).catch(() => {});
+                  }
+                }}
+                className="absolute right-4 top-1/2 -translate-y-1/2 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+              >
+                <XMarkIcon className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+              </button>
+            </IonToolbar>
+          </IonHeader>
+          <IonContent className="ion-padding bg-gray-50 dark:bg-gray-900">
+            {(terminal3CheckoutUrl || terminal3WidgetConfig) && user && terminal3PurchaseId != null && (
+              <>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                  Payment submitted. Chips will be added shortly after confirmation.
+                </p>
+                <div className="rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800" style={{ minHeight: 640 }}>
+                  <iframe
+                    title="Terminal3 Payment"
+                    src={terminal3CheckoutUrl ?? (terminal3WidgetConfig
+                      ? `${terminal3WidgetConfig.base_url}?key=${encodeURIComponent(terminal3WidgetConfig.key)}&uid=${encodeURIComponent(user.id)}&widget=${encodeURIComponent(terminal3WidgetConfig.widget_id)}&evaluation=${terminal3WidgetConfig.evaluation}&ps=${encodeURIComponent(terminal3WidgetConfig.ps)}&purchase_id=${encodeURIComponent(terminal3PurchaseId)}&chips_added=${terminal3ChipsAdded}`
+                      : 'about:blank')}
+                    style={{ width: '100%', height: '100%', minWidth: 860, minHeight: 640, border: 0 }}
+                    frameBorder={0}
+                  />
+                </div>
+              </>
+            )}
+          </IonContent>
+        </IonModal>
 
         {/* Certificate Info Modal */}
         <IonModal isOpen={showCertificateModal} onDidDismiss={() => setShowCertificateModal(false)}>

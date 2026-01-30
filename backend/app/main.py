@@ -80,8 +80,12 @@ async def root():
 
 @app.get("/health")
 async def health_check():
-    """Health check endpoint"""
-    return {"status": "healthy", "service": "ACBMarket-api"}
+    """Health check endpoint. payment_test_available: when True, Purchase page shows Test (no payment); when False, only Terminal3."""
+    return {
+        "status": "healthy",
+        "service": "ACBMarket-api",
+        "payment_test_available": settings.PAYMENT,
+    }
 
 
 @app.exception_handler(Exception)

@@ -44,6 +44,7 @@ import { activityService } from '../services/activity';
 import { Activity } from '../types/activity';
 import { Badge } from '../types/badge';
 import { useSEO } from '../hooks/useSEO';
+import imageCompression from 'browser-image-compression';
 // Simple date formatter (avoiding date-fns dependency)
 const formatTimeAgo = (dateString: string): string => {
   try {
@@ -293,7 +294,7 @@ const Profile: React.FC = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file size (10MB)
+    // Validate file size (10MB max before compression)
     if (file.size > 10 * 1024 * 1024) {
       setError('Image size must be less than 10MB');
       return;
@@ -313,22 +314,32 @@ const Profile: React.FC = () => {
     };
     reader.readAsDataURL(file);
 
-    // Upload file
     setIsUploadingAvatar(true);
     setError('');
     try {
-      const formData = new FormData();
-      formData.append('file', file);
+      // Compress/resize to stay under typical reverse-proxy limits (e.g. 1MB) and avoid 413
+      const isHeic = file.type === 'image/heic' || file.type === 'image/heif';
+      let fileToUpload: File = file;
+      if (!isHeic) {
+        try {
+          fileToUpload = await imageCompression(file, {
+            maxSizeMB: 1,
+            maxWidthOrHeight: 1024,
+            useWebWorker: true,
+          });
+        } catch {
+          // If compression fails (e.g. unsupported format), use original
+        }
+      }
 
-      const response = await api.post('/api/v1/users/me/upload-avatar', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      const formData = new FormData();
+      formData.append('file', fileToUpload);
+
+      // Do not set Content-Type; browser sets multipart/form-data with boundary
+      const response = await api.post('/api/v1/users/me/upload-avatar', formData);
 
       if (response.data.success) {
         const avatarUrl = response.data.data.avatar_url;
-        // Update profile user with new avatar URL
         if (profileUser) {
           const updatedUser = { ...profileUser, avatar_url: avatarUrl };
           setProfileUser(updatedUser);
@@ -338,7 +349,16 @@ const Profile: React.FC = () => {
         setError(response.data.errors?.[0]?.message || 'Failed to upload avatar');
       }
     } catch (err: any) {
-      setError(err.response?.data?.errors?.[0]?.message || err.response?.data?.detail || 'Failed to upload avatar');
+      const status = err.response?.status;
+      const is413 = status === 413;
+      const isNetworkOrCors = err.code === 'ERR_NETWORK' || !err.response;
+      if (is413) {
+        setError('Image too large for the server. Please choose a smaller photo (under 2MB).');
+      } else if (isNetworkOrCors) {
+        setError('Upload failed. Try a smaller photo or check your connection. If the image is large, use a smaller file.');
+      } else {
+        setError(err.response?.data?.errors?.[0]?.message || err.response?.data?.detail || 'Failed to upload avatar');
+      }
     } finally {
       setIsUploadingAvatar(false);
     }

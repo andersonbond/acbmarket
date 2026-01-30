@@ -98,3 +98,15 @@ alembic downgrade -1
 
 See `.env.example` (create `.env` file with your values)
 
+## Production / Reverse proxy
+
+If the API is behind nginx (or another reverse proxy), ensure the proxy allows request bodies large enough for avatar uploads. Otherwise uploads can fail with **413 Content Too Large**, and the browser may show a CORS error (because the proxy’s 413 response often has no CORS headers).
+
+**nginx example** (e.g. in `server` or `http` block):
+
+```nginx
+client_max_body_size 10M;
+```
+
+Then reload nginx. The backend accepts avatar images up to 10MB; the frontend compresses images before upload to reduce size.
+

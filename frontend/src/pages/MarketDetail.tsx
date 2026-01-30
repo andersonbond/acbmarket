@@ -25,6 +25,9 @@ const MarketDetail: React.FC = () => {
   const [toastMessage, setToastMessage] = useState('');
   const [toastColor, setToastColor] = useState<'success' | 'danger'>('success');
   const [isResolutionOpen, setIsResolutionOpen] = useState(false);
+  const [isDescriptionOpen, setIsDescriptionOpen] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches
+  );
   const [resolution, setResolution] = useState<any | null>(null);
   const [showCopiedToast, setShowCopiedToast] = useState(false);
 
@@ -475,19 +478,39 @@ const MarketDetail: React.FC = () => {
 
           {/* Consensus Section - Second */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {/* Resolution Rules - Compact */}
-            {market.rules && (
+            {/* Market Description - Accordion (no ionAccordion) */}
+            {market.description && (
               <div className="lg:col-span-1">
-                <IonCard className="bg-white dark:bg-gray-800 h-full">
-                  <IonCardContent className="p-2.5 sm:p-3 md:p-4">
-                    <h2 className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white mb-1.5 sm:mb-2 flex items-center">
-                      <IonIcon icon={informationCircle} className="mr-1 sm:mr-1.5 text-primary text-sm sm:text-base md:text-lg" />
-                      Resolution Rules
-                    </h2>
-                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-2 sm:p-3">
-                      <p className="text-xs text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
-                        {market.rules}
-                      </p>
+                <IonCard className="bg-white dark:bg-gray-800 h-full overflow-hidden">
+                  <IonCardContent className="p-0">
+                    <button
+                      type="button"
+                      onClick={() => setIsDescriptionOpen(!isDescriptionOpen)}
+                      className="w-full flex items-center justify-between p-2.5 sm:p-3 md:p-4 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-left"
+                    >
+                      <h2 className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white flex items-center">
+                        <IonIcon icon={informationCircle} className="mr-1 sm:mr-1.5 text-primary text-sm sm:text-base md:text-lg flex-shrink-0" />
+                        Market Description
+                      </h2>
+                      <IonIcon
+                        icon={chevronDown}
+                        className={`text-gray-500 dark:text-gray-400 text-lg flex-shrink-0 transition-transform duration-200 ${
+                          isDescriptionOpen ? 'rotate-180' : ''
+                        }`}
+                      />
+                    </button>
+                    <div
+                      className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                        isDescriptionOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
+                      }`}
+                    >
+                      <div className="px-2.5 sm:px-3 md:px-4 pb-2.5 sm:pb-3 md:pb-4 mt-2">
+                        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-2 sm:p-3 max-h-[160px] overflow-y-auto">
+                          <p className="text-xs text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
+                            {market.description}
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   </IonCardContent>
                 </IonCard>
@@ -495,7 +518,7 @@ const MarketDetail: React.FC = () => {
             )}
 
             {/* Outcomes & Consensus - Takes remaining space */}
-            <div className={market.rules ? 'lg:col-span-2' : 'lg:col-span-3'}>
+            <div className={market.description ? 'lg:col-span-2' : 'lg:col-span-3'}>
               <IonCard className="bg-white dark:bg-gray-800">
                 <IonCardContent className="p-2.5 sm:p-3 md:p-4">
                   <h2 className="text-sm sm:text-base md:text-lg font-bold text-gray-900 dark:text-white mb-2 sm:mb-3 md:mb-4">

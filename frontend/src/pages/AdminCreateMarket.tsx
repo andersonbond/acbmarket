@@ -50,6 +50,29 @@ const AdminCreateMarket: React.FC = () => {
     }));
   };
 
+  // Helpers for deadline: use local date/time so picking time doesn't change the date
+  const endDateObj = formData.end_date ? new Date(formData.end_date) : null;
+  const deadlineDatePart = endDateObj
+    ? `${endDateObj.getFullYear()}-${String(endDateObj.getMonth() + 1).padStart(2, '0')}-${String(endDateObj.getDate()).padStart(2, '0')}`
+    : '';
+  const deadlineTimePart = endDateObj
+    ? `${String(endDateObj.getHours()).padStart(2, '0')}:${String(endDateObj.getMinutes()).padStart(2, '0')}`
+    : '';
+  const minDateStr = (() => {
+    const n = new Date();
+    return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`;
+  })();
+  const setDeadlineFromParts = (dateStr: string, timeStr: string) => {
+    if (!dateStr) {
+      handleInputChange('end_date', '');
+      return;
+    }
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const [hh, mm] = (timeStr || '23:59').split(':').map(Number);
+    const d2 = new Date(y, m - 1, d, hh, mm, 0, 0);
+    handleInputChange('end_date', d2.toISOString());
+  };
+
   const handleOutcomeChange = (index: number, value: string) => {
     const newOutcomes = [...formData.outcomes];
     newOutcomes[index].name = value;
@@ -358,30 +381,49 @@ const AdminCreateMarket: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Market Deadline */}
+                {/* Market Deadline - separate date and time so selecting time doesn't change the date */}
                 <div>
                   <IonLabel className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block flex items-center">
                     <IonIcon icon={calendarOutline} className="mr-2" />
                     Market Deadline (Optional)
                   </IonLabel>
-                  <IonItem className="ion-no-padding" lines="none">
-                    <IonDatetime
-                      presentation="date-time"
-                      value={formData.end_date}
-                      onIonChange={(e) => {
-                        const value = e.detail.value as string;
-                        // Convert to ISO string format
-                        if (value) {
-                          const date = new Date(value);
-                          handleInputChange('end_date', date.toISOString());
-                        } else {
-                          handleInputChange('end_date', '');
-                        }
-                      }}
-                      min={new Date().toISOString()}
-                      className="border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3 w-full"
-                    />
-                  </IonItem>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Date</label>
+                      <IonItem className="ion-no-padding" lines="none">
+                        <IonDatetime
+                          presentation="date"
+                          value={deadlineDatePart || undefined}
+                          min={minDateStr}
+                          onIonChange={(e) => {
+                            const value = e.detail.value as string;
+                            setDeadlineFromParts(value || '', value ? deadlineTimePart || '23:59' : '');
+                          }}
+                          className="border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3 w-full"
+                        />
+                      </IonItem>
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Time</label>
+                      <IonItem className="ion-no-padding" lines="none">
+                        <IonDatetime
+                          presentation="time"
+                          value={deadlineDatePart ? (deadlineTimePart || '23:59') : undefined}
+                          onIonChange={(e) => {
+                            const value = e.detail.value as string;
+                            if (value && deadlineDatePart) {
+                              const t = new Date(value);
+                              const timeStr = Number.isNaN(t.getTime())
+                                ? (value.includes(':') ? value.slice(0, 5) : '23:59')
+                                : `${String(t.getHours()).padStart(2, '0')}:${String(t.getMinutes()).padStart(2, '0')}`;
+                              setDeadlineFromParts(deadlineDatePart, timeStr);
+                            }
+                          }}
+                          className="border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3 w-full"
+                        />
+                      </IonItem>
+                    </div>
+                  </div>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     When forecasting closes for this market. Leave empty for no deadline.
                   </p>

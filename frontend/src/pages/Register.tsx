@@ -124,37 +124,35 @@ const Register: React.FC = () => {
 
   return (
     <IonPage>
-      <IonContent className="ion-padding">
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-4 py-4 md:py-8">
+      <IonContent>
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-4 py-3 md:py-8">
           <div className="max-w-md lg:max-w-4xl xl:max-w-5xl w-full">
-            {/* Close Button */}
-            <div className="flex justify-end mb-1 md:mb-2">
-              <IonButton 
-                fill="clear" 
-                onClick={() => history.push('/')} 
-                className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
-                size="default"
-              >
-                <IonIcon icon={close} slot="icon-only" className="text-xl md:text-2xl" />
-              </IonButton>
-            </div>
-
-            {/* Logo/Header */}
-            <div className="text-center mb-4 md:mb-8">
-              <div className="flex justify-center mb-2 md:mb-4">
-                <img 
-                  src="/logo.png" 
-                  alt="ACBMarket" 
-                  className="h-12 md:h-16 w-auto rounded-lg shadow-md"
+            {/* Header: logo + title aligned with close button */}
+            <div className="flex items-center justify-between gap-3 mb-3 md:mb-6">
+              <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
+                <img
+                  src="/logo.png"
+                  alt="ACBMarket"
+                  className="h-10 md:h-16 w-auto rounded-lg shadow-md flex-shrink-0"
                   onError={(e) => {
                     (e.target as HTMLImageElement).style.display = 'none';
                   }}
                 />
+                <div className="min-w-0">
+                  <h1 className="text-2xl md:text-5xl font-dm-sans font-extrabold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent leading-tight">
+                    ACBMarket
+                  </h1>
+                  <p className="text-gray-600 dark:text-gray-300 text-xs md:text-lg truncate">Join the prediction market community</p>
+                </div>
               </div>
-              <h1 className="text-3xl md:text-5xl font-dm-sans font-extrabold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent mb-1 md:mb-2">
-                ACBMarket
-              </h1>
-              <p className="text-gray-600 dark:text-gray-300 text-sm md:text-lg">Join the prediction market community</p>
+              <IonButton
+                fill="clear"
+                onClick={() => history.push('/')}
+                className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors flex-shrink-0"
+                size="default"
+              >
+                <IonIcon icon={close} slot="icon-only" className="text-xl md:text-2xl" />
+              </IonButton>
             </div>
 
             {/* Register Card */}

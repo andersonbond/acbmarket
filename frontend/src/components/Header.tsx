@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonSearchbar, IonIcon, IonModal, IonContent } from '@ionic/react';
-import { person, statsChart, trophy, logOut, logIn, personAdd, moon, sunny, helpCircle, close, add, wallet, settingsOutline } from 'ionicons/icons';
+import { person, statsChart, trophy, logOut, logIn, personAdd, moon, sunny, helpCircle, add, wallet, settingsOutline } from 'ionicons/icons';
 import {
   UserGroupIcon,
   QuestionMarkCircleIcon,
@@ -21,6 +21,7 @@ import { useHistory, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import NotificationBell from './NotificationBell';
+import HowItWorksModal from './HowItWorksModal';
 
 const Header: React.FC = () => {
   const { isAuthenticated, user, logout } = useAuth();
@@ -394,145 +395,7 @@ const Header: React.FC = () => {
         </IonContent>
       </IonModal>
 
-      {/* How it Works Modal */}
-      <IonModal isOpen={isHowItWorksOpen} onDidDismiss={() => setIsHowItWorksOpen(false)}>
-        <IonHeader>
-          <IonToolbar>
-            <IonTitle>How It Works</IonTitle>
-            <IonButtons slot="end">
-              <IonButton onClick={() => setIsHowItWorksOpen(false)} className="font-dm-sans">
-                <IonIcon icon={close} />
-              </IonButton>
-            </IonButtons>
-          </IonToolbar>
-        </IonHeader>
-        <IonContent className="ion-padding">
-          <div className="max-w-3xl mx-auto py-6 space-y-6">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Welcome to ACBMarket</h2>
-              <p className="text-gray-700 dark:text-gray-300 mb-4">
-                ACBMarket is a Philippine prediction market platform where you can forecast events using virtual chips. 
-                Test your prediction skills, compete with others, and climb the leaderboard!
-              </p>
-            </div>
-
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
-                <span className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-black font-bold mr-3">1</span>
-                Get Started
-              </h3>
-              <p className="text-gray-700 dark:text-gray-300 ml-11">
-                Create an account to start forecasting. Purchase virtual chips (1 chip = ₱1.00 for reference) to participate in markets. 
-                These chips are non-redeemable and used solely for prediction purposes.
-              </p>
-            </div>
-
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
-                <span className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-black font-bold mr-3">2</span>
-                Browse Markets
-              </h3>
-              <p className="text-gray-700 dark:text-gray-300 ml-11">
-                Explore various prediction markets across categories like Elections, Politics, Sports, Entertainment, 
-                Economy, Weather, and more. Each market presents a question with Yes/No outcomes and has an end date.
-              </p>
-            </div>
-
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
-                <span className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-black font-bold mr-3">3</span>
-                Make Forecasts
-              </h3>
-              <p className="text-gray-700 dark:text-gray-300 ml-11">
-                Use your chips to forecast outcomes. Allocate chips to "Yes" or "No" based on your prediction. 
-                The percentage shown represents the current market consensus. You can update your forecast (change outcome or amount) 
-                before the market ends, but once placed, your chips are committed - you can only get them back if you win!
-              </p>
-            </div>
-
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
-                <span className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-black font-bold mr-3">4</span>
-                Win Chips & Earn Rewards
-              </h3>
-              <div className="text-gray-700 dark:text-gray-300 ml-11 space-y-2">
-                <p>
-                  When markets resolve, <strong className="text-primary">winning users receive chips as rewards!</strong>
-                </p>
-                <p>
-                  <strong>How it works:</strong>
-                </p>
-                <ul className="list-disc list-inside space-y-1 ml-4">
-                  <li>You get your original bet back</li>
-                  <li>Plus a proportional share of chips from losing forecasts (90% of losing chips are distributed)</li>
-                  <li>The more you bet, the larger your share of the rewards</li>
-                </ul>
-                <p className="mt-2 text-sm italic">
-                  Example: If you bet 100 chips and win, you might receive 150-300 chips depending on how many others lost!
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
-                <span className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-black font-bold mr-3">5</span>
-                Build Reputation & Earn Badges
-              </h3>
-              <p className="text-gray-700 dark:text-gray-300 ml-11">
-                Accurate forecasts earn you reputation points. Build your reputation to unlock badges (Newbie, Accurate, Veteran, etc.) 
-                and maintain winning streaks. Your reputation reflects your forecasting accuracy over time.
-              </p>
-            </div>
-
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
-                <span className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-black font-bold mr-3">6</span>
-                Compete on Leaderboards
-              </h3>
-              <p className="text-gray-700 dark:text-gray-300 ml-11">
-                Compete with other forecasters and see your name on the leaderboard. Rankings are based on reputation, streaks, and activity. 
-                Top forecasters may receive monthly certificates and recognition!
-              </p>
-            </div>
-
-            <div className="bg-primary/10 dark:bg-primary/20 rounded-lg p-6 border border-primary/20">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Important Notes</h3>
-              <ul className="space-y-2 text-gray-700 dark:text-gray-300">
-                <li className="flex items-start">
-                  <span className="text-primary mr-2">•</span>
-                  <span><strong>Chips are virtual and non-redeemable</strong> - they cannot be converted to real money. 1 chip = ₱1.00 is for reference only.</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-primary mr-2">•</span>
-                  <span>This is a forecasting platform for entertainment and educational purposes.</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-primary mr-2">•</span>
-                  <span>Markets are resolved by admins based on verifiable real-world outcomes with evidence.</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-primary mr-2">•</span>
-                  <span>Winning forecasts earn you chips back plus a share of losing chips (90% distributed, 10% house edge).</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-primary mr-2">•</span>
-                  <span>You can view your forecast history, track your reputation, and see your rankings on leaderboards.</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-primary mr-2">•</span>
-                  <span>Top forecasters may receive monthly digital certificates and recognition.</span>
-                </li>
-              </ul>
-            </div>
-
-            <div className="flex justify-center pt-4">
-              <IonButton onClick={() => setIsHowItWorksOpen(false)} className="button-primary font-dm-sans">
-                Got it!
-              </IonButton>
-            </div>
-          </div>
-        </IonContent>
-      </IonModal>
+      <HowItWorksModal isOpen={isHowItWorksOpen} onDismiss={() => setIsHowItWorksOpen(false)} />
     </IonHeader>
   );
 };

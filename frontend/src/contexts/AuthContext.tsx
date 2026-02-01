@@ -1,6 +1,13 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User, AuthTokens, LoginCredentials, RegisterData } from '../types/user';
+import { User, LoginCredentials, RegisterData } from '../types/user';
 import api from '../services/api';
+
+export interface RegisterVerifyOtpData {
+  contact_number: string;
+  otp: string;
+  display_name: string;
+  password: string;
+}
 
 interface AuthContextType {
   user: User | null;
@@ -8,6 +15,8 @@ interface AuthContextType {
   isLoading: boolean;
   login: (credentials: LoginCredentials) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
+  sendRegistrationOtp: (contact_number: string) => Promise<void>;
+  registerVerifyOtp: (data: RegisterVerifyOtpData) => Promise<void>;
   logout: () => void;
   refreshToken: () => Promise<void>;
   updateUser: (userData: Partial<User>) => void;
@@ -130,6 +139,37 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const sendRegistrationOtp = async (contact_number: string) => {
+    try {
+      const response = await api.post('/api/v1/auth/send-registration-otp', { contact_number });
+      if (!response.data.success) {
+        throw new Error(response.data.errors?.[0]?.message || 'Failed to send verification code');
+      }
+    } catch (error: any) {
+      const message = error.response?.data?.errors?.[0]?.message || error.message || 'Failed to send verification code';
+      throw new Error(message);
+    }
+  };
+
+  const registerVerifyOtp = async (data: RegisterVerifyOtpData) => {
+    try {
+      const response = await api.post('/api/v1/auth/register-verify-otp', data);
+      if (response.data.success) {
+        const { tokens, user: userData } = response.data.data;
+        const { access_token, refresh_token } = tokens;
+        localStorage.setItem('access_token', access_token);
+        localStorage.setItem('refresh_token', refresh_token);
+        localStorage.setItem('user', JSON.stringify(userData));
+        setUser(userData);
+      } else {
+        throw new Error(response.data.errors?.[0]?.message || 'Verification failed');
+      }
+    } catch (error: any) {
+      const message = error.response?.data?.errors?.[0]?.message || error.message || 'Verification failed';
+      throw new Error(message);
+    }
+  };
+
   const logout = () => {
     // Clear all auth data
     localStorage.removeItem('access_token');
@@ -177,6 +217,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         isLoading,
         login,
         register,
+        sendRegistrationOtp,
+        registerVerifyOtp,
         logout,
         refreshToken,
         updateUser,

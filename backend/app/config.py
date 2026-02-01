@@ -59,6 +59,11 @@ class Settings(BaseSettings):
     SMTP_USER: str = ""
     SMTP_PASSWORD: str = ""
     SMTP_FROM_EMAIL: str = ""
+
+    # Twilio Verify (registration OTP - no phone number purchase needed)
+    TWILIO_ACCOUNT_SID: str = ""
+    TWILIO_AUTH_TOKEN: str = ""
+    TWILIO_VERIFY_SERVICE_SID: str = ""  # Verify Service SID (starts with VA...) from Twilio Console
     
     class Config:
         env_file = ".env"

@@ -16,8 +16,10 @@ const Register: React.FC = () => {
   const [error, setError] = useState('');
   const [displayNameError, setDisplayNameError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { register } = useAuth();
+  const { sendRegistrationOtp } = useAuth();
   const history = useHistory();
+
+  const PENDING_REGISTRATION_KEY = 'pendingRegistration';
 
   const handleDisplayNameChange = (value: string) => {
     // Check if input contains special characters
@@ -92,12 +94,19 @@ const Register: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // Email is optional, so we don't send it
       const fullContactNumber = '+63' + contactNumberDigits;
-      await register({ password, display_name: displayName, contact_number: fullContactNumber });
-      history.push('/');
+      await sendRegistrationOtp(fullContactNumber);
+      sessionStorage.setItem(
+        PENDING_REGISTRATION_KEY,
+        JSON.stringify({
+          displayName,
+          password,
+          contactNumber: fullContactNumber,
+        })
+      );
+      history.push('/register-otp');
     } catch (err: any) {
-      setError(err.message || 'Registration failed. Please try again.');
+      setError(err.message || 'Failed to send verification code. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -198,7 +207,7 @@ const Register: React.FC = () => {
                       type="text"
                       value={displayName}
                       onIonInput={(e) => handleDisplayNameChange(e.detail.value!)}
-                      placeholder="Choose a display name (letters and numbers only)"
+                      placeholder="Choose a display name.."
                       required
                       minlength={3}
                       maxlength={50}
@@ -411,7 +420,7 @@ const Register: React.FC = () => {
                     {isLoading ? (
                       <>
                         <IonSpinner name="crescent" />
-                        Creating account...
+                        Sending verification code...
                       </>
                     ) : (
                       <>

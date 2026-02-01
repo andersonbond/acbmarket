@@ -27,6 +27,9 @@ email-validator==2.3.0
 # Payment Gateway (Philippines - PayMongo)
 # Using httpx (already included) for PayMongo API calls
 
+# SMS (Twilio - Philippine OTP)
+twilio==9.0.0
+
 # Utilities
 python-slugify==8.0.1
 

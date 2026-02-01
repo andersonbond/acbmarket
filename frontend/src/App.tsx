@@ -31,7 +31,9 @@ import MarketModeratorProtectedRoute from './components/MarketModeratorProtected
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import RegisterOtp from './pages/RegisterOtp';
 import ForgotPassword from './pages/ForgotPassword';
+import ForgotPasswordOtp from './pages/ForgotPasswordOtp';
 import ResetPassword from './pages/ResetPassword';
 import Profile from './pages/Profile';
 import Leaderboard from './pages/Leaderboard';
@@ -68,7 +70,9 @@ const App: React.FC = () => {
             <Route exact path="/" component={Home} />
             <Route exact path="/login" component={Login} />
             <Route exact path="/register" component={Register} />
+            <Route exact path="/register-otp" component={RegisterOtp} />
             <Route exact path="/forgot-password" component={ForgotPassword} />
+            <Route exact path="/forgot-password-otp" component={ForgotPasswordOtp} />
             <Route exact path="/reset-password/:token" component={ResetPassword} />
             <Route exact path="/leaderboard" component={Leaderboard} />
             <Route exact path="/markets" component={Markets} />

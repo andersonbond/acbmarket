@@ -73,9 +73,10 @@ const Login: React.FC = () => {
 
   return (
     <IonPage>
-      <IonContent>
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-4 py-3 md:py-8">
-          <div className="max-w-md lg:max-w-lg w-full">
+      <IonContent scrollY={false} className="login-content">
+        <div className="h-[100dvh] flex flex-col overflow-hidden md:overflow-visible md:min-h-screen md:h-auto md:items-center md:justify-center bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-4 py-3 md:py-8">
+          <div className="flex-1 min-h-0 overflow-hidden md:overflow-visible flex flex-col md:items-center md:justify-center pt-2 md:pt-0">
+            <div className="max-w-md lg:max-w-lg w-full flex-shrink-0">
             {/* Header: logo + title aligned with close button */}
             <div className="flex items-center justify-between gap-3 mb-3 md:mb-6">
               <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
@@ -231,6 +232,7 @@ const Login: React.FC = () => {
                   </Link>
                 </p>
               </div>
+            </div>
             </div>
           </div>
         </div>

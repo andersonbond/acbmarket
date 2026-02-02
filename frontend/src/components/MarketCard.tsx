@@ -122,7 +122,7 @@ const MarketCard: React.FC<MarketCardProps> = ({ market }) => {
 
           {/* Content - Right side of image */}
           <div className="flex-1 min-w-0">
-            <h3 className="text-base font-bold text-gray-900 dark:text-white mb-2 break-words">
+            <h3 className="market-card-title font-bold text-gray-900 dark:text-white mb-2 break-words">
               {market.title}
             </h3>
             <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${getCategoryColor(market.category)}`}>

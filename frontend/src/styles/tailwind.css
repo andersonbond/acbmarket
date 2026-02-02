@@ -508,6 +508,18 @@ ion-input .native-input {
   width: 100% !important;
 }
 
+/* Prevent iOS zoom on input focus: font-size must be at least 16px on mobile */
+@media screen and (max-width: 768px) {
+  ion-input,
+  ion-textarea,
+  ion-input input,
+  ion-input .native-input,
+  ion-textarea textarea,
+  ion-textarea .native-textarea {
+    font-size: 16px !important;
+  }
+}
+
 /* Ensure IonItem has proper spacing for inputs */
 ion-item {
   --inner-padding-end: 0.5rem !important;
@@ -699,6 +711,16 @@ ion-accordion div[slot="content"] {
 /* Override Ionic's default font-weight for market card titles */
 ion-card-content h3 {
   font-weight: 700 !important;
+}
+
+/* Market card title - slightly larger on mobile, base size from md up */
+ion-card-content .market-card-title {
+  font-size: 1.125rem !important; /* text-lg - slightly larger on mobile */
+}
+@media (min-width: 768px) {
+  ion-card-content .market-card-title {
+    font-size: 1rem !important; /* text-base */
+  }
 }
 
 /* Override Ionic's default font-size for market detail title on small screens */

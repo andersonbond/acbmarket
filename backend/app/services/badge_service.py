@@ -183,7 +183,7 @@ def check_and_award_badges(db: Session, user_id: str) -> List[str]:
                 newly_awarded.append(badge_id)
     
     # Check specialist badges for each category
-    categories = ['election', 'politics', 'sports', 'entertainment', 'economy', 'weather']
+    categories = ['election', 'politics', 'sports', 'entertainment', 'economy', 'weather', 'local', 'technology', 'world', 'culture', 'other']
     for category in categories:
         badge_id = f"specialist_{category}"
         if badge_id not in current_badges:

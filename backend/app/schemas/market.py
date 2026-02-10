@@ -34,7 +34,7 @@ class MarketBase(BaseModel):
     description: Optional[str] = Field(None, max_length=5000)
     rules: Optional[str] = Field(None, max_length=5000, description="Resolution rules/criteria")
     image_url: Optional[str] = Field(None, description="Market image URL")
-    category: str = Field(..., pattern="^(election|politics|sports|entertainment|economy|weather|other)$")
+    category: str = Field(..., pattern="^(election|politics|sports|entertainment|economy|weather|other|local|technology|world|culture)$")
     meta_data: Optional[Dict[str, Any]] = Field(default_factory=dict)
     max_points_per_user: int = Field(default=10000, ge=1, le=1000000)
     end_date: Optional[datetime] = Field(None, description="Market deadline - when forecasting closes")
@@ -60,7 +60,7 @@ class MarketUpdate(BaseModel):
     description: Optional[str] = Field(None, max_length=5000)
     rules: Optional[str] = Field(None, max_length=5000)
     image_url: Optional[str] = None
-    category: Optional[str] = Field(None, pattern="^(election|politics|sports|entertainment|economy|weather|other)$")
+    category: Optional[str] = Field(None, pattern="^(election|politics|sports|entertainment|economy|weather|other|local|technology|world|culture)$")
     status: Optional[str] = Field(None, pattern="^(open|suspended|resolved|cancelled)$")
     meta_data: Optional[Dict[str, Any]] = None
     max_points_per_user: Optional[int] = Field(None, ge=1, le=1000000)

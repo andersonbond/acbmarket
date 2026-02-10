@@ -40,6 +40,10 @@ const AdminCreateMarket: React.FC = () => {
     { value: 'entertainment', label: 'Entertainment' },
     { value: 'economy', label: 'Economy' },
     { value: 'weather', label: 'Weather' },
+    { value: 'local', label: 'Local' },
+    { value: 'technology', label: 'Technology' },
+    { value: 'world', label: 'World' },
+    { value: 'culture', label: 'Culture' },
     { value: 'other', label: 'Other' },
   ];
 

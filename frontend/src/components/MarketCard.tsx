@@ -47,9 +47,15 @@ const MarketCard: React.FC<MarketCardProps> = ({ market }) => {
     const colors: Record<string, string> = {
       election: 'bg-blue-100 text-blue-700',
       politics: 'bg-red-100 text-red-700',
-      crypto: 'bg-yellow-100 text-yellow-700',
       sports: 'bg-green-100 text-green-700',
       entertainment: 'bg-purple-100 text-purple-700',
+      economy: 'bg-yellow-100 text-yellow-700',
+      weather: 'bg-cyan-100 text-cyan-700',
+      local: 'bg-orange-100 text-orange-700',
+      technology: 'bg-cyan-100 text-cyan-700',
+      world: 'bg-teal-100 text-teal-700',
+      culture: 'bg-pink-100 text-pink-700',
+      other: 'bg-gray-100 text-gray-700',
     };
     return colors[category.toLowerCase()] || 'bg-gray-100 text-gray-700';
   };

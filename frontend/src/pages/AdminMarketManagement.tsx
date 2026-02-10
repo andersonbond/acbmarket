@@ -155,6 +155,13 @@ const AdminMarketManagement: React.FC = () => {
                 <IonSegmentButton value="politics">Politics</IonSegmentButton>
                 <IonSegmentButton value="sports">Sports</IonSegmentButton>
                 <IonSegmentButton value="entertainment">Entertainment</IonSegmentButton>
+                <IonSegmentButton value="economy">Economy</IonSegmentButton>
+                <IonSegmentButton value="weather">Weather</IonSegmentButton>
+                <IonSegmentButton value="local">Local</IonSegmentButton>
+                <IonSegmentButton value="technology">Technology</IonSegmentButton>
+                <IonSegmentButton value="world">World</IonSegmentButton>
+                <IonSegmentButton value="culture">Culture</IonSegmentButton>
+                <IonSegmentButton value="other">Other</IonSegmentButton>
               </IonSegment>
             </IonCardContent>
           </IonCard>

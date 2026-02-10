@@ -19,7 +19,7 @@ class Market(Base):
     description = Column(Text, nullable=True)
     rules = Column(Text, nullable=True)  # Resolution rules/criteria
     image_url = Column(String, nullable=True)  # Market image URL
-    category = Column(String, nullable=False, index=True)  # election, politics, sports, entertainment, economy, weather, other
+    category = Column(String, nullable=False, index=True)  # election, politics, sports, entertainment, economy, weather, local, technology, world, culture, other
     meta_data = Column(JSON, nullable=True, default=dict)  # Additional data as JSON (renamed from metadata to avoid SQLAlchemy reserved word)
     
     # Status: open, suspended, resolved, cancelled

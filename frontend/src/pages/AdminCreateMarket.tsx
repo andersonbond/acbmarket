@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { IonContent, IonPage, IonButton, IonInput, IonTextarea, IonItem, IonLabel, IonSpinner, IonAlert, IonIcon, IonDatetime } from '@ionic/react';
+import { IonContent, IonPage, IonButton, IonInput, IonTextarea, IonItem, IonLabel, IonSpinner, IonAlert, IonIcon } from '@ionic/react';
 import { useHistory } from 'react-router-dom';
 import { imageOutline, closeCircle, documentText, calendarOutline } from 'ionicons/icons';
 import Header from '../components/Header';
@@ -385,52 +385,63 @@ const AdminCreateMarket: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Market Deadline - separate date and time so selecting time doesn't change the date */}
-                <div>
-                  <IonLabel className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block flex items-center">
-                    <IonIcon icon={calendarOutline} className="mr-2" />
-                    Market Deadline (Optional)
-                  </IonLabel>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* Market Deadline - native date/time inputs for clean UX on all screen sizes */}
+                <div className="rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50/50 dark:bg-gray-700/30 p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <IonLabel className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center">
+                      <IonIcon icon={calendarOutline} className="mr-2 text-primary" />
+                      Market Deadline (Optional)
+                    </IonLabel>
+                    {formData.end_date && (
+                      <button
+                        type="button"
+                        onClick={() => handleInputChange('end_date', '')}
+                        className="text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                      >
+                        Clear
+                      </button>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Date</label>
-                      <IonItem className="ion-no-padding" lines="none">
-                        <IonDatetime
-                          presentation="date"
-                          value={deadlineDatePart || undefined}
-                          min={minDateStr}
-                          onIonChange={(e) => {
-                            const value = e.detail.value as string;
-                            setDeadlineFromParts(value || '', value ? deadlineTimePart || '23:59' : '');
-                          }}
-                          className="border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3 w-full"
-                        />
-                      </IonItem>
+                      <label htmlFor="deadline-date" className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 block">
+                        Date
+                      </label>
+                      <input
+                        id="deadline-date"
+                        type="date"
+                        value={deadlineDatePart}
+                        min={minDateStr}
+                        onChange={(e) => setDeadlineFromParts(e.target.value || '', e.target.value ? deadlineTimePart || '23:59' : '')}
+                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent"
+                      />
                     </div>
                     <div>
-                      <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Time</label>
-                      <IonItem className="ion-no-padding" lines="none">
-                        <IonDatetime
-                          presentation="time"
-                          value={deadlineDatePart ? (deadlineTimePart || '23:59') : undefined}
-                          onIonChange={(e) => {
-                            const value = e.detail.value as string;
-                            if (value && deadlineDatePart) {
-                              const t = new Date(value);
-                              const timeStr = Number.isNaN(t.getTime())
-                                ? (value.includes(':') ? value.slice(0, 5) : '23:59')
-                                : `${String(t.getHours()).padStart(2, '0')}:${String(t.getMinutes()).padStart(2, '0')}`;
-                              setDeadlineFromParts(deadlineDatePart, timeStr);
-                            }
-                          }}
-                          className="border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3 w-full"
-                        />
-                      </IonItem>
+                      <label htmlFor="deadline-time" className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 block">
+                        Time
+                      </label>
+                      <input
+                        id="deadline-time"
+                        type="time"
+                        value={deadlineDatePart ? (deadlineTimePart || '23:59') : ''}
+                        onChange={(e) => {
+                          if (deadlineDatePart) setDeadlineFromParts(deadlineDatePart, e.target.value || '23:59');
+                        }}
+                        disabled={!deadlineDatePart}
+                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed [&::-webkit-datetime-edit-fields-wrapper]:p-0"
+                      />
                     </div>
                   </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    When forecasting closes for this market. Leave empty for no deadline.
-                  </p>
+                  {formData.end_date && endDateObj && (
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                      Closes {endDateObj.toLocaleDateString(undefined, { dateStyle: 'medium' })} at {endDateObj.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
+                    </p>
+                  )}
+                  {!formData.end_date && (
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                      When forecasting closes. Leave empty for no deadline.
+                    </p>
+                  )}
                 </div>
               </div>
             </div>

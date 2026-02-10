@@ -22,7 +22,13 @@ pip install -r requirements.txt
 alembic upgrade head
 ```
 
-5. Start development server:
+5. **Local login (optional):** The app uses contact number + password; production uses Twilio for registration. To log in locally without Twilio, seed a dev user:
+```bash
+python scripts/seed_dev_user.py
+```
+Then log in with **contact** `+639123456789` and **password** `devpassword`.
+
+6. Start development server:
 
 **For macOS:**
 ```bash
@@ -42,6 +48,8 @@ uvicorn app.main:app --reload
 # Or without reload
 python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
+
+**Note (local login):** Your local DB is separate from production. Run `python scripts/seed_dev_user.py` once to create a dev user, then use contact `+639123456789` and password `devpassword` to log in.
 
 **Note:** The `--reload` flag may not work properly on macOS. Use the commands above without `--reload` for macOS.
 

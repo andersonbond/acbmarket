@@ -177,6 +177,22 @@ export const getMarkets = async (
   return response.data;
 };
 
+export interface MarketUpdatePayload {
+  title?: string;
+  description?: string;
+  rules?: string;
+  image_url?: string;
+  category?: string;
+}
+
+export const updateMarket = async (
+  marketId: string,
+  payload: MarketUpdatePayload
+): Promise<{ success: boolean; data: { market: any }; message: string }> => {
+  const response = await api.patch(`/api/v1/markets/${marketId}`, payload);
+  return response.data;
+};
+
 export const getPurchases = async (
   page: number = 1,
   limit: number = 20,

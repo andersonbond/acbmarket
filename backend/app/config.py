@@ -73,6 +73,14 @@ class Settings(BaseSettings):
 
 settings = Settings()
 
+# Require non-default SECRET_KEY in production (prevents JWT forgery)
+_DEFAULT_SECRET_KEY = "secret-key-change-in-production"
+if not settings.DEBUG and settings.SECRET_KEY == _DEFAULT_SECRET_KEY:
+    raise RuntimeError(
+        "SECRET_KEY must be set to a secure value in production. "
+        "Set the SECRET_KEY environment variable (e.g. a long random string)."
+    )
+
 # Chip Economy Constants
 # IMPORTANT: 1 Chip = 1 Philippine Peso (₱1.00)
 # This is for reference and display purposes only.

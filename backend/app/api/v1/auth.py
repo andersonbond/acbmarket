@@ -416,10 +416,7 @@ async def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(
 
     return {
         "success": True,
-        "data": {
-            "message": "If the account exists, a password reset link has been sent",
-            "reset_token": reset_token if db.query(User).count() < 10 else None,
-        },
+        "data": {"message": "If the account exists, a password reset link has been sent"},
         "errors": None,
     }
 

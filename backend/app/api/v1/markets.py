@@ -25,6 +25,7 @@ from app.schemas.market import (
 )
 from app.dependencies import get_current_user, get_current_user_id, require_market_moderator
 from app.config import settings
+from app.utils.file_upload import validate_image_content
 
 router = APIRouter()
 
@@ -32,8 +33,6 @@ router = APIRouter()
 UPLOAD_DIR = "uploads/markets"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-# Allowed image MIME types
-ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"]
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
 
 
@@ -519,26 +518,23 @@ async def upload_market_image(
     file: UploadFile = File(...),
     current_user: User = Depends(require_market_moderator),
 ):
-    """Upload market image (market moderator or admin only)"""
-    # Validate file type
-    if file.content_type not in ALLOWED_IMAGE_TYPES:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid file type. Allowed types: {', '.join(ALLOWED_IMAGE_TYPES)}",
-        )
-    
-    # Read file content to check size
+    """Upload market image (market moderator or admin only). Validates by magic bytes; extension whitelist."""
     file_content = await file.read()
     file_size = len(file_content)
-    
+
     if file_size > MAX_FILE_SIZE:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"File size exceeds 10MB limit. Current size: {file_size / 1024 / 1024:.2f}MB",
         )
-    
-    # Generate unique filename
-    file_ext = os.path.splitext(file.filename)[1] or ".jpg"
+
+    is_valid, file_ext = validate_image_content(file_content)
+    if not is_valid or not file_ext:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid file type. Allowed: JPEG, PNG, GIF, WebP (validated by file content).",
+        )
+
     unique_filename = f"{uuid_module.uuid4()}{file_ext}"
     file_path = os.path.join(UPLOAD_DIR, unique_filename)
     

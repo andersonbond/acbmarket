@@ -12,6 +12,7 @@ from app.database import get_db
 from app.models.user import User
 from app.schemas.user import UserResponse, UserUpdate, UserProfile
 from app.dependencies import get_current_user
+from app.utils.file_upload import validate_avatar_content
 
 router = APIRouter()
 
@@ -19,16 +20,6 @@ router = APIRouter()
 UPLOAD_DIR = "uploads/avatars"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-# Allowed image MIME types (common mobile formats)
-ALLOWED_IMAGE_TYPES = [
-    "image/jpeg", 
-    "image/jpg", 
-    "image/png", 
-    "image/gif", 
-    "image/webp",
-    "image/heic",  # iPhone format
-    "image/heif",  # iPhone format
-]
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
 
 
@@ -188,29 +179,23 @@ async def upload_profile_avatar(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Upload profile avatar image"""
-    # Validate file type
-    if file.content_type not in ALLOWED_IMAGE_TYPES:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid file type. Allowed types: JPEG, PNG, GIF, WebP, HEIC, HEIF",
-        )
-    
-    # Read file content to check size
+    """Upload profile avatar image. Validates by magic bytes; extension whitelist (includes HEIC)."""
     file_content = await file.read()
     file_size = len(file_content)
-    
+
     if file_size > MAX_FILE_SIZE:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"File size exceeds 10MB limit. Current size: {file_size / 1024 / 1024:.2f}MB",
         )
-    
-    # Generate unique filename
-    file_ext = os.path.splitext(file.filename)[1] or ".jpg"
-    # Normalize extension for HEIC/HEIF
-    if file.content_type in ["image/heic", "image/heif"]:
-        file_ext = ".heic"
+
+    is_valid, file_ext = validate_avatar_content(file_content)
+    if not is_valid or not file_ext:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid file type. Allowed: JPEG, PNG, GIF, WebP, HEIC (validated by file content).",
+        )
+
     unique_filename = f"{uuid_module.uuid4()}{file_ext}"
     file_path = os.path.join(UPLOAD_DIR, unique_filename)
     

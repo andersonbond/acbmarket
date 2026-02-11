@@ -1,6 +1,7 @@
 """
 Custom middleware
 """
+import logging
 from fastapi import Request, status
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -8,6 +9,8 @@ from starlette.middleware.gzip import GZipMiddleware
 from typing import Optional
 
 from app.utils.cache import redis_client
+
+logger = logging.getLogger(__name__)
 
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
@@ -18,6 +21,8 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         "/api/v1/auth/register": 5,
         "/api/v1/auth/login": 10,
         "/api/v1/auth/forgot-password": 3,
+        "/api/v1/auth/send-forgot-password-otp": 5,
+        "/api/v1/auth/send-registration-otp": 5,
         "/api/v1/auth/reset-password": 5,
         "/api/v1/auth/refresh": 20,
         "default": 60,  # Default rate limit
@@ -53,14 +58,18 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                         "errors": [{"message": "Rate limit exceeded. Please try again later."}],
                     },
                 )
-            
-            # Increment counter
             redis_client.incr(rate_limit_key)
             redis_client.expire(rate_limit_key, 60)
-        except Exception:
-            # If Redis is unavailable, allow request through (fail open)
-            # In production, you might want to fail closed
-            pass
+        except Exception as e:
+            logger.warning("Rate limit check failed (Redis unavailable?): %s", e, exc_info=True)
+            return JSONResponse(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                content={
+                    "success": False,
+                    "data": None,
+                    "errors": [{"message": "Service temporarily unavailable. Please try again later."}],
+                },
+            )
         
         response = await call_next(request)
         return response
@@ -84,7 +93,10 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         
         # Don't apply security headers to API responses - they can interfere with CORS
         # Security headers are meant for HTML pages, not JSON API responses
-        if path.startswith("/api/") or path.startswith("/uploads/"):
+        if path.startswith("/api/"):
+            return response
+        if path.startswith("/uploads/"):
+            response.headers["X-Content-Type-Options"] = "nosniff"
             return response
         
         # Apply security headers only to non-API responses (HTML pages, static files)

@@ -104,7 +104,7 @@ alembic downgrade -1
 
 ## Environment Variables
 
-See `.env.example` (create `.env` file with your values)
+See `.env.example` (create `.env` file with your values). **Production:** Set `SECRET_KEY` to a strong random value; the app will not start in production (when `DEBUG` is false) if the default secret is used.
 
 ## Production / Reverse proxy
 

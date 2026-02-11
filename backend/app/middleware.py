@@ -61,15 +61,12 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             redis_client.incr(rate_limit_key)
             redis_client.expire(rate_limit_key, 60)
         except Exception as e:
-            logger.warning("Rate limit check failed (Redis unavailable?): %s", e, exc_info=True)
-            return JSONResponse(
-                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                content={
-                    "success": False,
-                    "data": None,
-                    "errors": [{"message": "Service temporarily unavailable. Please try again later."}],
-                },
+            logger.warning(
+                "Rate limit check failed (Redis unavailable?): %s. Allowing request (fail-open).", e
             )
+            # Fail-open: allow request when Redis is down so the app keeps working.
+            # Install/start Redis in production to enable rate limiting.
+            pass
         
         response = await call_next(request)
         return response

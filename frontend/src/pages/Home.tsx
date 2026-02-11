@@ -50,7 +50,7 @@ const Home: React.FC = () => {
     const fetchMarkets = async () => {
       setIsLoading(true);
       try {
-        const response = await api.get('/api/v1/markets?status=open&limit=20&page=1');
+        const response = await api.get('/api/v1/markets?status=open&limit=30&page=1');
         if (response.data.success) {
           // Process markets to calculate percentages
           const processedMarkets = response.data.data.markets.map((market: Market) => {
@@ -101,8 +101,16 @@ const Home: React.FC = () => {
   const sortedMarkets = [...filteredMarkets].sort((a, b) => {
     if (sortBy === 'volume') {
       return (b.total_volume || 0) - (a.total_volume || 0);
-    } else if (sortBy === 'newest') {
-      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    }
+    if (sortBy === 'newest') {
+      const tA = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const tB = b.created_at ? new Date(b.created_at).getTime() : 0;
+      return tB - tA;
+    }
+    if (sortBy === 'ending') {
+      const endA = a.end_date ? new Date(a.end_date).getTime() : Number.MAX_SAFE_INTEGER;
+      const endB = b.end_date ? new Date(b.end_date).getTime() : Number.MAX_SAFE_INTEGER;
+      return endA - endB;
     }
     return 0;
   });

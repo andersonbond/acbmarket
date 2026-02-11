@@ -9,7 +9,7 @@ import api from '../services/api';
 import { Market, MarketListResponse } from '../types/market';
 import { useSEO } from '../hooks/useSEO';
 
-const MARKETS_PER_PAGE = 25;
+const MARKETS_PER_PAGE = 30;
 
 const Markets: React.FC = () => {
   const location = useLocation();
@@ -184,6 +184,24 @@ const Markets: React.FC = () => {
     return true;
   });
 
+  // Sort filtered markets by selected sort option (client-side so it works with paginated data)
+  const sortedMarkets = [...filteredMarkets].sort((a, b) => {
+    if (sortBy === 'volume') {
+      return (b.total_volume ?? 0) - (a.total_volume ?? 0);
+    }
+    if (sortBy === 'newest') {
+      const tA = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const tB = b.created_at ? new Date(b.created_at).getTime() : 0;
+      return tB - tA;
+    }
+    if (sortBy === 'ending') {
+      const endA = a.end_date ? new Date(a.end_date).getTime() : Number.MAX_SAFE_INTEGER;
+      const endB = b.end_date ? new Date(b.end_date).getTime() : Number.MAX_SAFE_INTEGER;
+      return endA - endB;
+    }
+    return 0;
+  });
+
   return (
     <IonPage>
       <Header />
@@ -197,12 +215,12 @@ const Markets: React.FC = () => {
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                   {totalMarkets > 0 ? (
                     <>
-                      {filteredMarkets.length} of {totalMarkets} {totalMarkets === 1 ? 'market' : 'markets'}
-                      {filteredMarkets.length !== totalMarkets && ' (filtered)'}
+                      {sortedMarkets.length} of {totalMarkets} {totalMarkets === 1 ? 'market' : 'markets'}
+                      {sortedMarkets.length !== totalMarkets && ' (filtered)'}
                     </>
                   ) : (
                     <>
-                      {filteredMarkets.length} {filteredMarkets.length === 1 ? 'market' : 'markets'} found
+                      {sortedMarkets.length} {sortedMarkets.length === 1 ? 'market' : 'markets'} found
                     </>
                   )}
                 </p>
@@ -235,7 +253,7 @@ const Markets: React.FC = () => {
             <div className="flex justify-center items-center py-12">
               <IonSpinner name="crescent" />
             </div>
-          ) : filteredMarkets.length === 0 ? (
+          ) : sortedMarkets.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-gray-500 dark:text-gray-400 text-lg">
                 No markets found. Try adjusting your filters.
@@ -244,7 +262,7 @@ const Markets: React.FC = () => {
           ) : (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 md:gap-4 mb-6">
-                {filteredMarkets.map((market) => (
+                {sortedMarkets.map((market) => (
                   <MarketCard key={market.id} market={market} />
                 ))}
               </div>
@@ -257,7 +275,7 @@ const Markets: React.FC = () => {
                     <span className="text-sm">Loading more markets...</span>
                   </div>
                 )}
-                {!hasMore && filteredMarkets.length > 0 && (
+                {!hasMore && sortedMarkets.length > 0 && (
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     No more markets to load
                   </p>
